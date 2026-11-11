@@ -1,5 +1,5 @@
 /* Offline shell cache. Game code is never sent to a remote endpoint. */
-const CACHE='scandeck-v6';
+const CACHE='scandeck-v7';
 const FILES=['./','index.html','style.css','app.js','protocol.js','runtime.js','code128.js','assets/favicon.svg','assets/snake-code128.svg','assets/ironpass-micro-v3.txt','assets/ironpass-micro-v3-qr.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));

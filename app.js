@@ -59,7 +59,7 @@ function playGame(game) {
   stopCamera();
   $('overlay-game-title').textContent=game.title;
   $('game-score').textContent='';
-  show('touch-controls',game.kind==='snake'||game.kind==='micro');
+  show('touch-controls',game.kind!=='html');
   show('game-overlay',true);
   // Never grant allow-same-origin, form submission, popups, or top navigation.
   $('game-frame').srcdoc = gameDocument(game);
