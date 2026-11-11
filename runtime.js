@@ -8,6 +8,7 @@ export function gameDocument(game) {
     // The meta policy must appear before game content, including authored <script> tags.
     return CSP + game.source;
   }
+  if (game.kind === 'standalone') return shell('<script>' + game.source + '</script>');
   const prelude = `<style>html,body{margin:0;width:100%;height:100%;background:#0d1612;overflow:hidden}canvas{display:block;width:min(96vw,96vh);height:min(96vw,96vh);margin:auto;image-rendering:pixelated;touch-action:none}</style><canvas id="c" width="320" height="320"></canvas><script>
 const c=document.getElementById('c'),g=c.getContext('2d');
 const report=(type,value)=>parent.postMessage({scandeck:type,value},'*');

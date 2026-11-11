@@ -1,4 +1,6 @@
 import test from 'node:test';
+import vm from 'node:vm';
+import {snakePayload,snakeSvg} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,QR_LIMIT} from '../protocol.js';
@@ -33,8 +35,9 @@ test('SD1 QR format creates and restores an HTML game',async()=>{
   assert.equal(game.source,html);
 });
 test('SDJ barcode is open to third party scripts, not only samples',async()=>{
-  const payload=packScript('g.fillRect(0,0,4,4)');
-  assert.equal((await decodeGame(payload)).source,'g.fillRect(0,0,4,4)');
+  const payload=packScript("document.body.textContent='OK'");
+  assert.equal((await decodeGame(payload)).kind,'standalone');
+  assert.equal((await decodeGame(payload)).source,"document.body.textContent='OK'");
   assert.throws(()=>packScript('bad\nnew line'),/single line/);
 });
 test('sandbox policy is included in every runtime and scripts close',async()=>{
@@ -47,10 +50,37 @@ test('sandbox policy is included in every runtime and scripts close',async()=>{
   const doc2=gameDocument(micro);
   assert.ok(doc2.includes('</script>'));
   assert.ok(doc2.includes('gameAPI'));
+  const standalone=await decodeGame(packScript("document.body.textContent='OK'"));
+  const doc3=gameDocument(standalone);
+  assert.ok(doc3.includes("document.body.textContent='OK'"));
+  assert.doesNotMatch(doc3, /gameAPI|snakeHelpers|const c=document/);
 });
 test('Code128 output includes start, checksum, and stop patterns',()=>{
   const svg=code128Svg('SDJ:g.fillRect(1,1,2,2)');
   assert.ok(svg.startsWith('<svg'));
   assert.ok(svg.includes('viewBox='));
   assert.match(svg,/<rect/);
+});
+test('the SVG encodes the entire independent Snake program',async()=>{
+  const file=readFileSync(new URL('../assets/snake-code128.svg',import.meta.url),'utf8');
+  assert.equal(file,snakeSvg());
+  const game=await decodeGame(snakePayload());
+  assert.equal(game.kind,'standalone');
+  assert.equal(game.source,readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8').trim());
+  assert.match(file,/<metadata id="scandeck-payload">/);
+  assert.ok(gameDocument(game).includes(game.source));
+});
+test('Snake runs on standard browser APIs with no ScanDeck game helpers',()=>{
+  const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8');
+  const board={textContent:''};
+  const context={document:{body:{}},b:board,setInterval:fn=>{context.tick=fn}};
+  vm.runInNewContext(source,context,{timeout:500});
+  assert.match(board.textContent,/SCORE 0/);
+  context.onkeydown({key:'ArrowDown'});
+  context.tick();
+  assert.equal(context.s[0],35);
+  context.onclick({target:{textContent:'d'}});
+  context.tick();
+  assert.equal(context.s[0],36);
+  assert.ok(board.textContent.includes('#'));
 });

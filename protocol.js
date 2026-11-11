@@ -63,16 +63,23 @@ export function packScript(script) {
   const source = script.trim();
   if (!source || /[^\x20-\x7e]/.test(source)) throw new Error('Code 128 supports printable ASCII. Put the script on a single line.');
   if (!source.includes('(') && !source.includes('=')) throw new Error('Enter a JavaScript microgame program.');
-  return `SDJ:${source}`;
+  if (/<\/script/i.test(source)) throw new Error('Do not put a closing script tag in the code.');
+  return `SDS:${source}`;
 }
 export async function decodeGame(raw) {
-  const value = raw.trim().startsWith('SDJ:') ? raw.trim() : raw.trim().replace(/\s+/g, '');
+  const trimmed = raw.trim();
+  const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
   if (value.startsWith('IP3:') || value.startsWith('SD1:')) {
     const legacy = value.startsWith('IP3:');
     const html = await inflateRaw(base43Decode(value.slice(4)));
     if (!/<(?:script|canvas|body|html|svg|div)\b/i.test(html)) throw new Error('The package does not look like a game.');
     return { title: legacy ? 'Ironpass Micro' : 'Custom QR Game', type: legacy ? 'IP3 / QR' : 'SD1 / QR', kind: 'html', source: html, payload: value, size: new TextEncoder().encode(html).length };
+  }
+  if (value.startsWith('SDS:')) {
+    const script = value.slice(4);
+    if (!script || script.length > 16_000 || /[^\x20-\x7e]/.test(script) || /<\/script/i.test(script)) throw new Error('Invalid standalone game code.');
+    return { title: 'Standalone Barcode Game', type: 'SDS / CODE 128', kind: 'standalone', source: script, payload: value, size: script.length };
   }
   if (value.startsWith('SDJ:')) {
     const script = value.slice(4);

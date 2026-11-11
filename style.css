@@ -88,6 +88,7 @@ textarea:focus{border-color:var(--accent);outline:none}textarea::placeholder{col
 .barcode-code-preview .game-code-paper img{width:100%;height:auto}
 .game-code-caption{font-size:11px;line-height:1.2;color:#a8b8aa}
 .game-code-preview:hover .game-code-caption{color:var(--accent)}
+.barcode-note{display:block;color:#a8b3ab;font-size:11px;line-height:1.5;margin-top:12px}
 .game-body{padding:23px;display:flex;flex-direction:column;flex:1}.game-body h3{font-size:23px;letter-spacing:-.045em;margin:0 0 6px}.game-body p{font-size:13px;color:var(--muted);margin:0;flex:1}.game-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:22px}
 .create-layout{max-width:740px;display:grid;gap:16px}
 .create-main,.result-surface{padding:27px}.section-label{margin-bottom:12px}

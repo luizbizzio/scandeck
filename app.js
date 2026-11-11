@@ -1,4 +1,4 @@
-import { decodeGame, packHtml, packScript, LEGACY_SNAKE, QR_LIMIT } from './protocol.js';
+import { decodeGame, packHtml, packScript, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
 import { code128Svg } from './code128.js';
 const $ = id => document.getElementById(id);
@@ -185,7 +185,19 @@ $('image-input').addEventListener('change',async e=>{await uploadImage(e.target.
 $('scan-viewport').addEventListener('dragover',e=>e.preventDefault());
 $('scan-viewport').addEventListener('drop',e=>{e.preventDefault();void uploadImage(e.dataTransfer.files?.[0])});
 
-$('try-snake').addEventListener('click',async()=>{try{playGame(await decodeGame(LEGACY_SNAKE))}catch(error){status(error.message,true)}});
+$('try-snake').addEventListener('click',async()=>{
+  try {
+    const response=await fetch('assets/snake-code128.svg',{cache:'no-cache'});
+    if(!response.ok)throw Error('Snake barcode not found.');
+    const documentSvg=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
+    const payload=documentSvg.getElementById('scandeck-payload')?.textContent;
+    if(!payload)throw Error('Snake barcode data is missing.');
+    const game=await decodeGame(payload);
+    if(game.kind!=='standalone')throw Error('Snake barcode is not standalone.');
+    game.title='Snake';
+    playGame(game);
+  }catch(error){switchTab('scan');status('Snake could not load: '+error.message,true)}
+});
 $('try-ironpass').addEventListener('click',async()=>{
   try{const response=await fetch('assets/ironpass-micro-v3.txt',{cache:'force-cache'});if(!response.ok)throw Error('Game payload not found.');playGame(await decodeGame(await response.text()))}
   catch(error){switchTab('scan');status('Ironpass could not load: '+error.message,true)}
@@ -195,8 +207,8 @@ function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   $('create-label').textContent=format==='qr'?'Game code (HTML)':'Game code (JavaScript)';
-  $('create-source').placeholder=format==='qr'?'Paste your HTML game here':'Paste a tiny ScanDeck script here';
-  $('create-help').textContent=format==='qr'?'QR codes can store more game data.':'Use a very short script made for ScanDeck. Long barcodes are harder to scan.';
+  $('create-source').placeholder=format==='qr'?'Paste your HTML game here':'Paste standalone JavaScript here';
+  $('create-help').textContent=format==='qr'?'QR codes can store more game data.':'Use standalone JavaScript without ScanDeck helpers. Long barcodes can be difficult to scan.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
@@ -208,7 +220,7 @@ $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='qr'){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
-    $('create-source').value="let x=4,y=4;g.fillStyle='#b9ef79';gameAPI.onDirection(v=>{x=(x+(v==='R')-(v==='L')+10)%10;y=(y+(v==='D')-(v==='U')+10)%10;g.clearRect(0,0,320,320);g.fillRect(x*32,y*32,30,30)});g.fillRect(x*32,y*32,30,30)";
+    $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
   }
 });
 function displaySvg(svg) {

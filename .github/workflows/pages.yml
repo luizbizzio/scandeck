@@ -30,7 +30,7 @@ jobs:
         run: |
           mkdir -p dist/assets
           cp index.html style.css app.js protocol.js runtime.js code128.js sw.js .nojekyll dist/
-          cp assets/favicon.svg assets/snake-code128.svg assets/snake-code128.png assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt dist/assets/
+          cp assets/favicon.svg assets/snake-code128.svg assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt dist/assets/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
