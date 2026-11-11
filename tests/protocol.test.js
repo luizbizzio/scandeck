@@ -73,19 +73,21 @@ test('the SVG encodes the entire independent Snake program',async()=>{
 });
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8');
-  const board={textContent:''};
-  const context={document:{body:{}},b:board,setInterval:(fn,delay)=>{context.tick=fn;context.delay=delay}};
+  const body={textContent:'',style:''};
+  const context={document:{body},setInterval:(fn,delay)=>{context.tick=fn;context.delay=delay}};
   vm.runInNewContext(source,context,{timeout:500});
   assert.equal(context.delay,250,'The interval moves the Snake; it is not a visible timer');
-  assert.match(context.document.body.style,/background:#000;color:#afa/);
+  assert.match(body.style,/background:#000;color:#afa/);
+  assert.match(body.style,/white-space:pre/);
+  assert.equal(context.b,body);
   assert.match(context.document.body.style,/touch-action:none/);
-  assert.doesNotMatch(context.document.body.innerHTML,/<button/);
+  assert.doesNotMatch(source,/<button/);
   assert.doesNotMatch(source,/gameAPI/);
   assert.equal(context.s.length,3);
   context.onkeydown({key:'ArrowDown'});
   context.tick();
   assert.equal(context.s[0],35);
-  assert.match(board.textContent,/^0\n/);
+  assert.match(body.textContent,/^0\n/);
   context.onmessage({data:'U'});
   context.tick();
   assert.equal(context.s[0],43,'Reverse direction is blocked');
@@ -103,9 +105,9 @@ test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   context.s=[27,28,29];context.f=45;context.d=1;
   context.tick();
   assert.equal(context.d,0);
-  assert.equal(board.textContent,'LOSE');
+  assert.equal(body.textContent,'LOSE');
   context.tick();
-  assert.equal(board.textContent,'LOSE','Game over persists');
+  assert.equal(body.textContent,'LOSE','Game over persists');
   context.onpointerdown({x:20,y:80});
   context.onpointerup({x:20,y:20});
   context.tick();
@@ -115,7 +117,7 @@ test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   context.tick();
   assert.equal(context.s.length,64);
   assert.equal(context.d,0);
-  assert.equal(board.textContent,'WIN');
+  assert.equal(body.textContent,'WIN');
   context.tick();
-  assert.equal(board.textContent,'WIN','Win state persists');
+  assert.equal(body.textContent,'WIN','Win state persists');
 });
