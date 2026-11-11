@@ -9,14 +9,11 @@ permissions:
   pages: write
   id-token: write
 concurrency:
-  group: scandeck-pages-v2-${{ github.ref }}
+  group: scandeck-pages-noenv-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out files
         uses: actions/checkout@v4
