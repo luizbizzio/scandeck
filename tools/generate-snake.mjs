@@ -8,9 +8,7 @@ export function snakePayload() {
   return packScript(source);
 }
 export function snakeSvg() {
-  const payload=snakePayload();
-  const escaped=payload.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  return code128Svg(payload).replace('</svg>', '<metadata id="scandeck-payload">'+escaped+'</metadata></svg>');
+  return code128Svg(snakePayload());
 }
 if(process.argv[1] && resolve(process.argv[1])===fileURLToPath(import.meta.url)) {
   writeFileSync(new URL('../assets/snake-code128.svg',import.meta.url),snakeSvg());

@@ -7,3 +7,29 @@ export function code128Svg(data) {
   let x=12,rects=[];for(const sym of symbols){const p=PATTERNS[sym];for(let i=0;i<p.length;i++){const w=Number(p[i]);if(!(i&1))rects.push(`<rect x="${x}" y="0" width="${w}" height="130"/>`);x+=w}}
   const width=x+12;return `<svg xmlns="http://www.w3.org/2000/svg" class="barcode-svg" width="${width}" height="130" viewBox="0 0 ${width} 130" shape-rendering="crispEdges"><rect width="${width}" height="130" fill="#fff"/><g fill="#000">${rects.join("")}</g></svg>`;
 }
+/* Decode the actual Code 128 B bar geometry; never depend on SVG metadata. */
+export function decodeCode128Svg(svg) {
+  const bars=[...svg.matchAll(/<rect x="(\d+)" y="0" width="(\d+)" height="130"\/>/g)];
+  if (!bars.length) throw new Error('Barcode has no readable bars.');
+  const runs=[];let last=Number(bars[0][1]);
+  for(const [,start,width] of bars){
+    const x=Number(start),w=Number(width);
+    if(x<last||w<1)throw new Error('Invalid barcode geometry.');
+    if(x>last)runs.push(x-last);
+    runs.push(w);
+    last=x+w;
+  }
+  if((runs.length-7)%6||runs.length<19)throw new Error('Incomplete barcode pattern.');
+  const symbols=[];
+  for(let i=0;i<runs.length;){
+    const n=runs.length-i===7?7:6;
+    const symbol=PATTERNS.indexOf(runs.slice(i,i+n).join(''));
+    if(symbol<0)throw new Error('Invalid barcode symbol.');
+    symbols.push(symbol);i+=n;
+  }
+  const data=symbols.slice(1,-2);
+  const checksum=[104,...data].reduce((sum,n,i)=>sum+(i?n*i:n),0)%103;
+  if(symbols[0]!==104||symbols.at(-1)!==106||symbols.at(-2)!==checksum||data.some(n=>n>95))
+    throw new Error('Barcode checksum failed.');
+  return String.fromCharCode(...data.map(n=>n+32));
+}

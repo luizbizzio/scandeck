@@ -4,7 +4,7 @@ import {snakePayload,snakeSvg} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,QR_LIMIT} from '../protocol.js';
-import {code128Svg} from '../code128.js';
+import {code128Svg,decodeCode128Svg} from '../code128.js';
 import {gameDocument} from '../runtime.js';
 test('base43 binary round trips',()=>{
   for(const n of [0,1,2,3,43,100,255,512,2779]){
@@ -67,7 +67,8 @@ test('the SVG encodes the entire independent Snake program',async()=>{
   const game=await decodeGame(snakePayload());
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8').trim());
-  assert.match(file,/<metadata id="scandeck-payload">/);
+  assert.doesNotMatch(file,/<metadata/);
+  assert.equal(decodeCode128Svg(file),snakePayload());
   assert.ok(gameDocument(game).includes(game.source));
 });
 test('Snake runs on standard browser APIs with no ScanDeck game helpers',()=>{
@@ -75,12 +76,23 @@ test('Snake runs on standard browser APIs with no ScanDeck game helpers',()=>{
   const board={textContent:''};
   const context={document:{body:{}},b:board,setInterval:fn=>{context.tick=fn}};
   vm.runInNewContext(source,context,{timeout:500});
-  assert.match(board.textContent,/SCORE 0/);
+  assert.equal(context.s.length,3);
   context.onkeydown({key:'ArrowDown'});
   context.tick();
   assert.equal(context.s[0],35);
+  assert.match(board.textContent,/^0\n/);
   context.onclick({target:{textContent:'d'}});
   context.tick();
   assert.equal(context.s[0],36);
-  assert.ok(board.textContent.includes('#'));
+  context.s=[27,26,25];context.f=28;context.d=1;
+  context.tick();
+  assert.equal(context.s.length,4);
+  assert.ok(!context.s.includes(context.f));
+  context.s=[27,28,29];context.d=1;
+  context.tick();
+  assert.equal(context.d,0);
+  assert.equal(board.textContent,'GAME OVER');
+  context.onclick({target:{textContent:'w'}});
+  context.tick();
+  assert.equal(context.s[0],19);
 });

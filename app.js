@@ -1,6 +1,6 @@
 import { decodeGame, packHtml, packScript, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
-import { code128Svg } from './code128.js';
+import { code128Svg, decodeCode128Svg } from './code128.js';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['code_128','qr_code'];
@@ -189,9 +189,7 @@ $('try-snake').addEventListener('click',async()=>{
   try {
     const response=await fetch('assets/snake-code128.svg',{cache:'no-cache'});
     if(!response.ok)throw Error('Snake barcode not found.');
-    const documentSvg=new DOMParser().parseFromString(await response.text(),'image/svg+xml');
-    const payload=documentSvg.getElementById('scandeck-payload')?.textContent;
-    if(!payload)throw Error('Snake barcode data is missing.');
+    const payload=decodeCode128Svg(await response.text());
     const game=await decodeGame(payload);
     if(game.kind!=='standalone')throw Error('Snake barcode is not standalone.');
     game.title='Snake';

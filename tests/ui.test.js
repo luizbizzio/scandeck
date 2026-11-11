@@ -32,6 +32,7 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /fetch\('assets\/snake-code128\.svg'/);
+  assert.match(script, /decodeCode128Svg\(await response\.text\(\)\)/);
   assert.doesNotMatch(script, /decodeGame\(LEGACY_SNAKE\)/);
 });
 
