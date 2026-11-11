@@ -1,0 +1,44 @@
+name: Build and publish ScanDeck
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: scandeck-pages-v2-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run tests
+        run: npm test
+      - name: Prepare static site
+        run: |
+          mkdir -p dist/assets
+          cp index.html style.css app.js protocol.js runtime.js code128.js sw.js .nojekyll dist/
+          cp assets/favicon.svg assets/snake-code128.svg assets/snake-code128.png assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt dist/assets/
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Wait for artifact indexing
+        run: sleep 15
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

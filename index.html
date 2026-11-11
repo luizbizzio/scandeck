@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="Tiny games stored inside QR codes and barcodes. Scan a code and play.">
+  <title>ScanDeck | Games inside codes</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a href="#scan" class="logo" aria-label="ScanDeck home"><span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>scan<span class="logo-light">deck</span><span class="logo-dot">.</span></span></a>
+    <nav aria-label="Main navigation">
+      <button class="tab active" data-tab="scan">Scan</button>
+      <button class="tab" data-tab="library">Games</button>
+      <button class="tab" data-tab="create">Create</button>
+      <button class="tab" data-tab="about">About</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page active" id="scan" aria-labelledby="scan-title">
+      <div class="section-heading"><h1 id="scan-title">The game is in the code.</h1><p>Scan a game QR code or barcode to play. The code holds the game, not a link to it.</p></div>
+      <div class="scan-layout">
+        <section class="surface scanner" aria-label="Game scanner">
+          <div class="scanner-heading">
+            <h2>Scan a game</h2>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR Code</span><span>Code 128</span></div>
+          </div>
+          <div class="scan-workspace">
+            <div class="scan-viewport" id="scan-viewport">
+              <div class="scan-idle" id="scan-idle">
+                <div class="idle-frame" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i>
+                  <div class="idle-symbol"><span></span><span></span><span></span><span></span></div>
+                </div>
+                <p>Place a game code in view</p>
+              </div>
+              <div id="camera-panel" class="camera-panel" hidden>
+                <div class="camera-stage" id="camera-stage">
+                  <video id="camera" playsinline muted autoplay aria-label="Live camera"></video>
+                  <div class="scan-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                  <span id="camera-label" class="camera-label">SCANNING</span>
+                </div>
+              </div>
+            </div>
+            <div class="scan-controls">
+              <div class="scan-guide"><h3>Ready to play?</h3><p>Use your camera or upload an image of a ScanDeck game code.</p></div>
+              <div class="scan-actions">
+                <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
+                <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
+                <button id="stop-camera" class="btn btn-small stop-camera" disabled hidden>Stop camera</button>
+              </div>
+              <div class="status" id="status" role="status" aria-live="polite"><span id="status-text"></span></div>
+              <details class="manual-entry"><summary>Paste game data instead</summary><div class="manual-inner"><label class="field-label" for="paste-input">Game data</label><textarea id="paste-input" rows="4" spellcheck="false" placeholder="Paste the code data here"></textarea><button id="decode-text" class="btn">Open game</button></div></details>
+            </div>
+          </div>
+        </section>
+        <p class="scan-explore">Don't have a code? <button class="inline-link" id="scan-games">Try a game</button></p>
+      </div>
+      <section id="detected" class="surface detected" hidden aria-label="Detected game">
+        <div><span class="small-label">GAME FOUND</span><h2 id="detected-title">Game found</h2><p id="detected-description">Ready to play.</p><div class="meta" id="detected-meta"></div></div>
+        <div class="detected-actions"><button class="btn btn-primary" id="play-detected">Play game <span aria-hidden="true">↗</span></button><details class="detected-more"><summary>Details</summary><button class="btn btn-small" id="inspect-detected">View source</button></details></div>
+      </section>
+    </section>
+
+    <section class="page" id="library" aria-labelledby="library-title">
+      <div class="section-heading"><h1 id="library-title">Games to try.</h1><p>Each game is stored inside the code you can download.</p></div>
+      <div class="game-groups">
+        <section class="game-group" aria-labelledby="qr-games-heading">
+          <h2 class="group-title" id="qr-games-heading">QR Code</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/ironpass-micro-v3-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Ironpass Micro QR code"><span class="game-code-paper"><img src="assets/ironpass-micro-v3-qr.png" alt="QR code containing Ironpass Micro" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Ironpass Micro</h3><p>Defend your towers against waves of enemies.</p><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download QR</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="bar-games-heading">
+          <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview barcode-code-preview" href="assets/snake-code128.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size Snake Code 128 barcode"><span class="game-code-paper"><img src="assets/snake-code128.svg" alt="Code 128 barcode containing Snake" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Snake</h3><p>Eat the food. Don't hit yourself.</p><div class="game-actions"><button class="btn btn-primary" id="try-snake">Play</button><a class="btn" href="assets/snake-code128.svg" download>Download barcode</a></div></div>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="create" aria-labelledby="create-title">
+      <div class="section-heading"><h1 id="create-title">Put a game in a code.</h1><p>Have a small game? Paste its code and make a QR code or barcode.</p></div>
+      <div class="create-layout">
+        <section class="surface create-main">
+          <label class="field-label section-label" id="format-label">Code type</label>
+          <div class="format-options" role="group" aria-labelledby="format-label">
+            <button class="format-option selected" data-format="qr" aria-pressed="true"><strong>QR Code</strong><span>For small HTML games</span></button>
+            <button class="format-option" data-format="bar" aria-pressed="false"><strong>Code 128</strong><span>For tiny ScanDeck scripts</span></button>
+          </div>
+          <p class="format-note" id="create-help">QR codes can store more game data.</p>
+          <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
+          <textarea spellcheck="false" id="create-source" class="source-editor" placeholder="Paste your HTML game here"></textarea>
+          <div class="create-actions"><button class="btn btn-primary" id="generate">Generate code <span aria-hidden="true">↗</span></button></div>
+          <p id="create-error" class="create-error" role="alert" hidden></p>
+        </section>
+        <section class="surface result-surface" id="create-result" hidden>
+          <div class="result-heading"><h2>Your game code</h2><span id="output-label" class="small-label" aria-live="polite">READY</span></div>
+          <div id="output-preview" class="output-preview"></div>
+          <div class="output-stats" id="output-stats" role="status" aria-live="polite"></div>
+          <div class="create-actions result-actions"><button class="btn btn-primary" id="download-code" disabled>Download SVG</button><button class="btn" id="test-code" disabled>Test game</button></div>
+          <details class="advanced-output"><summary>Copy game data</summary><div class="advanced-inner"><textarea id="generated-payload" spellcheck="false" readonly rows="3" aria-label="Generated game data"></textarea><button class="btn btn-small" id="copy-code" disabled>Copy data</button></div></details>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="about" aria-labelledby="about-title">
+      <div class="section-heading"><h1 id="about-title">Games inside codes.</h1><p>ScanDeck is a small game console in your browser.</p></div>
+      <div class="about-content">
+        <p class="about-lead">Most QR codes open a website. ScanDeck is different. The code contains the game itself. Scan it here, and play.</p>
+        <h2>How it works</h2>
+        <ol class="about-steps"><li><span>01</span>Find a ScanDeck game code.</li><li><span>02</span>Scan it or upload its image.</li><li><span>03</span>Play in your browser.</li></ol>
+        <div class="about-types">
+          <div><h3>QR Code</h3><p>More space for bigger games.</p></div>
+          <div><h3>Code 128 barcode</h3><p>Less space, for very small games.</p></div>
+        </div>
+        <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
+        <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>
+      </div>
+    </section>
+  </main>
+  <footer><span>ScanDeck</span><a href="https://github.com/luizbizzio/scandeck" target="_blank" rel="noopener noreferrer">GitHub ↗</a></footer>
+</div>
+<div class="game-overlay" id="game-overlay" hidden>
+  <div class="game-top"><div class="game-brand">scan<span>deck</span><span class="game-title" id="overlay-game-title">Game</span></div><div class="game-top-right"><span id="game-score" class="game-score"></span><button class="btn exit-btn" id="exit-game">✕ Exit</button></div></div>
+  <iframe id="game-frame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Sandboxed game"></iframe>
+  <div id="touch-controls" class="touch-controls" hidden><button data-dir="U" aria-label="Up">↑</button><div><button data-dir="L" aria-label="Left">←</button><button data-dir="D" aria-label="Down">↓</button><button data-dir="R" aria-label="Right">→</button></div></div>
+</div>
+<dialog id="source-dialog"><div class="dialog-head"><h2>Game source</h2><button class="btn" id="close-source">Close</button></div><p>Only open game codes you trust.</p><pre id="source-view"></pre></dialog>
+</body>
+</html>
