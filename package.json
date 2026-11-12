@@ -1,6 +1,6 @@
 {
   "name": "scandeck",
-  "version": "0.2.0-beta.1",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "Open QR and Code 128 game reader and creator",
