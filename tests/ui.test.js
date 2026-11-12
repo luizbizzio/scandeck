@@ -89,11 +89,14 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
-test('experimental color games explain that their Play buttons are not scans',()=>{
+test('experimental color symbols have pixel-decodable QR companions',()=>{
   for(const name of ['jab-games-heading','ultra-games-heading'])assert.match(html,new RegExp('id="'+name+'"'));
   for(const id of ['try-jab','try-ultra'])assert.ok(script.includes("$('"+id+"')"));
-  assert.match(html,/Scanner unavailable/);
-  assert.match(script,/playColorExample/);
+  assert.doesNotMatch(html,/Scanner unavailable/);
+  assert.match(html,/assets\/colorpath-scan\.svg/);
+  assert.match(html,/assets\/colormatch-scan\.svg/);
+  assert.match(script,/playMatrixExample\('colorpath-scan','Chroma Rush','QRCode'\)/);
+  assert.match(script,/playMatrixExample\('colormatch-scan','Wire Crisis','QRCode'\)/);
 });
 
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
@@ -138,4 +141,15 @@ test('inline barcode buttons are closed before player UI scripts',async()=>{
  const {gameDocument}=await import('../runtime.js');
  const frame=gameDocument({kind:'standalone',title:'Codebreaker',source:"document.write('<input id=a><button id=b>GO')"});
  assert.match(frame,/<\/script><\/button><script>/);
+});
+
+test('arcade shell contains all games with a centered Snake and working replay controls',async()=>{
+ assert.match(html,/class="game-app"/);assert.match(html,/class="game-viewport"/);
+ assert.match(html,/sandbox="allow-scripts"/);assert.match(css,/\.game-app\{/);
+ const {gameDocument}=await import('../runtime.js');
+ assert.match(gameDocument({kind:'snake',source:'s=[27,26,25];f=45;I=180;T=()=>{}'}),/body\{display:grid;place-items:center\}/);
+ assert.match(gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'}),/PLAY AGAIN/);
+ assert.match(gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'}),/THE CODE WAS/);
+ const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
+ assert.match(wire,/6000/);assert.match(wire,/ROUND /);
 });
