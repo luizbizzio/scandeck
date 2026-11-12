@@ -201,15 +201,16 @@ test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
  for(let i=0;i<3;i++)g.onclick({target:{dataset:{k:'1'}}});
  assert.equal(t.textContent,'GAME OVER');
  assert.match(html,/class=stats/);assert.match(html,/class=prompt/);
+ assert.doesNotMatch(html,/Example: RED in blue letters/);
 });
 test('Wire Crisis requires two cuts per round, not one simple tap',()=>{
  const src=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
  const t={innerHTML:''},ctx={t,document:{write(){}},Math:{random:()=>0}};
  vm.runInNewContext(src,ctx,{timeout:500});
  assert.equal(t.innerHTML,'RR');
- for(let round=0;round<3;round++){
+ for(let round=0;round<5;round++){
    ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,'NEXT');
-   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,round===2?'SAFE':'RR');
+   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,round===4?'SAFE':'RR');
  }
  ctx.onclick({target:{innerHTML:'G'}});assert.equal(t.innerHTML,'SAFE','Finished games cannot be changed');
  const wrong={t:{innerHTML:''},document:{write(){}},Math:{random:()=>0}};

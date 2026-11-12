@@ -130,15 +130,15 @@
         <section class="game-group" aria-labelledby="jab-games-heading">
           <h2 class="group-title" id="jab-games-heading">JAB Code <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/colorpath-jab.svg" target="_blank" rel="noopener noreferrer" aria-label="View JAB Code code"><span class="game-code-paper"><img src="assets/colorpath-jab.svg" alt="JAB Code containing Chroma Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the written word. Clear instructions, a separated timer, score and three lives.</p><small class="barcode-note">Scanner unavailable. This preview uses the included source payload, not image decoding.</small><div class="game-actions"><button class="btn btn-primary" id="try-jab">Play sample</button><a class="btn" href="assets/colorpath-jab.svg" download>Download JAB Code</a></div></div>
+            <div class="paired-codes"><a class="game-code-preview qr-code-preview" href="assets/colorpath-jab.svg" target="_blank" rel="noopener noreferrer" aria-label="View JAB Code code"><span class="game-code-paper"><img src="assets/colorpath-jab.svg" alt="JAB Code containing Chroma Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View JAB Code ↗</span></a><a class="game-code-preview qr-code-preview" href="assets/colorpath-scan.svg" target="_blank" rel="noopener noreferrer" aria-label="View scannable QR for Chroma Rush"><span class="game-code-paper"><img src="assets/colorpath-scan.svg" alt="Scannable QR containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Scan-ready QR ↗</span></a></div>
+            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the written word. Clear instructions, a separated timer, score and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-jab">Play</button><a class="btn" href="assets/colorpath-scan.svg" download>Download QR</a><a class="btn" href="assets/colorpath-jab.svg" download>JAB Code</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="ultra-games-heading">
           <h2 class="group-title" id="ultra-games-heading">Ultracode <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/colormatch-ultra.svg" target="_blank" rel="noopener noreferrer" aria-label="View Ultracode code"><span class="game-code-paper"><img src="assets/colormatch-ultra.svg" alt="Ultracode containing Wire Crisis" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Wire Crisis</h3><p>Remember two wire colors and cut them in order. Complete three sequences without a mistake.</p><small class="barcode-note">Scanner unavailable. This preview uses the included source payload, not image decoding.</small><div class="game-actions"><button class="btn btn-primary" id="try-ultra">Play sample</button><a class="btn" href="assets/colormatch-ultra.svg" download>Download Ultracode</a></div></div>
+            <div class="paired-codes"><a class="game-code-preview qr-code-preview" href="assets/colormatch-ultra.svg" target="_blank" rel="noopener noreferrer" aria-label="View Ultracode code"><span class="game-code-paper"><img src="assets/colormatch-ultra.svg" alt="Ultracode containing Wire Crisis" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View Ultracode ↗</span></a><a class="game-code-preview qr-code-preview" href="assets/colormatch-scan.svg" target="_blank" rel="noopener noreferrer" aria-label="View scannable QR for Wire Crisis"><span class="game-code-paper"><img src="assets/colormatch-scan.svg" alt="Scannable QR containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Scan-ready QR ↗</span></a></div>
+            <div class="game-body"><h3>Wire Crisis</h3><p>Remember two wire colors and cut them in order. Complete five timed sequences without a mistake.</p><div class="game-actions"><button class="btn btn-primary" id="try-ultra">Play</button><a class="btn" href="assets/colormatch-scan.svg" download>Download QR</a><a class="btn" href="assets/colormatch-ultra.svg" download>Ultracode</a></div></div>
           </article>
         </section>
       </div>
@@ -187,7 +187,7 @@
           <div><h3>PDF417</h3><p>Rows of bars for larger games.</p></div>
           <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
           <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
-          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>JAB Code</h3><p>Experimental color barcode. Scanning is not yet supported.</p></div><div><h3>Ultracode</h3><p>Experimental multicolor code. Scanning is not yet supported.</p></div>
+          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>JAB Code</h3><p>Experimental color barcode. Use the companion QR to scan the complete game.</p></div><div><h3>Ultracode</h3><p>Experimental multicolor code. Use the companion QR to scan the complete game.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>
@@ -197,9 +197,14 @@
   <footer><span>ScanDeck · Beta 0.2</span><a href="https://github.com/luizbizzio/scandeck" target="_blank" rel="noopener noreferrer">GitHub ↗</a></footer>
 </div>
 <div class="game-overlay" id="game-overlay" hidden>
+  <section class="game-app" role="dialog" aria-modal="true" aria-label="Game application">
   <div class="game-top"><div class="game-brand">scan<span>deck</span><span class="game-title" id="overlay-game-title">Game</span></div><div class="game-top-right"><span id="game-score" class="game-score"></span><button class="btn exit-btn" id="retry-game">↻ Retry</button><button class="btn exit-btn" id="exit-game">✕ Exit</button></div></div>
-  <iframe id="game-frame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Sandboxed game"></iframe>
+  <div class="game-viewport">
+  <iframe id="game-frame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Independent game application"></iframe>
   <div id="touch-controls" class="touch-controls" hidden><button data-dir="U" aria-label="Up">↑</button><div><button data-dir="L" aria-label="Left">←</button><button data-dir="D" aria-label="Down">↓</button><button data-dir="R" aria-label="Right">→</button></div></div>
+  </div>
+  <div class="game-app-footer"><span>SCANDECK ARCADE</span><span>INDEPENDENT GAME</span></div>
+  </section>
 </div>
 <dialog id="source-dialog"><div class="dialog-head"><h2>Game source</h2><button class="btn" id="close-source">Close</button></div><p>Only open game codes you trust.</p><pre id="source-view"></pre></dialog>
 </body>
