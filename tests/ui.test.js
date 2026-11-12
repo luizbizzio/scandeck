@@ -133,3 +133,9 @@ test('the arcade design presents time, attempts, wires and a centered brick fiel
  assert.match(brick,/align-items:center/);
  assert.match(brick,/justify-content:center/);
 });
+
+test('inline barcode buttons are closed before player UI scripts',async()=>{
+ const {gameDocument}=await import('../runtime.js');
+ const frame=gameDocument({kind:'standalone',title:'Codebreaker',source:"document.write('<input id=a><button id=b>GO')"});
+ assert.match(frame,/<\/script><\/button><script>/);
+});
