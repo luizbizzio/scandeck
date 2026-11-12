@@ -110,3 +110,12 @@ The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micr
 - **Micro QR:** due to its very low data capacity, contains a tiny `MQ:Q2+2=4` bytecode instruction. **This is not independent JavaScript**. ScanDeck provides a general-purpose arithmetic-question interpreter and input UI. It is deliberately labeled separately from complete standalone games.
 
 Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.
+
+## Experimental color codes: JAB Code and Ultracode
+
+- **Color Path (JAB Code):** a compressed, complete HTML game encoded into an eight-color symbol with the experimental etiket writer. It has **not** passed an independent image-decoding check.
+- **Color Match (Ultracode):** a standalone JavaScript program encoded by the Zint barcode generator. The program is held in the color symbol, not a URL.
+
+**Neither format is supported by the in-browser ZXing scanner.** The Play sample button deliberately loads the exact payload used to create the code from the packaged .txt file. It does **not** read or validate the pixels of these two symbols. Only PDF417, MaxiCode, Micro QR and rMQR have a working in-browser decoding path at this stage.
+
+The JAB writer is experimental and cannot be represented as independently verified. Real-camera scanning support for both color formats requires new decoders.

@@ -8,11 +8,12 @@
     "test": "node --test tests/*.test.js",
     "start": "python -m http.server 8000",
     "build:snake": "node tools/generate-snake.mjs",
-    "build": "node tools/build-matrix.mjs"
+    "build": "node tools/build-matrix.mjs && node tools/build-color.mjs"
   },
   "license": "MIT",
   "dependencies": {
     "zxing-wasm": "3.1.6",
-    "qrcode-generator": "2.0.4"
+    "qrcode-generator": "2.0.4",
+    "etiket": "1.0.0"
   }
 }

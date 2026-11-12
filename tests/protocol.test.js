@@ -153,3 +153,13 @@ test('Micro QR carries a complete arithmetic instruction in at most 15 bytes',as
   assert.ok(gameDocument(game).includes('WIN'));
   assert.throws(()=>packMicroQuiz('Q100+400=500'),/Micro QR/);
 });
+
+test('experimental color symbols use the standard embedded payloads',async()=>{
+  for(const name of ['colorpath-jab','colormatch-ultra']){
+    const raw=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
+    const result=await decodeGame(raw);
+    assert.ok(result.source.length>40);
+    assert.match(readFileSync(new URL('../assets/'+name+'.svg',import.meta.url),'utf8'),/<svg/);
+    assert.ok(!/^https?:\/\//.test(raw));
+  }
+});

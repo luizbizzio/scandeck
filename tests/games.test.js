@@ -158,3 +158,21 @@ test('PDF417 Breakout is a self-contained animated canvas game',()=>{
   assert.match(html,/<canvas/);assert.match(html,/requestAnimationFrame/);
   assert.match(html,/YOU WIN/);assert.doesNotMatch(html,/<script[^>]*src=/);
 });
+
+test('color experiments contain full game code in the generated source payloads',()=>{
+  const jab=readFileSync(new URL('../examples/colorpath-jab.html',import.meta.url),'utf8');
+  const ultra=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8');
+  assert.match(jab,/<script>/);
+  assert.match(jab,/Tap green/);
+  assert.match(jab,/RESET/);
+  assert.match(ultra,/WIN/);
+  assert.match(ultra,/background:red/);
+  assert.doesNotMatch(jab+ultra,/https?:\/\/|<script[^>]+src=/);
+});
+test('Ultracode color choice updates its own button',()=>{
+  const source=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8');
+  const ctx={document:{write(){}}};
+  vm.runInNewContext(source,ctx,{timeout:500});
+  const red={textContent:'R'};ctx.onclick({target:red});assert.equal(red.textContent,'WIN');
+  const green={textContent:'G'};ctx.onclick({target:green});assert.equal(green.textContent,'LOSE');
+});

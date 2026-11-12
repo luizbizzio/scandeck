@@ -253,6 +253,20 @@ $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Tap 
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Micro Math','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Math Check','RMQRCode'));
 
+async function playColorExample(name,title) {
+  try {
+    // These experimental formats have no browser decoder. The sample button
+    // loads the source payload bundled with the symbol. Do not label it as a scan.
+    const response=await fetch('assets/'+name+'.txt');
+    if(!response.ok)throw Error('Sample payload unavailable.');
+    const game=await decodeGame(await response.text());
+    game.title=title;
+    playGame(game);
+  }catch(error){switchTab('scan');status('Could not load '+title+': '+error.message,true)}
+}
+$('try-jab').addEventListener('click',()=>playColorExample('colorpath-jab','Color Path'));
+$('try-ultra').addEventListener('click',()=>playColorExample('colormatch-ultra','Color Match'));
+
 function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));

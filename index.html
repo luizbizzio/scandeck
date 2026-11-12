@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span></div>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>JAB</span><span>Ultracode</span></div>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -127,6 +127,20 @@
             <div class="game-body"><h3>Math Check</h3><p>Solve an equation using the complete embedded JavaScript.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.svg" download>Download rMQR</a></div></div>
           </article>
         </section>
+        <section class="game-group" aria-labelledby="jab-games-heading">
+          <h2 class="group-title" id="jab-games-heading">JAB Code <small>(Experimental)</small></h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/colorpath-jab.svg" target="_blank" rel="noopener noreferrer" aria-label="View JAB Code code"><span class="game-code-paper"><img src="assets/colorpath-jab.svg" alt="JAB Code containing Color Path" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Color Path</h3><p>Tap green five times, but red resets your progress. Experimental color code; the site cannot decode this symbol yet.</p><small class="barcode-note">Scanner unavailable. This preview uses the included source payload, not image decoding.</small><div class="game-actions"><button class="btn btn-primary" id="try-jab">Play sample</button><a class="btn" href="assets/colorpath-jab.svg" download>Download JAB Code</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="ultra-games-heading">
+          <h2 class="group-title" id="ultra-games-heading">Ultracode <small>(Experimental)</small></h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/colormatch-ultra.svg" target="_blank" rel="noopener noreferrer" aria-label="View Ultracode code"><span class="game-code-paper"><img src="assets/colormatch-ultra.svg" alt="Ultracode containing Color Match" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Color Match</h3><p>Pick the correct color to win. Experimental: Play sample loads packaged program data, not the colored image.</p><small class="barcode-note">Scanner unavailable. This preview uses the included source payload, not image decoding.</small><div class="game-actions"><button class="btn btn-primary" id="try-ultra">Play sample</button><a class="btn" href="assets/colormatch-ultra.svg" download>Download Ultracode</a></div></div>
+          </article>
+        </section>
       </div>
     </section>
 
@@ -173,7 +187,7 @@
           <div><h3>PDF417</h3><p>Rows of bars for larger games.</p></div>
           <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
           <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
-          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div>
+          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>JAB Code</h3><p>Experimental color barcode. Scanning is not yet supported.</p></div><div><h3>Ultracode</h3><p>Experimental multicolor code. Scanning is not yet supported.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

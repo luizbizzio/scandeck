@@ -89,3 +89,9 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
+test('experimental color games explain that their Play buttons are not scans',()=>{
+  for(const name of ['jab-games-heading','ultra-games-heading'])assert.match(html,new RegExp('id="'+name+'"'));
+  for(const id of ['try-jab','try-ultra'])assert.ok(script.includes("$('"+id+"')"));
+  assert.match(html,/Scanner unavailable/);
+  assert.match(script,/playColorExample/);
+});
