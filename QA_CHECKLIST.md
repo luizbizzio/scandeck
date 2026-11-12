@@ -62,16 +62,16 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
 - [ ] rMQR: solve the math puzzle using the input field.
-- [ ] JAB Code: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.
-- [ ] Ultracode: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.
+- [ ] JAB Code: experimental original; companion QR passes pixel round-trip, but camera reading still needs real-device testing.
+- [ ] Ultracode: experimental original; companion QR passes pixel round-trip, but camera reading still needs real-device testing.
 
 ## Redesigned games
 - [ ] Brick Rush: slow ball, bouncing angles, three lives, 15 bricks, touch controls and restart
 - [ ] Perfect Timing: watch the changing number and stop exactly at seven
 - [ ] Pocket Maze: 4 by 4 map, nine moves, walls, exit and restart
 - [ ] Codebreaker: seven guesses with UP/DOWN hints, WIN and LOSE
-- [ ] Chroma Rush: color matching, time pressure, 12 targets, 3 lives and retry
-- [ ] Wire Crisis: random target, three wire cuts, BOOM on incorrect wire
+- [ ] Chroma Rush: color matching, time pressure, 10 targets, 3 lives and retry
+- [ ] Wire Crisis: random two-wire sequence, five timed rounds, BOOM on wrong wire or timeout
 
 ## Fixes to check on real devices
 - [ ] Pocket Maze: Play decodes and opens the maze, with no unsupported-program error
@@ -87,5 +87,5 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Codebreaker: a full UP or DOWN hint, remaining attempts in a separate area, guess only on GO
 - [ ] Pocket Maze: randomized 6x6 layout with a solvable route, keyboard, buttons and mobile swipe
 - [ ] Chroma Rush: balanced spacing, three-second initial response window, 3 lives and 10 rounds
-- [ ] Wire Crisis: two-wire sequence in each round, three rounds, no continuing after BOOM
+- [ ] Wire Crisis: two-wire sequence in each of five rounds, six-second countdown, no continuing after BOOM or timeout
 - [ ] Brick Rush: the full game area is centered on desktop and mobile
