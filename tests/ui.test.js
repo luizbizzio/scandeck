@@ -108,3 +108,10 @@ test('standalone CSS is kept in the head when game rewrites body HTML',async()=>
   const safe=gameDocument({kind:'standalone',title:'<script>alert(1)</script>',source:'document.body.textContent=1'});
   assert.doesNotMatch(safe, /data-title="<script>/);
 });
+
+test('Every game has a real restart button',()=>{
+ assert.match(html,/id="retry-game"/);
+ assert.match(script,/\$\('retry-game'\)\.addEventListener\('click'/);
+ assert.match(script,/lastGame=game/);
+ assert.match(script,/gameDocument\(lastGame\)/);
+});

@@ -146,7 +146,7 @@ test('Perfect Timing cycles the number and rewards clicking at seven',()=>{
   for(let step=1;step<=7;step++){context.tick();assert.equal(body.innerHTML,step)}
   context.onclick();assert.equal(alerts.at(-1),true);
   context.tick();context.onclick();assert.equal(alerts.at(-1),false);
-  context.tick();assert.equal(body.innerHTML,0,'Counter must wrap around for another attempt');
+  context.tick();assert.equal(body.innerHTML,9,'Counter remains a one-shot timing challenge');
   assert.ok(source.length<=85,'MaxiCode source must remain compact');
 });
 test('Codebreaker only checks a guess when the GO button is clicked',()=>{

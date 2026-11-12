@@ -79,3 +79,5 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Codebreaker: dark input and GO button; touching input does not spend a guess
 - [ ] Chroma Rush: match the actual ink color, not the word; timer and three lives are visible
 - [ ] Wire Crisis: the CUT prompt and round count are clear; red, green, blue buttons are visually distinct
+
+- [ ] Retry resets Perfect Timing and other games without refreshing the ScanDeck page

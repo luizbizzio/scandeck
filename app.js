@@ -9,7 +9,7 @@ const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
-let generatorFormat = 'qr', outputData = null;
+let generatorFormat = 'qr', outputData = null, lastGame = null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 function status(message, error = false) { $('status-text').textContent = message; $('status').classList.toggle('error', error); }
 function switchTab(tab) {
@@ -59,8 +59,9 @@ function resetDetected(){selectedGame=null;show('detected',false);}
 
 function playGame(game) {
   stopCamera();
+  lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Perfect Timing':'TAP WHEN YOU SEE 7','Codebreaker':'GUESS 0-98 · 7 TRIES · UP/DN','Pocket Maze':'FIND THE STAR IN 9 MOVES','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'MATCH THE LETTER · 3 WIRES'};
+  const hints={'Perfect Timing':'TAP AT 7 · RESTART TO RETRY','Codebreaker':'GUESS 0-98 · 7 TRIES · UP/DN','Pocket Maze':'FIND THE STAR IN 9 MOVES','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'MATCH THE LETTER · 3 WIRES'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -70,12 +71,14 @@ function playGame(game) {
   document.documentElement.style.overflow='hidden';
 }
 function closeGame() {
+  lastGame=null;
   $('game-frame').srcdoc='';
   $('game-frame').removeAttribute('src');
   show('game-overlay',false);
   document.documentElement.style.overflow='';
 }
 $('exit-game').addEventListener('click',closeGame);
+$('retry-game').addEventListener('click',()=>{if(lastGame){$('game-frame').srcdoc='';$('game-frame').srcdoc=gameDocument(lastGame)}});
 addEventListener('keydown',e=>{
   if (e.key==='Escape' && !$('game-overlay').hidden) { closeGame(); return; }
   if ($('game-overlay').hidden) return;
