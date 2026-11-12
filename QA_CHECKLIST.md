@@ -62,8 +62,8 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
 - [ ] rMQR: solve the math puzzle using the input field.
-- [ ] JAB Code: experimental original; companion QR passes pixel round-trip, but camera reading still needs real-device testing.
-- [ ] Ultracode: experimental original; companion QR passes pixel round-trip, but camera reading still needs real-device testing.
+- [ ] JAB Code: experimental original; no camera decoder yet; Play sample must not be presented as a scan.
+- [ ] Ultracode: experimental original; no camera decoder yet; Play sample must not be presented as a scan.
 
 ## Redesigned games
 - [ ] Brick Rush: slow ball, bouncing angles, three lives, 15 bricks, touch controls and restart
@@ -71,7 +71,7 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Pocket Maze: 4 by 4 map, nine moves, walls, exit and restart
 - [ ] Codebreaker: seven guesses with UP/DOWN hints, WIN and LOSE
 - [ ] Chroma Rush: color matching, time pressure, 10 targets, 3 lives and retry
-- [ ] Wire Crisis: random two-wire sequence, five timed rounds, BOOM on wrong wire or timeout
+- [ ] Wire Crisis: three to seven random wires across five timed rounds, BOOM on wrong cut or timeout
 
 ## Fixes to check on real devices
 - [ ] Pocket Maze: Play decodes and opens the maze, with no unsupported-program error
@@ -87,5 +87,5 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Codebreaker: a full UP or DOWN hint, remaining attempts in a separate area, guess only on GO
 - [ ] Pocket Maze: randomized 6x6 layout with a solvable route, keyboard, buttons and mobile swipe
 - [ ] Chroma Rush: balanced spacing, three-second initial response window, 3 lives and 10 rounds
-- [ ] Wire Crisis: two-wire sequence in each of five rounds, six-second countdown, no continuing after BOOM or timeout
+- [ ] Wire Crisis: memorize three to seven wires, 1.6-second preview, shrinking ten-to-six-second timer, no continuing after BOOM or timeout
 - [ ] Brick Rush: the full game area is centered on desktop and mobile
