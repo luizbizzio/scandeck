@@ -248,10 +248,10 @@ async function playMatrixExample(name,title,format) {
 }
 $('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix','Catch 10','DataMatrix'));
 $('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory','Aztec'));
-$('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf417','Breakout Mini','PDF417'));
-$('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Tap 10','MaxiCode'));
-$('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Micro Math','MicroQRCode'));
-$('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Math Check','RMQRCode'));
+$('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf417','Brick Rush','PDF417'));
+$('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perfect Timing','MaxiCode'));
+$('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
+$('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
 
 async function playColorExample(name,title) {
   try {
@@ -264,17 +264,17 @@ async function playColorExample(name,title) {
     playGame(game);
   }catch(error){switchTab('scan');status('Could not load '+title+': '+error.message,true)}
 }
-$('try-jab').addEventListener('click',()=>playColorExample('colorpath-jab','Color Path'));
-$('try-ultra').addEventListener('click',()=>playColorExample('colormatch-ultra','Color Match'));
+$('try-jab').addEventListener('click',()=>playColorExample('colorpath-jab','Chroma Rush'));
+$('try-ultra').addEventListener('click',()=>playColorExample('colormatch-ultra','Wire Crisis'));
 
 function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
   const script=['bar','maxi','rmqr'].includes(format);
-  $('create-label').textContent=tiny?'Program (Q expression)':script?'Game code (JavaScript)':'Game code (HTML)';
-  $('create-source').placeholder=tiny?'Q2+2=4':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
-  $('create-help').textContent=tiny?'Micro QR has very little space. It holds a tiny arithmetic instruction, executed by a reusable ScanDeck interpreter, not a full independent JavaScript game.':
+  $('create-label').textContent=tiny?'Program (maze bytecode)':script?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
+  $('create-help').textContent=tiny?'Micro QR contains a 4×4 maze map and move limit as bytecode. It needs the generic ScanDeck maze interpreter, not JavaScript.':
     format==='bar'?'Keep JavaScript short. Code 128 can become too wide to scan.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':

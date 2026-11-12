@@ -68,7 +68,10 @@ export function packScript(script) {
 }
 export function packMicroQuiz(text) {
   const value=text.trim().startsWith('MQ:')?text.trim():'MQ:'+text.trim();
-  if(!/^MQ:Q[0-9][+*-][0-9]=[0-9]{1,2}$/.test(value) || value.length>15)throw new Error('Micro QR needs a tiny Q arithmetic bytecode program, e.g. Q2+2=4.');
+  if(value.length>15 || !/^MQ:(?:Q[0-9][+*-][0-9]=[0-9]{1,2}|M[0-9A-F]{4}[1-9])$/.test(value))
+    throw new Error('Micro QR needs tiny bytecode: M36509 for maze or Q2+2=4 for math.');
+  if(value[3]==='M' && (parseInt(value.slice(4,8),16)&32769))
+    throw new Error('The maze must keep its entrance and exit open.');
   return value;
 }
 export async function decodeGame(raw) {
@@ -77,7 +80,8 @@ export async function decodeGame(raw) {
   if (!value) throw new Error('No game code was provided.');
   if(value.startsWith('MQ:')) {
     const code=packMicroQuiz(value);
-    return {title:'Micro Math',type:'MQ / MICRO QR',kind:'bytecode',source:code.slice(3),payload:code,size:code.length};
+    const isMaze=code[3]==='M';
+    return {title:isMaze?'Pocket Maze':'Micro Math',type:'MQ / MICRO QR',kind:isMaze?'maze':'bytecode',source:code.slice(3),payload:code,size:code.length};
   }
   if (value.startsWith('IP3:') || value.startsWith('SD1:')) {
     const legacy = value.startsWith('IP3:');

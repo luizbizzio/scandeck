@@ -163,3 +163,21 @@ test('experimental color symbols use the standard embedded payloads',async()=>{
     assert.ok(!/^https?:\/\//.test(raw));
   }
 });
+
+test('Micro QR Pocket Maze is complete level bytecode with a solvable route',async()=>{
+  const raw=packMicroQuiz('M36509');
+  assert.equal(raw,'MQ:M36509');
+  const game=await decodeGame(raw);
+  assert.equal(game.kind,'maze');
+  assert.equal(game.source,'M36509');
+  assert.ok(gameDocument(game).includes('POCKET MAZE'));
+  const walls=parseInt(game.source.slice(1,5),16);
+  let p=0;
+  for(const d of [1,1,1,4,4,4]){
+    p+=d;
+    assert.equal((walls>>p)&1,0,'Expected route must not contain walls');
+  }
+  assert.equal(p,15);
+  assert.throws(()=>packMicroQuiz('MFFFF9'),/entrance and exit/);
+  assert.throws(()=>packMicroQuiz('M365010'),/bytecode/);
+});

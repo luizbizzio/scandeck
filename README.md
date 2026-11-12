@@ -121,3 +121,14 @@ Large codes and MaxiCode in particular can be difficult to read from real camera
 The JAB writer is experimental and cannot be represented as independently verified. Real-camera scanning support for both color formats requires new decoders.
 
 In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth tap. Only the exact source inside the barcode is executed. Among the six newly added formats, the in-browser scanner currently supports PDF417, MaxiCode, Micro QR and rMQR; JAB Code and Ultracode are displayed as experimental encoding demos.
+
+## Redesigned games
+
+- **Brick Rush (PDF417):** a slower Breakout game with fifteen bricks, three lives, scoring, pointer/keyboard control and replay. Complete HTML and JavaScript are inside the PDF417.
+- **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
+- **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
+- **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
+- **Chroma Rush (JAB Code):** twelve color targets, three lives, progressively faster reaction times and replay. The complete HTML game is embedded in the experimental color code.
+- **Wire Crisis (Ultracode):** choose the requested wire in three consecutive rounds. A wrong choice ends the game. The compact, self-contained JavaScript is encoded in Ultracode.
+
+JAB Code and Ultracode still have no independent image decoding in the ScanDeck scanner. Their Play sample buttons load the bundled source payload, not the symbol's pixels. Physical camera reading has not been confirmed for any of the new formats.

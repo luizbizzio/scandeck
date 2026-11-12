@@ -1,1 +1,1 @@
-document.write('<button id=b>0');onclick=()=>b.innerHTML=++n>9?'WIN':n;n=0
+setInterval(()=>document.body.innerHTML=++n,220);onclick=()=>alert(n==7?'OK':'NO');n=0

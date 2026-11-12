@@ -64,3 +64,11 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] rMQR: solve the math puzzle using the input field.
 - [ ] JAB Code: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.
 - [ ] Ultracode: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.
+
+## Redesigned games
+- [ ] Brick Rush: slow ball, bouncing angles, three lives, 15 bricks, touch controls and restart
+- [ ] Perfect Timing: watch the changing number and stop exactly at seven
+- [ ] Pocket Maze: 4 by 4 map, nine moves, walls, exit and restart
+- [ ] Codebreaker: seven guesses with UP/DOWN hints, WIN and LOSE
+- [ ] Chroma Rush: color matching, time pressure, 12 targets, 3 lives and retry
+- [ ] Wire Crisis: random target, three wire cuts, BOOM on incorrect wire

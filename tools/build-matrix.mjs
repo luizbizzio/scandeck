@@ -10,7 +10,7 @@ mkdirSync(new URL('vendor/zxing-wasm/',root),{recursive:true});
 
 const matrixGames=[
   {input:'examples/breakout-pdf417.html',output:'breakout-pdf417',format:'PDF417',kind:'html',max:1700},
-  {input:'examples/tap-maxicode.js',output:'tap-maxicode',format:'MaxiCode',kind:'script',max:100},
+  {input:'examples/tap-maxicode.js',output:'tap-maxicode',format:'MaxiCode',kind:'script',max:95},
   {input:'examples/math-microqr.txt',output:'math-microqr',format:'MicroQRCode',kind:'tiny',max:15},
   {input:'examples/math-rmqr.js',output:'math-rmqr',format:'RMQRCode',kind:'script',max:160},
   {input:'examples/catch-datamatrix.html',output:'catch-datamatrix',format:'DataMatrix'},

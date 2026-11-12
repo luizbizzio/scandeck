@@ -1,1 +1,1 @@
-document.write('<h3>RED?</h3><button style=background:red>R</button><button style=background:lime>G</button>');onclick=e=>e.target.textContent=e.target.textContent=='R'?'WIN':'LOSE'
+document.write('<h2 id=t></h2><button style=color:red>R<button style=color:green>G<button style=color:blue>B');n=0;f=()=>t.innerHTML='CUT '+(k='RGB'[Math.random()*3|0]);onload=f;onclick=e=>t.innerHTML=e.target.innerHTML==k?++n==3?'WIN':f():'BOOM'

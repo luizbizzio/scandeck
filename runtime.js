@@ -9,6 +9,13 @@ export function gameDocument(game) {
     return CSP + game.source;
   }
   if (game.kind === 'standalone') return shell('<script>' + game.source + '</script>');
+  if(game.kind==='maze') {
+    const m=/^M([0-9A-F]{4})([1-9])$/.exec(game.source);
+    if(!m)throw Error('Invalid maze program.');
+    const wall=parseInt(m[1],16),limit=Number(m[2]);
+    if(wall&32769)throw Error('The maze entrance or exit is blocked.');
+    return shell('<style>body{background:#080d0a;color:#c6ffa1;text-align:center;font:20px system-ui}#board{width:240px;margin:18px auto;display:grid;grid-template-columns:repeat(4,56px);gap:5px}#board i{height:56px;border-radius:8px;background:#21352b;display:grid;place-items:center;font-style:normal}button{font-size:24px;margin:4px;padding:8px 17px;background:#bddf9c;border:0;border-radius:7px}</style><h2>POCKET MAZE</h2><p id=s></p><div id=board></div><div><button data-d=-4>↑</button></div><div><button data-d=-1>←</button><button data-d=4>↓</button><button data-d=1>→</button></div><button id=again>Restart</button><script>w='+wall+';max='+limit+';p=0;n=0;done=0;draw=()=>{board.innerHTML=Array.from({length:16},(_,i)=>"<i style=background:"+(w>>i&1?"#526454":i==p?"#a3e97e":i==15?"#f1b26a":"#21352b")+">"+(i==p?"●":i==15?"★":"")+"</i>").join("");s.textContent=p==15?"YOU WIN":done?"OUT OF MOVES":n+"/"+max+" MOVES"};move=d=>{if(!d||done||d==1&&p%4==3||d==-1&&p%4==0||p+d<0||p+d>15||w>>(p+d)&1)return;p+=d;done=p==15||++n>=max;draw()};onclick=e=>{if(e.target.dataset.d)move(+e.target.dataset.d)};onkeydown=e=>move(({ArrowUp:-4,ArrowDown:4,ArrowLeft:-1,ArrowRight:1,w:-4,s:4,a:-1,d:1})[e.key]||0);onmessage=e=>move(({U:-4,D:4,L:-1,R:1})[e.data]||0);again.onclick=()=>{p=n=done=0;draw()};draw()</script>');
+  }
   if(game.kind==='bytecode') {
     // The entire arithmetic instruction lives in the code. The player UI and
     // instruction decoder are reusable virtual-machine services, not game data.
