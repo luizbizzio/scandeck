@@ -154,7 +154,7 @@ test('Codebreaker gives directional hints, wins, and runs out of guesses',()=>{
  const a={value:'10'},b={innerText:'GO'},ctx={a,b,Math:{random:()=>.38},document:{write(){}}};
  vm.runInNewContext(src,ctx,{timeout:500});assert.equal(ctx.n,37);
  ctx.onclick();assert.match(b.innerText,/UP/);
- a.value='90';ctx.onclick();assert.match(b.innerText,/DOWN/);
+ a.value='90';ctx.onclick();assert.match(b.innerText,/DN/);
  a.value='37';ctx.onclick();assert.equal(b.innerText,'WIN');
  const a2={value:'0'},b2={innerText:'GO'},q={a:a2,b:b2,Math:{random:()=>.8},document:{write(){}}};
  vm.runInNewContext(src,q,{timeout:500});for(let i=0;i<7;i++)q.onclick();
