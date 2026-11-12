@@ -3,11 +3,18 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
+function extractScript(html){
+  const opening='<script>',closing='</script>';
+  const begin=html.indexOf(opening),end=html.indexOf(closing,begin+opening.length);
+  assert.ok(begin>=0&&end>begin,'Game must include a complete inline script');
+  assert.equal(html.indexOf('<script',begin+opening.length),-1,'Game should have exactly one script');
+  return html.slice(begin+opening.length,end);
+}
 function loadGame(name){
   const html=readFileSync(new URL('../examples/'+name,import.meta.url),'utf8');
-  assert.match(html,/<script>[\s\S]*<\/script>/);
-  assert.doesNotMatch(html,/<script[^>]*src=|https?:\/\//);
-  return {html,script:html.match(/<script>([\s\S]+)<\/script>/)[1]};
+  assert.ok(!html.includes('http://')&&!html.includes('https://'),'The game must have no remote dependency');
+  assert.ok(!html.includes('<script src=')&&!html.includes('<script type='),'The game must use an inline script');
+  return {html,script:extractScript(html)};
 }
 
 function catchHarness(){
@@ -173,7 +180,7 @@ test('Codebreaker checks only GO and spells both directions completely',()=>{
 });
 test('Brick Rush retains slower ball, three lives and pointer/keyboard control',()=>{
  const html=readFileSync(new URL('../examples/breakout-pdf417.html',import.meta.url),'utf8');
- const src=html.match(/<script>([\s\S]+)<\/script>/)[1];
+ const src=extractScript(html);
  const pen={clearRect(){},fillRect(){},beginPath(){},arc(){},fill(){},fillText(){}};
  const c={clientWidth:300,getContext(){return pen}},s={innerText:''},ctx={c,s,Math,requestAnimationFrame(fn){ctx.tick=fn}};
  vm.runInNewContext(src,ctx,{timeout:500});
@@ -183,7 +190,7 @@ test('Brick Rush retains slower ball, three lives and pointer/keyboard control',
 });
 test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
  const html=readFileSync(new URL('../examples/colorpath-jab.html',import.meta.url),'utf8');
- const src=html.match(/<script>([\s\S]+)<\/script>/)[1];
+ const src=extractScript(html);
  const t={textContent:'',style:{}},s={textContent:''},l={textContent:''},start={hidden:false,textContent:'START'},g={},fill={style:{},offsetWidth:50};
  let timerId=0;
  const timers=new Map();

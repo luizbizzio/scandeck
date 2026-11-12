@@ -130,7 +130,8 @@ test('the arcade design presents time, attempts, wires and a centered brick fiel
  assert.match(breaker,/UP ↑/);
  assert.match(breaker,/DOWN ↓/);
  const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
- assert.match(wire,/MEMORIZE/);
+ assert.match(wire,/CUT IN ORDER/);
+ assert.match(wire,/TIME IS UP/);
  assert.match(wire,/button:nth-of-type/);
  const brick=gameDocument({kind:'html',title:'Brick Rush',source:'<canvas id=c></canvas>'});
  assert.match(brick,/align-items:center/);
