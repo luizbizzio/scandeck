@@ -145,8 +145,8 @@ test('Perfect Timing counts automatically and checks stop at seven',()=>{
  vm.runInNewContext(src,ctx,{timeout:500});
  for(let i=1;i<=7;i++)ctx.tick();
  assert.equal(body.innerHTML,7);
- ctx.onclick();assert.equal(alerts.at(-1),'OK');
- ctx.tick();ctx.onclick();assert.equal(alerts.at(-1),'NO');
+ ctx.onclick();assert.equal(alerts.at(-1),true);
+ ctx.tick();ctx.onclick();assert.equal(alerts.at(-1),false);
  assert.ok(src.length<90);
 });
 test('Codebreaker gives directional hints, wins, and runs out of guesses',()=>{
