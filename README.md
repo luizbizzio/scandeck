@@ -143,7 +143,7 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 
 ## Latest mini-game redesign
 
-- **Perfect Timing (MaxiCode):** choose a new random target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
+- **Perfect Timing (MaxiCode):** choose a new millisecond-derived target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
 - **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
 - **Chroma Rush (JAB):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.

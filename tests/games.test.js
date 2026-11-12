@@ -142,18 +142,19 @@ test('Perfect Timing sets a randomized millisecond target and starts on the firs
  const src=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
  const alerts=[];let now=100000;
  const DateMock=function(){return {valueOf:()=>now}};
- const context={Math:{random:()=>.245},Date:DateMock,alert:x=>alerts.push(x)};
+ const context={Date:DateMock,alert:x=>alerts.push(x)};
  vm.runInNewContext(src,context,{timeout:500});
- const target=999+(.245*999|0);
+ const target=999+100000%999;
  assert.equal(context.n,target);
  assert.equal(context.t,0);
  context.onclick();assert.equal(context.t,100000);
  now+=target-55;context.onclick();assert.equal(alerts.at(-1),-55);
  now+=100;context.onclick();assert.equal(alerts.at(-1),45);
  assert.ok(src.length<=80,'The full program must fit MaxiCode');
- const other={Math:{random:()=>.73},Date:DateMock,alert(){}};
+ now+=317;
+ const other={Date:DateMock,alert(){}};
  vm.runInNewContext(src,other,{timeout:500});
- assert.notEqual(context.n,other.n,'A new play produces another target');
+ assert.notEqual(context.n,other.n,'A new launch uses a new millisecond-derived target');
 });
 test('Codebreaker checks only GO and spells both directions completely',()=>{
  const src=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
