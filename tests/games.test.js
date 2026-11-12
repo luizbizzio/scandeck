@@ -3,143 +3,137 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 
-const loadGame=name=>{
+function loadGame(name){
   const html=readFileSync(new URL('../examples/'+name,import.meta.url),'utf8');
-  assert.ok(html.includes('background') || html.includes('bgcolor=black'));
-  const script=html.match(/<script>([\s\S]+)<\/script>/)?.[1];
-  assert.ok(script,'All game JavaScript must be inside the HTML');
+  assert.match(html,/<script>[\s\S]*<\/script>/);
   assert.doesNotMatch(html,/<script[^>]*src=|https?:\/\//);
-  return script;
-};
+  return {html,script:html.match(/<script>([\s\S]+)<\/script>/)[1]};
+}
 
-const newCatch=()=>{
-  const intervals=new Map();
+function catchHarness(){
+  const {html,script}=loadGame('catch-datamatrix.html');
+  const s={textContent:'0 / 10'},t={textContent:'0s'};
   const b={style:{},removed:false,remove(){this.removed=true}};
-  const s={innerText:''},t={innerText:'20s'};
-  const context={b,s,t,Math:{random:()=>.5},setInterval(fn,delay){
-    assert.equal(delay,1000);
-    const id=intervals.size+1;
-    intervals.set(id,{fn,active:true});
-    return id;
-  },clearInterval(id){intervals.get(id).active=false}};
-  vm.runInNewContext(loadGame('catch-datamatrix.html'),context,{timeout:500});
-  return {context,b,s,t,intervals,tick(){for(const v of intervals.values())if(v.active)v.fn()}};
-};
+  const intervals=[];
+  const context={s,t,b,Math:{random:()=>.5},
+    setInterval(fn,ms){assert.equal(ms,1000);intervals.push({fn,active:true});return intervals.length},
+    clearInterval(id){intervals[id-1].active=false}};
+  vm.runInNewContext(script,context,{timeout:500});
+  return {html,s,t,b,intervals,tick(){for(const item of intervals)if(item.active)item.fn()}};
+}
 
-test('Catch 10 timer starts at the first hit, not at page load',()=>{
-  const game=newCatch();
-  assert.equal(game.t.innerText,'20s');
-  assert.equal(game.intervals.size,0);
-  assert.equal(game.b.style.left,'37.5%');
-  game.b.onclick();
-  assert.equal(game.s.innerText,'1/10');
-  assert.equal(game.intervals.size,1);
+test('Catch 10 restores its original circular green target',()=>{
+  const game=catchHarness();
+  assert.match(game.html,/border-radius:50%/);
+  assert.match(game.html,/background:#b9ff6a/);
+  assert.match(game.html,/width:70px;height:70px/);
+  assert.equal(game.b.style.left,'42.5%');
+});
+
+test('Catch 10 starts at zero, counts upward, and has no time limit',()=>{
+  const game=catchHarness();
+  assert.equal(game.t.textContent,'0s');
+  assert.equal(game.intervals.length,1);
+  for(let i=1;i<=41;i++)game.tick();
+  assert.equal(game.t.textContent,'41s');
+  assert.equal(game.b.removed,false);
+  assert.equal(game.s.textContent,'0 / 10');
+});
+
+test('Catch 10 wins at ten taps and stops the elapsed timer',()=>{
+  const game=catchHarness();
+  for(let i=1;i<=10;i++){
+    game.b.onclick();
+    assert.equal(game.s.textContent,i===10?'YOU WIN':i+'/10');
+  }
+  assert.equal(game.b.removed,true);
+  assert.equal(game.intervals[0].active,false);
   game.tick();
-  assert.equal(game.t.innerText,'19s');
+  assert.equal(game.t.textContent,'0s');
+  assert.equal(game.s.textContent,'YOU WIN');
 });
 
-test('Catch 10 wins with ten taps and stops the countdown',()=>{
-  const {b,s,intervals,tick}=newCatch();
-  for(let n=1;n<=10;n++){
-    b.onclick();
-    assert.equal(s.innerText,n===10?'YOU WIN':n+'/10');
-  }
-  assert.equal(b.removed,true);
-  assert.equal(intervals.get(1).active,false);
-  tick();
-  assert.equal(s.innerText,'YOU WIN');
-});
-
-test('Catch 10 loses when the twenty second timer reaches zero',()=>{
-  const {b,s,t,tick,intervals}=newCatch();
-  b.onclick();
-  for(let sec=19;sec>=0;sec--){
-    tick();
-    assert.equal(t.innerText,sec+'s');
-  }
-  assert.equal(s.innerText,'TIME UP');
-  assert.equal(b.removed,true);
-  assert.equal(intervals.get(1).active,false);
-  tick();
-  assert.equal(t.innerText,'0s');
-});
-
-const newMemory=({audio=true,random=()=>0}={})=>{
-  const notes=[],queue=[],tiles=Array.from({length:4},()=>({tagName:'BUTTON',style:{}}));
-  const g={children:tiles,hidden:true},s={innerText:'Tap START for sound'};
-  const start={removed:false,remove(){this.removed=true}};
-  const clock=function(){return {
-    currentTime:0,destination:{},resume(){this.resumed=true;return Promise.resolve()},
-    createOscillator(){
-      const node={frequency:{value:0},connect(gain){return gain},start(){notes.push(node.frequency.value)},stop(t){assert.ok(t>0)}};
-      return node;
-    },
+function memoryHarness(audio=true){
+  const {html,script}=loadGame('memory-aztec.html');
+  const tiles=Array.from({length:4},()=>({tagName:'BUTTON',style:{}}));
+  const g={children:tiles},s={textContent:'Tap a color to start'};
+  const queue=[],notes=[];
+  const audioContext=function(){return {
+    currentTime:0,destination:{},resume(){return Promise.resolve()},
+    createOscillator(){return {frequency:{value:0},connect(v){return v},
+      start(){notes.push(this.frequency.value)},stop(){}}},
     createGain(){return {gain:{value:0},connect(){return this}}}
-  }}
-  const context={g,s,start,window:audio?{AudioContext:clock}:{},Math:{random},
+  }};
+  const context={g,s,window:audio?{AudioContext:audioContext}:{},Math:{random:()=>0},
     setTimeout(fn){queue.push(fn);return queue.length}};
-  vm.runInNewContext(loadGame('memory-aztec.html'),context,{timeout:500});
-  const flush=()=>{
-    let guard=100;
-    while(s.innerText!=='REPEAT'&&guard--){
-      assert.ok(queue.length,'Sequence callback must be scheduled');
-      queue.shift()();
-    }
-    assert.ok(guard>0,'Sequence must become playable');
-  };
-  return {context,g,s,start,notes,queue,flush};
-};
+  vm.runInNewContext(script,context,{timeout:500});
+  return {html,context,g,s,tiles,notes,queue,
+    flush(){
+      let guard=100;
+      while(s.textContent!=='REPEAT'&&guard-->0){
+        assert.ok(queue.length,'The next sequence must be scheduled');
+        queue.shift()();
+      }
+      assert.ok(guard>0,'The pattern must become playable');
+    }};
+}
 
-test('Pattern Memory uses a Start tap to unlock the sound and show the board',()=>{
-  const game=newMemory();
+test('Pattern Memory restores its original four rounded color tiles',()=>{
+  const game=memoryHarness();
+  assert.match(game.html,/grid-template-columns:repeat\(2,100px\)/);
+  assert.match(game.html,/border-radius:14px/);
+  assert.match(game.html,/background:#ee6659/);
+  assert.match(game.html,/background:#69c778/);
+  assert.match(game.html,/background:#669ce2/);
+  assert.match(game.html,/background:#e8c15e/);
+  assert.equal((game.html.match(/<button\b/g)||[]).length,4);
+  assert.equal(game.s.textContent,'Tap a color to start');
+});
+
+test('Pattern Memory starts with a color tap and plays a sequence note',()=>{
+  const game=memoryHarness();
   assert.equal(game.notes.length,0);
-  assert.equal(game.g.hidden,true);
-  assert.equal(game.s.innerText,'Tap START for sound');
-  game.start.onclick();
-  assert.equal(game.start.removed,true);
-  assert.equal(game.g.hidden,false);
+  game.g.onclick({target:game.tiles[2]});
+  assert.equal(game.s.textContent,'WATCH');
   game.flush();
-  assert.equal(game.s.innerText,'REPEAT');
-  assert.ok(game.notes.includes(262),'The first color must make its tone');
-  game.g.onclick({target:game.g.children[0]});
-  assert.equal(game.s.innerText,'NICE');
+  assert.equal(game.s.textContent,'REPEAT');
+  assert.ok(game.notes.includes(262));
 });
 
-test('Pattern Memory has a distinct note for each of its four colors',()=>{
-  const game=newMemory({random:()=>.01});
-  game.start.onclick();
+test('Pattern Memory uses four distinct synthesized notes',()=>{
+  const game=memoryHarness();
+  game.g.onclick({target:game.tiles[0]});
   game.flush();
-  for(let color=0;color<4;color++)game.context.h(color);
-  for(const hz of [262,330,392,523])assert.ok(game.notes.includes(hz),hz+' Hz tone is missing');
-  assert.ok(game.notes.length>=5);
+  for(let i=0;i<4;i++)game.context.note(i);
+  assert.deepEqual(game.notes.slice(-4),[262,330,392,523]);
 });
 
-test('Pattern Memory completes five growing rounds with audio',()=>{
-  const game=newMemory();
-  game.start.onclick();
+test('Pattern Memory plays five growing rounds and shows victory',()=>{
+  const game=memoryHarness();
+  game.g.onclick({target:game.tiles[0]});
   for(let round=1;round<=5;round++){
     game.flush();
-    for(let n=0;n<round;n++)game.g.onclick({target:game.g.children[0]});
-    assert.equal(game.s.innerText,round===5?'WIN':'NICE');
+    for(let n=0;n<round;n++)game.g.onclick({target:game.tiles[0]});
+    assert.equal(game.s.textContent,round===5?'YOU WIN':'NICE');
   }
 });
 
-test('Pattern Memory restarts after a wrong answer',()=>{
-  const game=newMemory();
-  game.start.onclick();
+test('Pattern Memory resets on a wrong answer',()=>{
+  const game=memoryHarness();
+  game.g.onclick({target:game.tiles[0]});
   game.flush();
-  game.g.onclick({target:game.g.children[1]});
-  assert.equal(game.s.innerText,'LOSE');
+  game.g.onclick({target:game.tiles[1]});
+  assert.equal(game.s.textContent,'TRY AGAIN');
   assert.equal(game.context.p.length,0);
   game.flush();
   assert.equal(game.context.p.length,1);
 });
 
-test('Pattern Memory still works with sound unavailable',()=>{
-  const game=newMemory({audio:false});
-  game.start.onclick();
+test('Pattern Memory also works without an audio device',()=>{
+  const game=memoryHarness(false);
+  game.g.onclick({target:game.tiles[0]});
   game.flush();
-  assert.equal(game.s.innerText,'REPEAT');
-  game.g.onclick({target:game.g.children[0]});
-  assert.equal(game.s.innerText,'NICE');
+  game.g.onclick({target:game.tiles[0]});
+  assert.equal(game.notes.length,0);
+  assert.equal(game.s.textContent,'NICE');
 });

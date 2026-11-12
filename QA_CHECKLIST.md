@@ -19,9 +19,9 @@ Do not mark the camera checks as passed until tested on real devices. Unit tests
 
 - [ ] Snake: WASD, arrow keys, and mobile swipes work.
 - [ ] Snake: growing, losing, winning, and starting again work.
-- [ ] Catch 10: the 20-second countdown starts on the first tap, wins at ten taps, and shows TIME UP at zero.
-- [ ] Pattern Memory: Start enables audio, all four colors produce distinct tones, wrong answers restart, and five correct rounds win.
-- [ ] On iPhone Safari and Android Chrome, Pattern Memory plays sound after Start. Check volume and silent mode.
+- [ ] Catch 10: the timer starts at zero and counts up continuously, even after 20 seconds; ten successful taps win and stop the timer.
+- [ ] Pattern Memory: the original four rounded color tiles are visible immediately; tapping one enables audio, all four colors have distinct tones, mistakes restart, and five correct rounds win.
+- [ ] On iPhone Safari and Android Chrome, Pattern Memory plays sound after tapping a color tile. Check volume and silent mode.
 - [ ] The Exit button closes every game.
 - [ ] The site does not move or zoom while playing.
 
