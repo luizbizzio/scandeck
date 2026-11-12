@@ -2,98 +2,100 @@
 
 **Scan a code. Play a game.**
 
-ScanDeck is an open web app that reads games from QR codes and Code 128 barcodes. A game is stored in the code itself, not behind a link. The website acts as the game console.
+ScanDeck is a small open-source game console in your browser. Games are stored **inside** QR codes, Code 128 barcodes, Data Matrix codes, and Aztec codes. The data is game code, not a website link.
 
-## What it can do
+**Status: 0.2.0 beta.** The software can generate and decode the official examples, but reading codes with real phone cameras still needs more testing. Large codes may be hard or impossible to scan reliably.
 
-- Scan QR codes and Code 128 with a phone or laptop camera.
-- Open a QR or barcode image, or paste the code text.
-- Play the original **Ironpass Micro V3** QR game and the **126-byte Snake** barcode game.
-- Run compatible games made by other people.
-- Create a QR game from a small HTML file.
-- Create a Code 128 microgame from a small JavaScript program.
-- Work offline for saved website files, when browser support allows it.
+## Games
 
-The site uses the built-in browser scanner when possible. If that is not available, it tries ZXing from a third-party CDN. The QR image generator also loads a small library from a CDN. Those two extra features need an internet connection the first time.
+| Game | Code format | How to play |
+| --- | --- | --- |
+| Ironpass Micro | QR Code | Defend your towers from enemy waves |
+| Snake | Code 128 | Use WASD or arrow keys on a computer, or swipe on a phone |
+| Catch 10 | Data Matrix | Tap the moving target ten times |
+| Pattern Memory | Aztec Code | Watch the color pattern and repeat it |
 
-## Run locally
+Snake is an extreme storage experiment. Its full program is about **696 bytes** and its barcode is very wide. The Play button decodes the real bars, but most phone cameras may not be able to scan the whole barcode. Do not use it as the only scanning demo.
 
-No build tool is needed. Serve the folder with a local HTTP server:
+The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. They do not need a game engine supplied by the website.
+
+## What you can do
+
+- Scan supported codes using your phone or computer camera.
+- Upload an image of a code, including a saved SVG or PNG when your browser supports it.
+- Play any compatible game after reading its data.
+- Browse and download the four official examples.
+- Create a new QR, Code 128, Data Matrix, or Aztec game.
+- View the game source before you play it.
+- Use the app offline after the site and its files have been saved by the browser.
+
+The browser needs **HTTPS or localhost** for camera access.
+
+## Install and test
+
+You need Node.js 22 or newer.
 
 ```bash
-python -m http.server 8000
-```
-
-Open `http://localhost:8000` in your browser. Camera access needs HTTPS or localhost. Opening `index.html` with `file://` is not supported because the app uses JavaScript modules.
-
-Run tests:
-
-```bash
+npm install
+npm run build
 npm test
+npm run start
 ```
+
+Open `http://localhost:8000` in your browser.
+
+The build command creates the Data Matrix and Aztec example images in `assets/`. It also puts the local ZXing WebAssembly scanner and QR generator in `vendor/`. These built files are created during GitHub Pages deployment as well.
+
+### Build checks
+
+The build creates each new code and then reads the **encoded PNG pixels** back. It checks that the result is the exact game payload. The automated tests also check the game data, the sandbox, the Snake program, and the interface.
+
+These software tests **do not prove camera readability**. Please complete [the physical test checklist](QA_CHECKLIST.md) before a stable 1.0 release.
 
 ## Game formats
 
-| Prefix | Type | Details |
+| Prefix | Code type | What the code holds |
 | --- | --- | --- |
-| `IP3:` | QR Code | Original Ironpass Micro V3. Raw Deflate, custom base43 encoding. |
-| `SD1:` | QR Code | Open ScanDeck format. Raw Deflate, custom base43 encoding, self-contained HTML. |
-| `SDJ:` | Code 128 | Open mini JavaScript format. The script runs with ScanDeck's microgame canvas API. |
-| none | Code 128 | Exact 126-byte original Snake source. This legacy format is checked against the original source. |
+| `SD1:` | QR / Data Matrix / Aztec | Raw Deflate HTML compressed into base43 text |
+| `SDS:` | Code 128 | Complete standalone JavaScript program |
+| `SDJ:` | Code 128 (legacy) | Small JavaScript program that needs the old ScanDeck helper API |
+| `IP3:` | QR (legacy) | Original Ironpass Micro compressed HTML |
+| No prefix | Code 128 (legacy) | Exact original 126-byte Snake experiment |
 
-**SD1** and **SDJ** are open formats. Games are not restricted to the two official examples. Random barcodes, URLs, and normal HTML5 game repositories cannot be played unless their content is packed in a supported format.
+`SD1:` uses this alphabet: `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:`. It stores compressed UTF-8 HTML as base43 text. The HTML can include its own styles and scripts. The maximum QR payload is 4,296 alphanumeric characters in theory, but very large QR codes can be hard to scan. Data Matrix and Aztec have their own size limits, and the generator will show an error if a game does not fit.
 
-### SD1: QR HTML games
+`SDS:` holds printable ASCII JavaScript. The code is run in a clean browser frame with no ScanDeck game helpers. Normal browser APIs, such as `document`, keyboard events, and timers, are available inside that frame.
 
-1. Build an HTML game that works without external files.
-2. Paste the HTML into the **Create** tab.
-3. ScanDeck compresses the UTF-8 HTML with raw Deflate.
-4. Bytes are encoded with the QR-friendly 43-character alphabet: `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:`.
-5. Each group of two bytes becomes three alphabet characters. The first character is `1` when the final byte needs padding, or `0` otherwise.
-6. The final payload starts with `SD1:`.
+The old `SDJ:` and 126-byte Snake formats are kept for backward compatibility. New games should use `SD1:` or `SDS:`.
 
-The maximum payload is 4,296 QR alphanumeric characters, which uses QR version 40, error correction L. This is a theoretical maximum and may be very hard to scan on a phone. The author must fit the game inside that limit.
+## How Create works
 
-### SDJ: Code 128 microgames
+For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, paste a short, standalone JavaScript game.
 
-The code contains `SDJ:` followed by one line of printable ASCII JavaScript. The host provides these global objects:
+After generating a code, you can test it, download the SVG, or copy the full encoded text. For a small, easy-to-scan result, use very short games. Code 128 gets physically wider with every extra character.
 
-- `c`: 320×320 canvas
-- `g`: 2D canvas drawing context
-- `gameAPI.canvas` and `gameAPI.ctx`: same canvas and context
-- `gameAPI.onDirection(callback)`: listen for `U`, `D`, `L`, `R`
-- `gameAPI.score(number)`: show a score
-- `gameAPI.end(message)`: show a game end message
+## Safety and privacy
 
-Example:
+Game code is not sent to a remote game server. The barcode scanner, QR generator, and WebAssembly engine are hosted with the site. The WebAssembly module and other files must load once before they can work offline.
 
-```js
-let x=4,y=4;g.fillStyle='#b9ef79';gameAPI.onDirection(v=>{x=(x+(v==='R')-(v==='L')+10)%10;y=(y+(v==='D')-(v==='U')+10)%10;g.clearRect(0,0,320,320);g.fillRect(x*32,y*32,30,30)});g.fillRect(x*32,y*32,30,30)
-```
+Games run in an iframe with `sandbox="allow-scripts"` and a Content Security Policy that blocks outgoing network connections and external scripts. The iframe does not get the site's origin. Unknown JavaScript is still a risk: a bad game could use too much CPU or freeze the browser tab. **Only play codes from sources you trust.**
 
-Code 128 does not have a simple fixed maximum. Longer programs create very wide barcodes that most phone cameras cannot read well. Keep programs as small as possible.
+## Project files
 
-## Security and privacy
+- `index.html`, `style.css`: website layout
+- `app.js`: game scanner, player, library, and creator
+- `protocol.js`: encoding and decoding of game data
+- `runtime.js`: isolated browser runtime
+- `code128.js`: local Code 128 generator and validator
+- `examples/`: HTML sources and standalone Snake source
+- `tools/build-matrix.mjs`: builds the Data Matrix and Aztec samples and copies local browser libraries
+- `assets/`: images and encoded example data
+- `vendor/`: local browser libraries, generated during build
+- `tests/`: automated tests
+- `QA_CHECKLIST.md`: physical release checks
 
-Games run inside an iframe with `sandbox="allow-scripts"`. The frame has an opaque origin and a Content Security Policy that blocks network requests, forms, and external scripts. Game code cannot read the ScanDeck page or use its permissions. Still, do not play unknown code you do not trust: hostile code can use CPU or freeze its own frame. A code is decoded first; you press **Play game** to run it.
+## Publishing
 
-Game data stays in the browser when you scan, decode, and create it. The fallback scanner and QR generator may download their public libraries from external CDNs, but the game is not uploaded to them.
+GitHub Actions installs the dependencies, builds the codes, runs the tests, and publishes the static site. The beta runs without a server-side database or API.
 
-## GitHub Pages
-
-An included GitHub Actions workflow builds, tests, and deploys the static site. Open **Settings → Pages**, select **GitHub Actions** as the build source, and push to `main`. The repo may need a suitable GitHub plan to publish Pages while private.
-
-## Project layout
-
-- `index.html`, `style.css`: user interface
-- `app.js`: scanner, player, example games, creator
-- `protocol.js`: formats and compression
-- `runtime.js`: isolated game runtime
-- `code128.js`: barcode image generator
-- `assets/`: example barcode and QR files
-- `tests/`: format and runtime tests
-- `tools/generate_examples.py`: rebuild the Ironpass QR code
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+The ScanDeck source is under the MIT license. See [LICENSE](LICENSE). The bundled libraries include ZXing WebAssembly (MIT, Apache-2.0, and BSD-3-Clause components) and qrcode-generator (MIT).

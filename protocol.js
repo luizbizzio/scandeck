@@ -74,7 +74,9 @@ export async function decodeGame(raw) {
     const legacy = value.startsWith('IP3:');
     const html = await inflateRaw(base43Decode(value.slice(4)));
     if (!/<(?:script|canvas|body|html|svg|div)\b/i.test(html)) throw new Error('The package does not look like a game.');
-    return { title: legacy ? 'Ironpass Micro' : 'Custom QR Game', type: legacy ? 'IP3 / QR' : 'SD1 / QR', kind: 'html', source: html, payload: value, size: new TextEncoder().encode(html).length };
+    const heading=html.match(/<h[1-3][^>]*>([^<]{1,60})<\/h[1-3]>/i);
+    const title=legacy?'Ironpass Micro':heading?heading[1].trim():'Custom game';
+    return { title, type: legacy ? 'IP3 / QR' : 'SD1 / 2D', kind: 'html', source: html, payload: value, size: new TextEncoder().encode(html).length };
   }
   if (value.startsWith('SDS:')) {
     const script = value.slice(4);
@@ -84,7 +86,7 @@ export async function decodeGame(raw) {
   if (value.startsWith('SDJ:')) {
     const script = value.slice(4);
     if (script.length > 16_000) throw new Error('The microgame program is too large.');
-    if (/[^\x20-\x7e]/.test(script)) throw new Error('Invalid microgame characters.');
+    if (/[^\x20-\x7e]/.test(script) || /<\/script/i.test(script)) throw new Error('Invalid microgame characters.');
     return { title: 'Custom Microgame', type: 'SDJ / CODE 128', kind: 'micro', source: script, payload: value, size: script.length };
   }
   // Original public experiment: exact source match. This is not a universal raw-JS executor.

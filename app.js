@@ -6,7 +6,7 @@ const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec'];
 const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec'];
 const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
-const QR_GENERATOR_URL = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
+const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
 let generatorFormat = 'qr', outputData = null;
@@ -233,18 +233,21 @@ $('try-ironpass').addEventListener('click',async()=>{
   catch(error){switchTab('scan');status('Ironpass could not load: '+error.message,true)}
 });
 
-async function playMatrixExample(name,title) {
+async function playMatrixExample(name,title,format) {
   try {
-    const response=await fetch('assets/'+name+'.txt');
-    if(!response.ok)throw Error('Game code not found.');
-    const game=await decodeGame(await response.text());
+    const response=await fetch('assets/'+name+'.png');
+    if(!response.ok)throw Error('Game code image not found.');
+    const engine=await getMatrixEngine();
+    const hit=firstResult(await engine.readBarcodes(await response.blob(),{formats:[format],tryHarder:true,maxNumberOfSymbols:1}));
+    if(!hit?.text)throw Error('Could not read the game from its code image.');
+    const game=await decodeGame(hit.text);
     if(game.kind!=='html')throw Error('The code is not a complete HTML game.');
     game.title=title;
     playGame(game);
   } catch(error) {switchTab('scan');status('Could not open '+title+': '+error.message,true)}
 }
-$('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix','Catch 10'));
-$('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory'));
+$('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix','Catch 10','DataMatrix'));
+$('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory','Aztec'));
 
 function selectGenerator(format) {
   generatorFormat=format;
@@ -299,7 +302,7 @@ $('generate').addEventListener('click',async()=>{
     show('create-result',true);
     $('output-label').textContent='READY';
     $('output-stats').replaceChildren();
-    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='qr'?'QR Code ready':generatorFormat==='data-matrix'?'Data Matrix ready':'Aztec Code ready')]){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
+    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='qr'?'QR Code ready':generatorFormat==='data-matrix'?'Data Matrix ready':'Aztec Code ready'),payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
     $('generated-payload').value=payload;
     for(const id of ['download-code','copy-code','test-code'])$(id).disabled=false;
     $('create-result').scrollIntoView({behavior:'smooth',block:'nearest'});

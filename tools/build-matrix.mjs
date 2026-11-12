@@ -24,6 +24,7 @@ for (const game of matrixGames) {
   const found=await readBarcodes(result.image,{formats:[game.format],tryHarder:true,maxNumberOfSymbols:1});
   if(!found.some(x=>x.text===payload))throw new Error(game.format+' failed its pixel round-trip');
   writeFileSync(asset(game.output+'.svg'),result.svg);
+  writeFileSync(asset(game.output+'.png'),Buffer.from(await result.image.arrayBuffer()));
   writeFileSync(asset(game.output+'.txt'),payload);
   console.log(game.format+' | '+html.length+' HTML characters | '+payload.length+' code characters | barcode verified');
 }
@@ -31,4 +32,5 @@ for (const game of matrixGames) {
 // Host scanner engine locally, including the Wasm binary used by the browser.
 copyFileSync(new URL('node_modules/zxing-wasm/dist/iife/full/index.js',root),new URL('vendor/zxing-wasm/index.js',root));
 copyFileSync(new URL('node_modules/zxing-wasm/dist/full/zxing_full.wasm',root),new URL('vendor/zxing-wasm/zxing_full.wasm',root));
-console.log('ZXing WASM reader/writer: local browser files prepared');
+copyFileSync(new URL('node_modules/qrcode-generator/dist/qrcode.js',root),new URL('vendor/qrcode-generator.js',root));
+console.log('ZXing WASM and QR creator: local browser files prepared');

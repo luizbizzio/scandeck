@@ -33,6 +33,7 @@ test('SD1 QR format creates and restores an HTML game',async()=>{
   const game=await decodeGame(payload);
   assert.equal(game.kind,'html');
   assert.equal(game.source,html);
+  assert.equal(game.title,'Custom game');
 });
 test('SDJ barcode is open to third party scripts, not only samples',async()=>{
   const payload=packScript("document.body.textContent='OK'");
@@ -120,4 +121,24 @@ test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   assert.equal(body.textContent,'WIN');
   context.tick();
   assert.equal(body.textContent,'WIN','Win state persists');
+});
+
+test('untrusted legacy scripts cannot terminate the sandbox script tag',async()=>{
+  await assert.rejects(()=>decodeGame("SDJ:1;</script><script>parent.alert(1)</script>"),/Invalid microgame characters/);
+});
+test('generated matrix games contain complete HTML, not links',async()=>{
+  for(const [stem,title] of [['catch-datamatrix','CATCH 10'],['memory-aztec','PATTERN MEMORY']]){
+    const raw=readFileSync(new URL('../assets/'+stem+'.txt',import.meta.url),'utf8');
+    const game=await decodeGame(raw);
+    assert.equal(game.kind,'html');
+    assert.equal(game.title,title);
+    assert.ok(game.source.includes('<script>') && game.source.includes('</script>'));
+    assert.doesNotMatch(game.source, /<script[^>]+src=|fetch\(|https?:\/\//);
+    assert.ok(raw.length<1400);
+    const svg=readFileSync(new URL('../assets/'+stem+'.svg',import.meta.url),'utf8');
+    assert.match(svg,/<svg\b/);
+    const png=readFileSync(new URL('../assets/'+stem+'.png',import.meta.url));
+    assert.ok(png.length>100);
+    assert.deepEqual([...png.subarray(0,8)],[137,80,78,71,13,10,26,10]);
+  }
 });

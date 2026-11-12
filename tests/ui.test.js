@@ -35,6 +35,8 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /fetch\('assets\/snake-code128\.svg'/);
   assert.match(script, /decodeCode128Svg\(await response\.text\(\)\)/);
+  assert.match(script, /fetch\('assets\/'\+name\+'\.png'\)/);
+  assert.match(script, /getMatrixEngine\(\)/);
   assert.doesNotMatch(script, /decodeGame\(LEGACY_SNAKE\)/);
   assert.match(script, /show\('touch-controls',game.kind==='snake'\|\|game.kind==='micro'\)/);
 });
@@ -47,6 +49,8 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
+  assert.match(html, /Beta 0\.2/);
+  assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
 });
 
