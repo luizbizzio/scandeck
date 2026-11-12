@@ -63,7 +63,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · 6 SECONDS EACH · CUT IN ORDER'};
+  const hints={'Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -260,9 +260,18 @@ $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perf
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
 
-// Load each companion QR by decoding its actual image pixels.
-$('try-jab').addEventListener('click',()=>playMatrixExample('colorpath-scan','Chroma Rush','QRCode'));
-$('try-ultra').addEventListener('click',()=>playMatrixExample('colormatch-scan','Wire Crisis','QRCode'));
+// Samples use the actual payload bundled with each original colored symbol.
+async function playColorExample(name,title){
+  try{
+    const response=await fetch('assets/'+name+'.txt');
+    if(!response.ok)throw Error('Sample not available.');
+    const game=await decodeGame(await response.text());
+    game.title=title;
+    playGame(game);
+  }catch(error){switchTab('scan');status('Could not load '+title+': '+error.message,true)}
+}
+$('try-jab').addEventListener('click',()=>playColorExample('colorpath-jab','Chroma Rush'));
+$('try-ultra').addEventListener('click',()=>playColorExample('colormatch-ultra','Wire Crisis'));
 
 function selectGenerator(format) {
   generatorFormat=format;
