@@ -51,7 +51,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
   for(const code of ['pdf','maxi','microqr','rmqr'])assert.ok(html.includes('data-format="'+code+'"'));
-  assert.match(html, /Beta 0\.2/);
+  assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
 });
@@ -89,14 +89,14 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
-test('experimental color symbols have pixel-decodable QR companions',()=>{
-  for(const name of ['jab-games-heading','ultra-games-heading'])assert.match(html,new RegExp('id="'+name+'"'));
+test('experimental color cards show only the requested barcode symbol',()=>{
+  for(const name of ['jab-games-heading','ultra-games-heading'])assert.ok(html.includes('id="'+name+'"'));
   for(const id of ['try-jab','try-ultra'])assert.ok(script.includes("$('"+id+"')"));
-  assert.doesNotMatch(html,/Scanner unavailable/);
-  assert.match(html,/assets\/colorpath-scan\.svg/);
-  assert.match(html,/assets\/colormatch-scan\.svg/);
-  assert.match(script,/playMatrixExample\('colorpath-scan','Chroma Rush','QRCode'\)/);
-  assert.match(script,/playMatrixExample\('colormatch-scan','Wire Crisis','QRCode'\)/);
+  assert.ok(html.includes('assets/colorpath-jab.svg'));
+  assert.ok(html.includes('assets/colormatch-ultra.svg'));
+  assert.ok(!html.includes('colorpath-scan.svg')&&!html.includes('colormatch-scan.svg'));
+  assert.ok(script.includes("playColorExample('colorpath-jab','Chroma Rush')"));
+  assert.ok(script.includes("playColorExample('colormatch-ultra','Wire Crisis')"));
 });
 
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
@@ -130,7 +130,7 @@ test('the arcade design presents time, attempts, wires and a centered brick fiel
  assert.match(breaker,/UP ↑/);
  assert.match(breaker,/DOWN ↓/);
  const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
- assert.match(wire,/CUT IN ORDER/);
+ assert.match(wire,/MEMORIZE/);
  assert.match(wire,/TIME IS UP/);
  assert.match(wire,/button:nth-of-type/);
  const brick=gameDocument({kind:'html',title:'Brick Rush',source:'<canvas id=c></canvas>'});
@@ -152,5 +152,5 @@ test('arcade shell contains all games with a centered Snake and working replay c
  assert.match(gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'}),/PLAY AGAIN/);
  assert.match(gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'}),/THE CODE WAS/);
  const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
- assert.match(wire,/6000/);assert.match(wire,/ROUND /);
+ assert.match(wire,/1600/);assert.match(wire,/ROUND /);
 });
