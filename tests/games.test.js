@@ -210,18 +210,22 @@ test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
  assert.match(html,/class=stats/);assert.match(html,/class=prompt/);
  assert.doesNotMatch(html,/Example: RED in blue letters/);
 });
-test('Wire Crisis requires two cuts per round, not one simple tap',()=>{
+test('Wire Crisis memorization increases from 3 to 7 colors over 5 rounds',()=>{
  const src=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
+ assert.ok(src.length<=248,'Entire program must still fit Ultracode');
  const t={innerHTML:''},ctx={t,document:{write(){}},Math:{random:()=>0}};
  vm.runInNewContext(src,ctx,{timeout:500});
- assert.equal(t.innerHTML,'RR');
+ assert.equal(t.innerHTML,'RRR');
  for(let round=0;round<5;round++){
-   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,'NEXT');
-   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,round===4?'SAFE':'RR');
+   for(let cut=0;cut<round+3;cut++){
+     ctx.onclick({target:{innerHTML:'R'}});
+     assert.equal(t.innerHTML,cut===round+2?(round===4?'WIN':'R'.repeat(round+4)):'?');
+   }
  }
- ctx.onclick({target:{innerHTML:'G'}});assert.equal(t.innerHTML,'SAFE','Finished games cannot be changed');
+ ctx.onclick({target:{innerHTML:'G'}});assert.equal(t.innerHTML,'WIN','Finished game stays closed');
  const wrong={t:{innerHTML:''},document:{write(){}},Math:{random:()=>0}};
  vm.runInNewContext(src,wrong,{timeout:500});
  wrong.onclick({target:{innerHTML:'G'}});assert.equal(wrong.t.innerHTML,'BOOM');
- wrong.onclick({target:{innerHTML:'R'}});assert.equal(wrong.t.innerHTML,'BOOM','A loss is final until Retry');
+ wrong.onclick({target:{innerHTML:'R'}});assert.equal(wrong.t.innerHTML,'BOOM','Loss is final');
 });
+
