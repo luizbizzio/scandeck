@@ -116,11 +116,11 @@ Large codes and MaxiCode in particular can be difficult to read from real camera
 - **Color Path (JAB Code):** a compressed, complete HTML game encoded into an eight-color symbol with the experimental etiket writer. It has **not** passed an independent image-decoding check.
 - **Color Match (Ultracode):** a standalone JavaScript program encoded by the Zint barcode generator. The program is held in the color symbol, not a URL.
 
-**Neither format is supported by the in-browser ZXing scanner.** The Play sample button deliberately loads the exact payload used to create the code from the packaged .txt file. It does **not** read or validate the pixels of these two symbols. Only PDF417, MaxiCode, Micro QR and rMQR have a working in-browser decoding path at this stage.
+**The original color symbols are not supported by the in-browser ZXing scanner.** Each game now has a companion QR code carrying the same complete game data. The Play button decodes actual pixels from that QR image, and the build verifies the QR image round-trip. JAB Code and Ultracode are retained as experimental originals.
 
 The JAB writer is experimental and cannot be represented as independently verified. Real-camera scanning support for both color formats requires new decoders.
 
-In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth tap. Only the exact source inside the barcode is executed. Among the six newly added formats, the in-browser scanner currently supports PDF417, MaxiCode, Micro QR and rMQR; JAB Code and Ultracode are displayed as experimental encoding demos.
+The MaxiCode Perfect Timing game uses a randomized millisecond target. Browser scanning supports QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR. The JAB Code and Ultracode original symbols remain experimental, with scan-ready QR companions.
 
 ## Redesigned games
 
@@ -128,16 +128,16 @@ In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth t
 - **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
 - **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
-- **Chroma Rush (JAB Code):** twelve color targets, three lives, progressively faster reaction times and replay. The complete HTML game is embedded in the experimental color code.
-- **Wire Crisis (Ultracode):** choose the requested wire in three consecutive rounds. A wrong choice ends the game. The compact, self-contained JavaScript is encoded in Ultracode.
+- **Chroma Rush (JAB Code):** ten color targets, three lives, progressively faster reaction times and replay. The complete HTML game is embedded in the experimental color code.
+- **Wire Crisis (Ultracode):** remember and cut two wires in order across five timed rounds. Wrong cuts and expired timers end the game. The compact, self-contained JavaScript is encoded in Ultracode.
 
-JAB Code and Ultracode still have no independent image decoding in the ScanDeck scanner. Their Play sample buttons load the bundled source payload, not the symbol's pixels. Physical camera reading has not been confirmed for any of the new formats.
+JAB Code and Ultracode still have no independent image decoding. Their companion QR images are generated from the same game source and validated by pixel decoding. Physical camera reading must still be tested on real devices.
 
 ## UX fixes in the beta player
 
 Pocket Maze is now accepted by Play after the scanner decodes its Micro QR level. Standalone JavaScript games have a generic dark player, readable input controls, instructions and a clear visual result for boolean feedback. Their game-specific program logic remains embedded in the respective code.
 
-Perfect Timing loops through 0 to 8 and rewards tapping at 7. Codebreaker submits only on the GO button, preventing input focus from spending a turn. Chroma Rush is now a color-word attention game: tap the color of the letters, not the word, before the visible timer expires. Wire Crisis has colored R, G and B controls and an explicit requested wire and round count. Color-code scanning is still experimental.
+Perfect Timing uses a randomized millisecond target and offers Play Again after each result. Codebreaker submits only on the GO button, preventing input focus from spending a turn. Chroma Rush is now a color-word attention game: tap the color of the letters, not the word, before the visible timer expires. Wire Crisis has colored R, G and B controls and an explicit requested wire and round count. Color-code scanning is still experimental.
 
 Perfect Timing uses the compact original one-shot timer to stay within MaxiCode's physical codeword capacity. After a hit or miss, use the shared **Retry** control to play it again. The timer and click condition are still inside MaxiCode.
 
@@ -147,7 +147,7 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
 - **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
 - **Chroma Rush (JAB):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
-- **Wire Crisis (Ultracode):** three rounds of remembering two colored wires and cutting them in order. A wrong choice ends the run. The shared player renders the larger wire buttons and status text.
+- **Wire Crisis (Ultracode):** five rounds of remembering and cutting two colored wires in order. A wrong cut or the six-second timer ends the run. The shared player renders large wire buttons, countdown and status text.
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
 
-The colored-symbol encoder does not have a verified independent scanner, and Play sample still loads the bundled payload rather than reading JAB/Ultracode pixels. Real-camera testing remains outstanding.
+The colored-symbol encoder still lacks a verified independent decoder. ScanDeck reads the companion QR code pixels instead of bypassing the scanner. Real-camera testing remains outstanding.
