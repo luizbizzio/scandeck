@@ -124,7 +124,7 @@ In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth t
 
 ## Redesigned games
 
-- **Brick Rush (PDF417):** a slower Breakout game with fifteen bricks, three lives, scoring, pointer/keyboard control and replay. Complete HTML and JavaScript are inside the PDF417.
+- **Brick Rush (PDF417):** a slower Breakout game with twelve bricks, three lives, scoring, pointer/keyboard control and replay. Complete HTML and JavaScript are inside the PDF417.
 - **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
 - **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.

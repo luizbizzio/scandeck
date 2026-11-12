@@ -160,17 +160,18 @@ test('Codebreaker gives directional hints, wins, and runs out of guesses',()=>{
  vm.runInNewContext(src,q,{timeout:500});for(let i=0;i<7;i++)q.onclick();
  assert.equal(b2.innerText,'LOSE');
 });
-test('Brick Rush uses slower ball, paddle input and three lives',()=>{
+test('Brick Rush has a slower ball, three lives and a controllable paddle',()=>{
  const html=readFileSync(new URL('../examples/breakout-pdf417.html',import.meta.url),'utf8');
  const script=html.match(/<script>([\s\S]+)<\/script>/)[1];
  const pen={clearRect(){},fillRect(){},beginPath(){},arc(){},fill(){},fillText(){}};
- const c={clientWidth:300,getContext(){return pen}},q={textContent:''},m={textContent:''};
- const ctx={c,q,m,Math,requestAnimationFrame(fn){ctx.tick=fn}};
+ const c={clientWidth:300,getContext(){return pen}},s={innerText:''};
+ const ctx={c,s,Math,requestAnimationFrame(fn){ctx.frame=fn}};
  vm.runInNewContext(script,ctx,{timeout:500});
- assert.equal(ctx.u,1.2);assert.equal(ctx.l,3);assert.equal(ctx.run,0);
- c.onpointerdown();ctx.tick();assert.equal(ctx.run,1);assert.ok(ctx.y<275);
- ctx.onmessage({data:'R'});assert.equal(ctx.p,175);
- ctx.y=330;ctx.tick();assert.equal(ctx.l,2);assert.equal(ctx.run,0);
+ assert.equal(ctx.u,1.2);assert.equal(ctx.v,-1.4);assert.equal(ctx.l,3);assert.equal(ctx.z,0);
+ ctx.onclick();ctx.frame();assert.equal(ctx.z,1);assert.ok(ctx.y<260);
+ ctx.onmessage({data:'R'});assert.equal(ctx.p,170);
+ ctx.y=330;ctx.frame();assert.equal(ctx.l,2);assert.equal(ctx.z,0);
+ assert.equal(ctx.a.length,12);
  assert.match(html,/BRICK RUSH/);
 });
 test('Chroma Rush has twelve goals, three lives and increasing speed',()=>{
