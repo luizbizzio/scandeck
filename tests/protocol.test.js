@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import {snakePayload,snakeSvg} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,QR_LIMIT} from '../protocol.js';
+import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packMicroQuiz,QR_LIMIT} from '../protocol.js';
 import {code128Svg,decodeCode128Svg} from '../code128.js';
 import {gameDocument} from '../runtime.js';
 test('base43 binary round trips',()=>{
@@ -141,4 +141,15 @@ test('generated matrix games contain complete HTML, not links',async()=>{
     assert.ok(png.length>100);
     assert.deepEqual([...png.subarray(0,8)],[137,80,78,71,13,10,26,10]);
   }
+});
+
+test('Micro QR carries a complete arithmetic instruction in at most 15 bytes',async()=>{
+  const payload=packMicroQuiz('Q2+2=4');
+  assert.equal(payload,'MQ:Q2+2=4');
+  assert.ok(payload.length<=15);
+  const game=await decodeGame(payload);
+  assert.equal(game.kind,'bytecode');
+  assert.equal(game.source,'Q2+2=4');
+  assert.ok(gameDocument(game).includes('WIN'));
+  assert.throws(()=>packMicroQuiz('Q100+400=500'),/Micro QR/);
 });

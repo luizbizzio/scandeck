@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span></div>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span></div>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -99,6 +99,34 @@
             <div class="game-body"><h3>Pattern Memory</h3><p>Tap a color to start. Listen to the tones and repeat each pattern.</p><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.svg" download>Download Aztec</a></div></div>
           </article>
         </section>
+        <section class="game-group" aria-labelledby="pdf-games-heading">
+          <h2 class="group-title" id="pdf-games-heading">PDF417</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/breakout-pdf417.svg" target="_blank" rel="noopener noreferrer" aria-label="View PDF417 Breakout Mini code"><span class="game-code-paper"><img src="assets/breakout-pdf417.svg" alt="PDF417 containing Breakout Mini" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Breakout Mini</h3><p>Move the paddle and clear the bricks. HTML game stored in PDF417.</p><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.svg" download>Download PDF417</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="maxi-games-heading">
+          <h2 class="group-title" id="maxi-games-heading">MaxiCode</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/tap-maxicode.svg" target="_blank" rel="noopener noreferrer" aria-label="View MaxiCode Tap 10 code"><span class="game-code-paper"><img src="assets/tap-maxicode.svg" alt="MaxiCode containing Tap 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Tap 10</h3><p>Tap ten times to win. Full JavaScript in the MaxiCode.</p><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/tap-maxicode.svg" download>Download MaxiCode</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="micro-games-heading">
+          <h2 class="group-title" id="micro-games-heading">Micro QR</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/math-microqr.svg" target="_blank" rel="noopener noreferrer" aria-label="View Micro QR Micro Math code"><span class="game-code-paper"><img src="assets/math-microqr.svg" alt="Micro QR containing Micro Math" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Micro Math</h3><p>Tiny math bytecode program. ScanDeck interprets the instruction. Not standalone JavaScript.</p><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/math-microqr.svg" download>Download Micro QR</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="rmqr-games-heading">
+          <h2 class="group-title" id="rmqr-games-heading">rMQR</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/math-rmqr.svg" target="_blank" rel="noopener noreferrer" aria-label="View rMQR Math Check code"><span class="game-code-paper"><img src="assets/math-rmqr.svg" alt="rMQR containing Math Check" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Math Check</h3><p>Solve an equation using the complete embedded JavaScript.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.svg" download>Download rMQR</a></div></div>
+          </article>
+        </section>
       </div>
     </section>
 
@@ -112,6 +140,10 @@
             <button class="format-option" data-format="bar" aria-pressed="false"><strong>Code 128</strong><span>For standalone JavaScript games</span></button>
             <button class="format-option" data-format="data-matrix" aria-pressed="false"><strong>Data Matrix</strong><span>For tiny HTML games</span></button>
             <button class="format-option" data-format="aztec" aria-pressed="false"><strong>Aztec Code</strong><span>For compact HTML games</span></button>
+            <button class="format-option" data-format="pdf" aria-pressed="false"><strong>PDF417</strong><span>For HTML arcade games</span></button>
+            <button class="format-option" data-format="maxi" aria-pressed="false"><strong>MaxiCode</strong><span>For tiny JavaScript games</span></button>
+            <button class="format-option" data-format="microqr" aria-pressed="false"><strong>Micro QR</strong><span>For compact VM bytecode</span></button>
+            <button class="format-option" data-format="rmqr" aria-pressed="false"><strong>rMQR</strong><span>For short JavaScript games</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
           <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
@@ -138,6 +170,10 @@
         <div class="about-types">
           <div><h3>QR Code</h3><p>More space for bigger games.</p></div>
           <div><h3>Code 128 barcode</h3><p>Less space, for very small games.</p></div><div><h3>Data Matrix</h3><p>Compact square codes for tiny HTML games.</p></div><div><h3>Aztec Code</h3><p>Square codes with a central finder pattern.</p></div>
+          <div><h3>PDF417</h3><p>Rows of bars for larger games.</p></div>
+          <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
+          <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
+          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

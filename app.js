@@ -1,10 +1,10 @@
-import { decodeGame, packHtml, packScript, QR_LIMIT } from './protocol.js';
+import { decodeGame, packHtml, packScript, packMicroQuiz, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
-const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec'];
-const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec'];
+const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
+const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec','PDF417','MaxiCode','MicroQRCode','RMQRCode'];
 const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
@@ -30,7 +30,7 @@ async function acceptPayload(raw, mode='manual', format='') {
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    const labels={qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code'};
+    const labels={qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
     for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
@@ -241,24 +241,32 @@ async function playMatrixExample(name,title,format) {
     const hit=firstResult(await engine.readBarcodes(await response.blob(),{formats:[format],tryHarder:true,maxNumberOfSymbols:1}));
     if(!hit?.text)throw Error('Could not read the game from its code image.');
     const game=await decodeGame(hit.text);
-    if(game.kind!=='html')throw Error('The code is not a complete HTML game.');
+    if(!['html','standalone','bytecode'].includes(game.kind))throw Error('Unsupported embedded game program.');
     game.title=title;
     playGame(game);
   } catch(error) {switchTab('scan');status('Could not open '+title+': '+error.message,true)}
 }
 $('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix','Catch 10','DataMatrix'));
 $('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory','Aztec'));
+$('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf417','Breakout Mini','PDF417'));
+$('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Tap 10','MaxiCode'));
+$('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Micro Math','MicroQRCode'));
+$('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Math Check','RMQRCode'));
 
 function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
-  const bar=format==='bar';
-  $('create-label').textContent=bar?'Game code (JavaScript)':'Game code (HTML)';
-  $('create-source').placeholder=bar?'Paste standalone JavaScript here':'Paste a complete HTML game here';
-  $('create-help').textContent=bar?'Keep the JavaScript very short. Long Code 128 barcodes are hard to scan.':
+  const tiny=format==='microqr';
+  const script=['bar','maxi','rmqr'].includes(format);
+  $('create-label').textContent=tiny?'Program (Q expression)':script?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-source').placeholder=tiny?'Q2+2=4':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
+  $('create-help').textContent=tiny?'Micro QR has very little space. It holds a tiny arithmetic instruction, executed by a reusable ScanDeck interpreter, not a full independent JavaScript game.':
+    format==='bar'?'Keep JavaScript short. Code 128 can become too wide to scan.':
+    format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
+    format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
+    format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
     format==='data-matrix'?'Data Matrix works best with small self-contained HTML games.':
-    format==='aztec'?'Aztec Code can store a compact HTML game.':
-    'QR codes can store more game data.';
+    format==='aztec'?'Aztec Code can store a compact HTML game.':'QR codes can store more game data.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
@@ -267,7 +275,9 @@ function selectGenerator(format) {
 }
 document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click',()=>selectGenerator(b.dataset.format)));
 $('use-example').addEventListener('click',async()=>{
-  if(generatorFormat!=='bar'){
+  if(generatorFormat==='microqr'){
+    $('create-source').value='Q2+2=4';
+  }else if(!['bar','maxi','rmqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
@@ -284,7 +294,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='bar'?packScript(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr'].includes(generatorFormat)?packScript(input):await packHtml(input);
     let svg;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
@@ -294,7 +304,8 @@ $('generate').addEventListener('click',async()=>{
       svg=displaySvg(code128Svg(payload));
     } else {
       const lib=await getMatrixEngine();
-      const format=generatorFormat==='data-matrix'?'DataMatrix':'Aztec';
+      const format=({ 'data-matrix':'DataMatrix',aztec:'Aztec',pdf:'PDF417',maxi:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode' })[generatorFormat];
+      if(!format)throw Error('Unsupported code format.');
       const result=await lib.writeBarcode(payload,{format,scale:5});
       svg=displaySvg(result.svg);
     }
@@ -302,7 +313,7 @@ $('generate').addEventListener('click',async()=>{
     show('create-result',true);
     $('output-label').textContent='READY';
     $('output-stats').replaceChildren();
-    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='qr'?'QR Code ready':generatorFormat==='data-matrix'?'Data Matrix ready':'Aztec Code ready'),payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
+    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='microqr'?'Micro QR bytecode ready (requires ScanDeck interpreter)':generatorFormat.toUpperCase()+' game code ready'),payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
     $('generated-payload').value=payload;
     for(const id of ['download-code','copy-code','test-code'])$(id).disabled=false;
     $('create-result').scrollIntoView({behavior:'smooth',block:'nearest'});

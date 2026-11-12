@@ -34,7 +34,7 @@ jobs:
         run: |
           mkdir -p dist/assets dist/vendor/zxing-wasm
           cp index.html style.css app.js protocol.js runtime.js code128.js sw.js .nojekyll dist/
-          cp assets/favicon.svg assets/snake-code128.svg assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt assets/catch-datamatrix.svg assets/catch-datamatrix.txt assets/catch-datamatrix.png assets/memory-aztec.svg assets/memory-aztec.txt assets/memory-aztec.png dist/assets/
+          cp assets/*.svg assets/*.png assets/*.txt dist/assets/
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
           cp vendor/qrcode-generator.js dist/vendor/
       - name: Configure Pages

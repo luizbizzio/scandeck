@@ -137,3 +137,24 @@ test('Pattern Memory also works without an audio device',()=>{
   assert.equal(game.notes.length,0);
   assert.equal(game.s.textContent,'NICE');
 });
+
+test('MaxiCode Tap 10 works with only standard browser APIs',()=>{
+  const script=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
+  const button={textContent:'GO'};
+  const ctx={document:{write(){}}};
+  vm.runInNewContext(script,ctx,{timeout:500});
+  for(let n=1;n<=9;n++){ctx.onclick({target:button});assert.equal(button.textContent,n)}
+  ctx.onclick({target:button});assert.equal(button.textContent,'WIN');
+});
+test('rMQR Math 3+4 tests the supplied answer',()=>{
+  const script=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
+  const ctx={document:{write(){}}};
+  vm.runInNewContext(script,ctx,{timeout:500});
+  const field={value:'6'};ctx.onchange({target:field});assert.equal(field.value,'LOSE');
+  field.value='7';ctx.onchange({target:field});assert.equal(field.value,'WIN');
+});
+test('PDF417 Breakout is a self-contained animated canvas game',()=>{
+  const html=readFileSync(new URL('../examples/breakout-pdf417.html',import.meta.url),'utf8');
+  assert.match(html,/<canvas/);assert.match(html,/requestAnimationFrame/);
+  assert.match(html,/YOU WIN/);assert.doesNotMatch(html,/<script[^>]*src=/);
+});

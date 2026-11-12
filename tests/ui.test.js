@@ -21,6 +21,7 @@ test('games are clearly split by code type', () => {
   assert.match(html, /id="bar-games-heading"/);
   assert.match(html, /id="dm-games-heading"/);
   assert.match(html, /id="aztec-games-heading"/);
+  for(const id of ['pdf-games-heading','maxi-games-heading','micro-games-heading','rmqr-games-heading'])assert.ok(html.includes('id="'+id+'"'));
   assert.match(html, /Download QR/);
   assert.match(html, /Download barcode/);
 });
@@ -49,6 +50,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
+  for(const code of ['pdf','maxi','microqr','rmqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /Beta 0\.2/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -63,7 +65,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory']) {
+  for (const id of ['scan-games','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }

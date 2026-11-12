@@ -66,10 +66,19 @@ export function packScript(script) {
   if (/<\/script/i.test(source)) throw new Error('Do not put a closing script tag in the code.');
   return `SDS:${source}`;
 }
+export function packMicroQuiz(text) {
+  const value=text.trim().startsWith('MQ:')?text.trim():'MQ:'+text.trim();
+  if(!/^MQ:Q[0-9][+*-][0-9]=[0-9]{1,2}$/.test(value) || value.length>15)throw new Error('Micro QR needs a tiny Q arithmetic bytecode program, e.g. Q2+2=4.');
+  return value;
+}
 export async function decodeGame(raw) {
   const trimmed = raw.trim();
   const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
+  if(value.startsWith('MQ:')) {
+    const code=packMicroQuiz(value);
+    return {title:'Micro Math',type:'MQ / MICRO QR',kind:'bytecode',source:code.slice(3),payload:code,size:code.length};
+  }
   if (value.startsWith('IP3:') || value.startsWith('SD1:')) {
     const legacy = value.startsWith('IP3:');
     const html = await inflateRaw(base43Decode(value.slice(4)));

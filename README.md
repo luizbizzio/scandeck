@@ -99,3 +99,14 @@ Games run in an iframe with `sandbox="allow-scripts"` and a Content Security Pol
 GitHub Actions installs the dependencies, builds the codes, runs the tests, and publishes the static site. The beta runs without a server-side database or API.
 
 The ScanDeck source is under the MIT license. See [LICENSE](LICENSE). The bundled libraries include ZXing WebAssembly (MIT, Apache-2.0, and BSD-3-Clause components) and qrcode-generator (MIT).
+
+## Extra code experiments
+
+The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micro Math** (Micro QR) and **Math Check** (rMQR).
+
+- **PDF417:** contains a compressed, complete HTML/JavaScript Breakout game.
+- **MaxiCode:** contains a short, standalone JavaScript tap counter.
+- **rMQR:** contains a short, standalone JavaScript math game.
+- **Micro QR:** due to its very low data capacity, contains a tiny `MQ:Q2+2=4` bytecode instruction. **This is not independent JavaScript**. ScanDeck provides a general-purpose arithmetic-question interpreter and input UI. It is deliberately labeled separately from complete standalone games.
+
+Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.

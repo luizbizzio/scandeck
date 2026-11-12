@@ -9,6 +9,15 @@ export function gameDocument(game) {
     return CSP + game.source;
   }
   if (game.kind === 'standalone') return shell('<script>' + game.source + '</script>');
+  if(game.kind==='bytecode') {
+    // The entire arithmetic instruction lives in the code. The player UI and
+    // instruction decoder are reusable virtual-machine services, not game data.
+    if(!/^Q[0-9][+*-][0-9]=[0-9]{1,2}$/.test(game.source))throw Error('Invalid micro-game instruction.');
+    const [left,operation,right,answer]=game.source.slice(1).match(/^([0-9])([+*-])([0-9])=([0-9]{1,2})$/).slice(1);
+    const question=left+' '+operation+' '+right+' = ?';
+    return shell('<main style="background:#080c0b;color:#b9ef79;text-align:center;font:24px system-ui;min-height:100vh;padding:20px"><h2>MICRO MATH</h2><p>'+question+'</p><input id="a" inputmode="numeric" style="font-size:25px;width:90px"><button id="b" style="font-size:25px;margin:12px">Check</button><p id="r"></p></main><script>b.onclick=()=>r.textContent=a.value=='+Number(answer)+'?"WIN":"TRY AGAIN"</script>');
+  }
+
   const prelude = `<style>html,body{margin:0;width:100%;height:100%;background:#0d1612;overflow:hidden}canvas{display:block;width:min(96vw,96vh);height:min(96vw,96vh);margin:auto;image-rendering:pixelated;touch-action:none}</style><canvas id="c" width="320" height="320"></canvas><script>
 const c=document.getElementById('c'),g=c.getContext('2d');
 const report=(type,value)=>parent.postMessage({scandeck:type,value},'*');
