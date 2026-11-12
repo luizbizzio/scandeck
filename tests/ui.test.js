@@ -95,3 +95,16 @@ test('experimental color games explain that their Play buttons are not scans',()
   assert.match(html,/Scanner unavailable/);
   assert.match(script,/playColorExample/);
 });
+
+test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
+  const {gameDocument}=await import('../runtime.js');
+  const doc=gameDocument({kind:'standalone',title:'Perfect Timing',instructions:'TAP WHEN 7',
+    source:'document.body.innerHTML=7'});
+  const head=doc.slice(0,doc.indexOf('</head>'));
+  assert.match(head,/background:#09120d/);
+  assert.match(doc,/<body data-title="Perfect Timing" data-hint="TAP WHEN 7">/);
+  assert.match(doc,/PERFECT!/);
+  assert.ok(doc.indexOf('<style>')<doc.indexOf('</head>'),'Styles must survive document.body.innerHTML updates');
+  const safe=gameDocument({kind:'standalone',title:'<script>alert(1)</script>',source:'document.body.textContent=1'});
+  assert.doesNotMatch(safe, /data-title="<script>/);
+});

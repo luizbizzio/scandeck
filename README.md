@@ -132,3 +132,9 @@ In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth t
 - **Wire Crisis (Ultracode):** choose the requested wire in three consecutive rounds. A wrong choice ends the game. The compact, self-contained JavaScript is encoded in Ultracode.
 
 JAB Code and Ultracode still have no independent image decoding in the ScanDeck scanner. Their Play sample buttons load the bundled source payload, not the symbol's pixels. Physical camera reading has not been confirmed for any of the new formats.
+
+## UX fixes in the beta player
+
+Pocket Maze is now accepted by Play after the scanner decodes its Micro QR level. Standalone JavaScript games have a generic dark player, readable input controls, instructions and a clear visual result for boolean feedback. Their game-specific program logic remains embedded in the respective code.
+
+Perfect Timing loops through 0 to 8 and rewards tapping at 7. Codebreaker submits only on the GO button, preventing input focus from spending a turn. Chroma Rush is now a color-word attention game: tap the color of the letters, not the word, before the visible timer expires. Wire Crisis has colored R, G and B controls and an explicit requested wire and round count. Color-code scanning is still experimental.

@@ -2,13 +2,17 @@
    Strict CSP stops outgoing requests; malicious game code may still waste CPU.
 */
 const CSP = `<meta http-equiv="Content-Security-Policy" content="default-src 'none'; connect-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; media-src data: blob:; font-src data:; form-action 'none'; base-uri 'none'; object-src 'none'">`;
-const shell = (body) => '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + CSP + '</head><body>' + body + '</body></html>';
+const shell = (body,attrs='',headExtra='') => '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + CSP + headExtra + '</head><body'+attrs+'>' + body + '</body></html>';
+const escapeAttr=x=>String(x||'').slice(0,180).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 export function gameDocument(game) {
   if (game.kind === 'html') {
     // The meta policy must appear before game content, including authored <script> tags.
     return CSP + game.source;
   }
-  if (game.kind === 'standalone') return shell('<script>' + game.source + '</script>');
+  if (game.kind === 'standalone') {
+    const attrs=' data-title="'+escapeAttr(game.title||'Standalone Game')+'" data-hint="'+escapeAttr(game.instructions||'Tap to play')+'"';
+    return shell("<script>window.alert=value=>{let el=document.getElementById('sd-notice');if(!el){el=document.createElement('div');el.id='sd-notice';document.documentElement.append(el)}el.textContent=typeof value==='boolean'?(value?'PERFECT!':'MISS! TRY AGAIN'):String(value);clearTimeout(window.sdNoticeTimer);window.sdNoticeTimer=setTimeout(()=>el.remove(),1300)}</script>"+'<script>'+game.source+'</script>',attrs,"<style>html,body{margin:0;min-height:100%;background:#09120d;color:#d9ffd0;font-family:system-ui;text-align:center}body{box-sizing:border-box;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:17px;padding:75px 16px 24px;font-size:clamp(68px,20vw,120px);font-weight:750;line-height:1.1}body::before{content:attr(data-title) \"  ·  \" attr(data-hint);position:fixed;top:17px;left:12px;right:12px;font:600 14px/1.5 system-ui;color:#c2d6c6}button,input{box-sizing:border-box;font:600 24px system-ui;border:1px solid #476653;border-radius:14px;min-height:65px;padding:14px 20px;background:#213b2a;color:#e0ffd8}input{width:min(260px,80vw);text-align:center;background:#102218;border-color:#8eb992}button{cursor:pointer;min-width:74px}button:active{transform:scale(.96)}h1,h2,h3{font-size:clamp(26px,7vw,42px);margin:4px;color:#c3ff9c}.r{background:#c44449}.g{background:#24834a}.b{background:#2c65ae}#sd-notice{position:fixed;left:10%;right:10%;bottom:14%;padding:20px 12px;border:1px solid #98df7c;border-radius:14px;background:#17251eea;color:#c5ff9b;font:750 30px system-ui;pointer-events:none;z-index:30}</style>");
+  }
   if(game.kind==='maze') {
     const m=/^M([0-9A-F]{4})([1-9])$/.exec(game.source);
     if(!m)throw Error('Invalid maze program.');

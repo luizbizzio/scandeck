@@ -72,3 +72,10 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Codebreaker: seven guesses with UP/DOWN hints, WIN and LOSE
 - [ ] Chroma Rush: color matching, time pressure, 12 targets, 3 lives and retry
 - [ ] Wire Crisis: random target, three wire cuts, BOOM on incorrect wire
+
+## Fixes to check on real devices
+- [ ] Pocket Maze: Play decodes and opens the maze, with no unsupported-program error
+- [ ] Perfect Timing: dark background, large repeating number and visible PERFECT/MISS result
+- [ ] Codebreaker: dark input and GO button; touching input does not spend a guess
+- [ ] Chroma Rush: match the actual ink color, not the word; timer and three lives are visible
+- [ ] Wire Crisis: the CUT prompt and round count are clear; red, green, blue buttons are visually distinct

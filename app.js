@@ -60,7 +60,9 @@ function resetDetected(){selectedGame=null;show('detected',false);}
 function playGame(game) {
   stopCamera();
   $('overlay-game-title').textContent=game.title;
-  $('game-score').textContent='';
+  const hints={'Perfect Timing':'TAP WHEN YOU SEE 7','Codebreaker':'GUESS 0-98 · 7 TRIES · UP/DN','Pocket Maze':'FIND THE STAR IN 9 MOVES','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'MATCH THE LETTER · 3 WIRES'};
+  game.instructions=hints[game.title]||game.instructions||'';
+  $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
   show('game-overlay',true);
   // Never grant allow-same-origin, form submission, popups, or top navigation.
@@ -241,7 +243,7 @@ async function playMatrixExample(name,title,format) {
     const hit=firstResult(await engine.readBarcodes(await response.blob(),{formats:[format],tryHarder:true,maxNumberOfSymbols:1}));
     if(!hit?.text)throw Error('Could not read the game from its code image.');
     const game=await decodeGame(hit.text);
-    if(!['html','standalone','bytecode'].includes(game.kind))throw Error('Unsupported embedded game program.');
+    if(!['html','standalone','bytecode','maze'].includes(game.kind))throw Error('Unsupported embedded game program.');
     game.title=title;
     playGame(game);
   } catch(error) {switchTab('scan');status('Could not open '+title+': '+error.message,true)}
