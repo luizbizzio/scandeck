@@ -143,8 +143,9 @@ test('MaxiCode Tap 10 works with only standard browser APIs',()=>{
   const button={innerHTML:'0'};
   const ctx={b:button,document:{write(){}}};
   vm.runInNewContext(script,ctx,{timeout:500});
-  for(let n=1;n<=10;n++){ctx.onclick();assert.equal(button.innerHTML,n)}
-  assert.ok(script.length<65);
+  for(let n=1;n<=9;n++){ctx.onclick();assert.equal(button.innerHTML,n)}
+  ctx.onclick();assert.equal(button.innerHTML,'WIN');
+  assert.ok(script.length<90);
 });
 test('rMQR Math 3+4 tests the supplied answer',()=>{
   const script=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();

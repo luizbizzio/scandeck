@@ -55,3 +55,12 @@ Do not mark the camera checks as passed until tested on real devices. Unit tests
 ## Suggested feedback form
 
 Record: device model, OS version, browser version, code format, display or printed size, distance, lighting, scan success, time to detect, and the error message if one appears.
+
+## New format release checks
+
+- [ ] PDF417: move the paddle and clear all bricks in Breakout Mini.
+- [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
+- [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
+- [ ] rMQR: solve the math puzzle using the input field.
+- [ ] JAB Code: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.
+- [ ] Ultracode: experimental image generation only; do not claim camera scanning or image decoding without a tested decoder.

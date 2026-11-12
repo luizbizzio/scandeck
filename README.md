@@ -119,3 +119,5 @@ Large codes and MaxiCode in particular can be difficult to read from real camera
 **Neither format is supported by the in-browser ZXing scanner.** The Play sample button deliberately loads the exact payload used to create the code from the packaged .txt file. It does **not** read or validate the pixels of these two symbols. Only PDF417, MaxiCode, Micro QR and rMQR have a working in-browser decoding path at this stage.
 
 The JAB writer is experimental and cannot be represented as independently verified. Real-camera scanning support for both color formats requires new decoders.
+
+In the current MaxiCode Tap 10 sample, the player reaches **WIN** on the tenth tap. Only the exact source inside the barcode is executed. Among the six newly added formats, the in-browser scanner currently supports PDF417, MaxiCode, Micro QR and rMQR; JAB Code and Ultracode are displayed as experimental encoding demos.
