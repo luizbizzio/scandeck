@@ -140,3 +140,14 @@ Pocket Maze is now accepted by Play after the scanner decodes its Micro QR level
 Perfect Timing loops through 0 to 8 and rewards tapping at 7. Codebreaker submits only on the GO button, preventing input focus from spending a turn. Chroma Rush is now a color-word attention game: tap the color of the letters, not the word, before the visible timer expires. Wire Crisis has colored R, G and B controls and an explicit requested wire and round count. Color-code scanning is still experimental.
 
 Perfect Timing uses the compact original one-shot timer to stay within MaxiCode's physical codeword capacity. After a hit or miss, use the shared **Retry** control to play it again. The timer and click condition are still inside MaxiCode.
+
+## Latest mini-game redesign
+
+- **Perfect Timing (MaxiCode):** choose a new random target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
+- **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
+- **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
+- **Chroma Rush (JAB):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
+- **Wire Crisis (Ultracode):** three rounds of remembering two colored wires and cutting them in order. A wrong choice ends the run. The shared player renders the larger wire buttons and status text.
+- **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
+
+The colored-symbol encoder does not have a verified independent scanner, and Play sample still loads the bundled payload rather than reading JAB/Ultracode pixels. Real-camera testing remains outstanding.

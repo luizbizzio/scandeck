@@ -1,1 +1,1 @@
-document.write('<h2 id=t></h2><button>R<button>G<button>B');n=0;f=()=>t.innerHTML='CUT '+(k='RGB'[Math.random()*3|0])+' '+(n+1)+'/3';onload=f;onclick=e=>e.target.tagName=='BUTTON'&&(t.innerHTML=e.target.innerHTML==k?++n==3?'SAFE':f():'BOOM')
+document.write('<h2 id=t></h2><button>R<button>G<button>B');n=0;f=()=>t.innerHTML=k='RGB'[Math.random()*3|0]+'RGB'[Math.random()*3|0];f();onclick=e=>n<3&&(t.innerHTML=e.target.innerHTML==k[0]?(k=k.slice(1),k?'NEXT':++n==3?'SAFE':f()):(n=3,'BOOM'))

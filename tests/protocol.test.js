@@ -164,20 +164,28 @@ test('experimental color symbols use the standard embedded payloads',async()=>{
   }
 });
 
-test('Micro QR Pocket Maze is complete level bytecode with a solvable route',async()=>{
-  const raw=packMicroQuiz('M36509');
-  assert.equal(raw,'MQ:M36509');
-  const game=await decodeGame(raw);
-  assert.equal(game.kind,'maze');
-  assert.equal(game.source,'M36509');
-  assert.ok(gameDocument(game).includes('POCKET MAZE'));
-  const walls=parseInt(game.source.slice(1,5),16);
-  let p=0;
-  for(const d of [1,1,1,4,4,4]){
-    p+=d;
-    assert.equal((walls>>p)&1,0,'Expected route must not contain walls');
-  }
-  assert.equal(p,15);
-  assert.throws(()=>packMicroQuiz('MFFFF9'),/entrance and exit/);
-  assert.throws(()=>packMicroQuiz('M365010'),/bytecode/);
+test('Micro QR controls randomly generated, solvable 6x6 mazes',async()=>{
+ const {generateMaze}=await import('../maze.js');
+ const raw=packMicroQuiz('M36509');
+ assert.equal(raw,'MQ:M36509');
+ const game=await decodeGame(raw);
+ assert.equal(game.kind,'maze');
+ assert.equal(game.source,'M36509');
+ const first=generateMaze(0x3650,1,123),second=generateMaze(0x3650,2,321);
+ assert.equal(first.walls.length,36);assert.equal(second.walls.length,36);
+ assert.notDeepEqual(first.walls,second.walls,'Different seeds must create new patterns');
+ for(const maze of [first,second]){
+   assert.ok(maze.shortest>0);
+   assert.ok(maze.limit>=maze.shortest,'Every maze must be solvable within the move limit');
+   const visited=new Set([0]),queue=[0];
+   for(const p of queue)for(const [diff,bit] of [[-6,1],[1,2],[6,4],[-1,8]]){
+     if(maze.walls[p]&bit)continue;
+     const next=p+diff;
+     if(!visited.has(next)){visited.add(next);queue.push(next)}
+   }
+   assert.equal(visited.size,36,'The maze generator must connect every cell');
+ }
+ assert.match(gameDocument(game),/POCKET MAZE/);
+ assert.match(gameDocument(game),/NEW MAZE/);
+ assert.throws(()=>packMicroQuiz('MFFFF9'),/entrance and exit/);
 });

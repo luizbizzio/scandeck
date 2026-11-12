@@ -26,6 +26,8 @@ if(location.hash) switchTab(location.hash.slice(1));
 async function acceptPayload(raw, mode='manual', format='') {
   try {
     const game = await decodeGame(raw);
+    if(format==='MaxiCode'&&game.kind==='standalone')game.title='Perfect Timing';
+    if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
@@ -61,7 +63,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Perfect Timing':'TAP AT 7 · RESTART TO RETRY','Codebreaker':'GUESS 0-98 · 7 TRIES · UP/DN','Pocket Maze':'FIND THE STAR IN 9 MOVES','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'MATCH THE LETTER · 3 WIRES'};
+  const hints={'Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'MEMORIZE TWO WIRES · CUT IN ORDER'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -279,7 +281,7 @@ function selectGenerator(format) {
   const script=['bar','maxi','rmqr'].includes(format);
   $('create-label').textContent=tiny?'Program (maze bytecode)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
-  $('create-help').textContent=tiny?'Micro QR contains a 4×4 maze map and move limit as bytecode. It needs the generic ScanDeck maze interpreter, not JavaScript.':
+  $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
     format==='bar'?'Keep JavaScript short. Code 128 can become too wide to scan.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
@@ -295,7 +297,7 @@ function selectGenerator(format) {
 document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click',()=>selectGenerator(b.dataset.format)));
 $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
-    $('create-source').value='Q2+2=4';
+    $('create-source').value='M36509';
   }else if(!['bar','maxi','rmqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {

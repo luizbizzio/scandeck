@@ -101,7 +101,7 @@ test('standalone CSS is kept in the head when game rewrites body HTML',async()=>
   const doc=gameDocument({kind:'standalone',title:'Perfect Timing',instructions:'TAP WHEN 7',
     source:'document.body.innerHTML=7'});
   const head=doc.slice(0,doc.indexOf('</head>'));
-  assert.match(head,/background:#09120d/);
+  assert.match(head,/background:#0b1410/);
   assert.match(doc,/<body data-title="Perfect Timing" data-hint="TAP WHEN 7">/);
   assert.match(doc,/PERFECT!/);
   assert.ok(doc.indexOf('<style>')<doc.indexOf('</head>'),'Styles must survive document.body.innerHTML updates');
@@ -114,4 +114,22 @@ test('Every game has a real restart button',()=>{
  assert.match(script,/\$\('retry-game'\)\.addEventListener\('click'/);
  assert.match(script,/lastGame=game/);
  assert.match(script,/gameDocument\(lastGame\)/);
+});
+
+test('the arcade design presents time, attempts, wires and a centered brick field',async()=>{
+ const {gameDocument}=await import('../runtime.js');
+ const timing=gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'});
+ assert.match(timing,/YOUR TARGET/);
+ assert.match(timing,/ELAPSED TIME/);
+ assert.match(timing,/#sd-perfect/);
+ const breaker=gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'});
+ assert.match(breaker,/GUESSES LEFT/);
+ assert.match(breaker,/UP ↑/);
+ assert.match(breaker,/DOWN ↓/);
+ const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
+ assert.match(wire,/MEMORIZE/);
+ assert.match(wire,/button:nth-of-type/);
+ const brick=gameDocument({kind:'html',title:'Brick Rush',source:'<canvas id=c></canvas>'});
+ assert.match(brick,/align-items:center/);
+ assert.match(brick,/justify-content:center/);
 });

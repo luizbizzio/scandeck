@@ -81,3 +81,11 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Wire Crisis: the CUT prompt and round count are clear; red, green, blue buttons are visually distinct
 
 - [ ] Retry resets Perfect Timing and other games without refreshing the ScanDeck page
+
+## New UI and gameplay QA
+- [ ] Perfect Timing: random target, Start/Stop, visible milliseconds, different target on Retry, clear accuracy result
+- [ ] Codebreaker: a full UP or DOWN hint, remaining attempts in a separate area, guess only on GO
+- [ ] Pocket Maze: randomized 6x6 layout with a solvable route, keyboard, buttons and mobile swipe
+- [ ] Chroma Rush: balanced spacing, three-second initial response window, 3 lives and 10 rounds
+- [ ] Wire Crisis: two-wire sequence in each round, three rounds, no continuing after BOOM
+- [ ] Brick Rush: the full game area is centered on desktop and mobile

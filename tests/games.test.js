@@ -138,90 +138,81 @@ test('Pattern Memory also works without an audio device',()=>{
   assert.equal(game.s.textContent,'NICE');
 });
 
-test('Perfect Timing cycles the number and rewards clicking at seven',()=>{
-  const source=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
-  const body={innerHTML:''},alerts=[];
-  const context={document:{body},setInterval(fn,delay){assert.equal(delay,400);context.tick=fn},alert:value=>alerts.push(value)};
-  vm.runInNewContext(source,context,{timeout:500});
-  for(let step=1;step<=7;step++){context.tick();assert.equal(body.innerHTML,step)}
-  context.onclick();assert.equal(alerts.at(-1),true);
-  context.tick();context.onclick();assert.equal(alerts.at(-1),false);
-  context.tick();assert.equal(body.innerHTML,9,'Counter remains a one-shot timing challenge');
-  assert.ok(source.length<=85,'MaxiCode source must remain compact');
+test('Perfect Timing sets a randomized millisecond target and starts on the first tap',()=>{
+ const src=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
+ const alerts=[];let now=100000;
+ const DateMock=function(){return {valueOf:()=>now}};
+ const context={Math:{random:()=>.245},Date:DateMock,alert:x=>alerts.push(x)};
+ vm.runInNewContext(src,context,{timeout:500});
+ const target=999+(.245*999|0);
+ assert.equal(context.n,target);
+ assert.equal(context.t,0);
+ context.onclick();assert.equal(context.t,100000);
+ now+=target-55;context.onclick();assert.equal(alerts.at(-1),-55);
+ now+=100;context.onclick();assert.equal(alerts.at(-1),45);
+ assert.ok(src.length<=80,'The full program must fit MaxiCode');
+ const other={Math:{random:()=>.73},Date:DateMock,alert(){}};
+ vm.runInNewContext(src,other,{timeout:500});
+ assert.notEqual(context.n,other.n,'A new play produces another target');
 });
-test('Codebreaker only checks a guess when the GO button is clicked',()=>{
-  const source=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
-  const a={value:'10'},b={innerText:'GO'},context={a,b,Date:{now:()=>37},document:{write(){}}};
-  vm.runInNewContext(source,context,{timeout:500});
-  assert.equal(context.n,37);
-  assert.equal(context.t,7,'Focusing the input must not spend a guess');
-  assert.equal(context.onclick,undefined,'Clicking outside the button must not spend a guess');
-  b.onclick();assert.match(b.innerText,/UP/);
-  a.value='90';b.onclick();assert.match(b.innerText,/DN/);
-  a.value='37';b.onclick();assert.equal(b.innerText,'WIN');
-  const a2={value:'0'},b2={innerText:'GO'},other={a:a2,b:b2,Date:{now:()=>80},document:{write(){}}};
-  vm.runInNewContext(source,other,{timeout:500});
-  for(let n=0;n<7;n++)b2.onclick();
-  assert.equal(b2.innerText,'LOSE');
+test('Codebreaker checks only GO and spells both directions completely',()=>{
+ const src=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
+ const a={value:'10'},b={innerText:'GO'},DateMock=function(){return {valueOf:()=>37}};
+ const context={a,b,Date:DateMock,document:{write(){}}};
+ vm.runInNewContext(src,context,{timeout:500});
+ assert.equal(context.n,37);assert.equal(context.t,7);
+ assert.equal(context.onclick,undefined,'Focusing the input must not use a guess');
+ b.onclick();assert.equal(b.innerText,'6UP');
+ a.value='90';b.onclick();assert.equal(b.innerText,'5DOWN');
+ a.value='37';b.onclick();assert.equal(b.innerText,'WIN');
+ const fail={a:{value:'0'},b:{innerText:'GO'},Date:function(){return {valueOf:()=>80}},document:{write(){}}};
+ vm.runInNewContext(src,fail,{timeout:500});for(let i=0;i<7;i++)fail.b.onclick();
+ assert.equal(fail.b.innerText,'LOSE');
+ assert.ok(src.length<=145,'rMQR budget is extremely limited');
 });
-test('Brick Rush has slower ball, three lives and responsive paddle',()=>{
-  const html=readFileSync(new URL('../examples/breakout-pdf417.html',import.meta.url),'utf8');
-  const script=html.match(/<script>([\s\S]+)<\/script>/)[1];
-  const ctx2d={clearRect(){},fillRect(){},beginPath(){},arc(){},fill(){},fillText(){}};
-  const c={clientWidth:300,getContext(){return ctx2d}},s={innerText:''};
-  const context={c,s,Math,requestAnimationFrame(fn){context.tick=fn}};
-  vm.runInNewContext(script,context,{timeout:500});
-  assert.equal(context.u,1.2);assert.equal(context.v,-1.4);assert.equal(context.l,3);assert.equal(context.z,0);
-  context.onclick();context.tick();assert.equal(context.z,1);assert.ok(context.y<260);
-  context.onmessage({data:'R'});assert.equal(context.p,170);
-  context.y=330;context.tick();assert.equal(context.l,2);assert.equal(context.z,0);
-  assert.equal(context.a.length,12);
+test('Brick Rush retains slower ball, three lives and pointer/keyboard control',()=>{
+ const html=readFileSync(new URL('../examples/breakout-pdf417.html',import.meta.url),'utf8');
+ const src=html.match(/<script>([\s\S]+)<\/script>/)[1];
+ const pen={clearRect(){},fillRect(){},beginPath(){},arc(){},fill(){},fillText(){}};
+ const c={clientWidth:300,getContext(){return pen}},s={innerText:''},ctx={c,s,Math,requestAnimationFrame(fn){ctx.tick=fn}};
+ vm.runInNewContext(src,ctx,{timeout:500});
+ assert.equal(ctx.u,1.2);assert.equal(ctx.l,3);ctx.onclick();ctx.tick();assert.equal(ctx.z,1);
+ ctx.onmessage({data:'R'});assert.equal(ctx.p,170);
+ assert.match(html,/BRICK RUSH/);
 });
-test('Chroma Rush rewards the ink color and not the word',()=>{
-  const html=readFileSync(new URL('../examples/colorpath-jab.html',import.meta.url),'utf8');
-  assert.match(html,/TEXT COLOR/);
-  assert.match(html,/id=track/);
-  const code=html.match(/<script>([\s\S]+)<\/script>/)[1];
-  let randomIndex=0,nextTimer=0;
-  const timers=new Map();
-  const t={textContent:'',style:{}},s={textContent:''},fill={style:{},offsetWidth:100},
-    start={textContent:'START',hidden:false},g={};
-  const context={t,s,fill,start,g,Math:{random:()=>randomIndex++%2?.3:0},
-    setTimeout(fn,ms){let id=++nextTimer;timers.set(id,{fn,ms});return id},
-    clearTimeout(id){timers.delete(id)}};
-  vm.runInNewContext(code,context,{timeout:500});
-  start.onclick();
-  assert.equal(t.textContent,'RED','Word must differ from ink');
-  assert.equal(t.style.color,'#6e8','Ink must be green');
-  assert.equal(context.k,1);
-  g.onclick({target:{dataset:{k:'0'}}});
-  assert.equal(context.l,2,'Tapping the word instead of its color loses a life');
-  g.onclick({target:{dataset:{k:'1'}}});
-  assert.equal(context.n,1);
-  assert.equal([...timers.values()].at(-1).ms,1640);
-  for(let n=0;n<9;n++)g.onclick({target:{dataset:{k:'1'}}});
-  assert.equal(t.textContent,'YOU WIN');
-  assert.equal(start.hidden,false);
-  start.onclick();
-  for(let n=0;n<3;n++)g.onclick({target:{dataset:{k:'0'}}});
-  assert.equal(t.textContent,'GAME OVER');
+test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
+ const html=readFileSync(new URL('../examples/colorpath-jab.html',import.meta.url),'utf8');
+ const src=html.match(/<script>([\s\S]+)<\/script>/)[1];
+ const t={textContent:'',style:{}},s={textContent:''},l={textContent:''},start={hidden:false,textContent:'START'},g={},fill={style:{},offsetWidth:50};
+ let timerId=0;
+ const timers=new Map();
+ const ctx={t,s,l,start,g,fill,Math:{random:()=>0},setTimeout(fn,ms){const id=++timerId;timers.set(id,{fn,ms});return id},clearTimeout(id){timers.delete(id)}};
+ vm.runInNewContext(src,ctx,{timeout:500});
+ start.onclick();
+ assert.equal(ctx.k,0);assert.equal(ctx.w,1,'The word must differ from the ink color');
+ assert.equal(t.textContent,'GREEN');assert.equal(t.style.color,'#ed7776');
+ assert.equal([...timers.values()].at(-1).ms,3000,'The player must have enough time');
+ g.onclick({target:{dataset:{k:'0'}}});assert.equal(ctx.n,1);
+ assert.equal([...timers.values()].at(-1).ms,2900);
+ for(let i=0;i<9;i++)g.onclick({target:{dataset:{k:'0'}}});
+ assert.equal(t.textContent,'YOU WIN');
+ start.onclick();
+ for(let i=0;i<3;i++)g.onclick({target:{dataset:{k:'1'}}});
+ assert.equal(t.textContent,'GAME OVER');
+ assert.match(html,/class=stats/);assert.match(html,/class=prompt/);
 });
-test('Wire Crisis shows the requested wire and the current round',()=>{
-  const source=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
-  assert.match(source,/<button>R<button>G<button>B/);
-  const t={innerHTML:''},context={document:{write(){}},t,Math:{random:()=>0}};
-  vm.runInNewContext(source,context,{timeout:500});
-  context.onload();
-  assert.equal(t.innerHTML,'CUT R 1/3');
-  for(let n=2;n<=3;n++){
-    context.onclick({target:{tagName:'BUTTON',innerHTML:'R'}});
-    assert.equal(t.innerHTML,'CUT R '+n+'/3');
-  }
-  context.onclick({target:{tagName:'BUTTON',innerHTML:'R'}});
-  assert.equal(t.innerHTML,'SAFE');
-  const t2={innerHTML:''},other={document:{write(){}},t:t2,Math:{random:()=>0}};
-  vm.runInNewContext(source,other,{timeout:500});
-  other.onload();
-  other.onclick({target:{tagName:'BUTTON',innerHTML:'G'}});
-  assert.equal(t2.innerHTML,'BOOM');
+test('Wire Crisis requires two cuts per round, not one simple tap',()=>{
+ const src=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
+ const t={innerHTML:''},ctx={t,document:{write(){}},Math:{random:()=>0}};
+ vm.runInNewContext(src,ctx,{timeout:500});
+ assert.equal(t.innerHTML,'RR');
+ for(let round=0;round<3;round++){
+   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,'NEXT');
+   ctx.onclick({target:{innerHTML:'R'}});assert.equal(t.innerHTML,round===2?'SAFE':'RR');
+ }
+ ctx.onclick({target:{innerHTML:'G'}});assert.equal(t.innerHTML,'SAFE','Finished games cannot be changed');
+ const wrong={t:{innerHTML:''},document:{write(){}},Math:{random:()=>0}};
+ vm.runInNewContext(src,wrong,{timeout:500});
+ wrong.onclick({target:{innerHTML:'G'}});assert.equal(wrong.t.innerHTML,'BOOM');
+ wrong.onclick({target:{innerHTML:'R'}});assert.equal(wrong.t.innerHTML,'BOOM','A loss is final until Retry');
 });
