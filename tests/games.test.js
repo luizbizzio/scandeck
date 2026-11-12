@@ -208,7 +208,7 @@ test('Chroma Rush rewards the ink color and not the word',()=>{
 });
 test('Wire Crisis shows the requested wire and the current round',()=>{
   const source=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
-  assert.match(source,/class=r/);assert.match(source,/class=g/);assert.match(source,/class=b/);
+  assert.match(source,/<button>R<button>G<button>B/);
   const t={innerHTML:''},context={document:{write(){}},t,Math:{random:()=>0}};
   vm.runInNewContext(source,context,{timeout:500});
   context.onload();
