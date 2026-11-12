@@ -9,8 +9,6 @@ mkdirSync(new URL('assets/',root),{recursive:true});
 mkdirSync(new URL('vendor/zxing-wasm/',root),{recursive:true});
 
 const matrixGames=[
-  {input:'examples/colorpath-jab.html',output:'colorpath-scan',format:'QRCode',kind:'html',max:2900},
-  {input:'examples/colormatch-ultra.js',output:'colormatch-scan',format:'QRCode',kind:'script',max:2900},
   {input:'examples/breakout-pdf417.html',output:'breakout-pdf417',format:'PDF417',kind:'html',max:1700},
   {input:'examples/tap-maxicode.js',output:'tap-maxicode',format:'MaxiCode',kind:'script',max:95},
   {input:'examples/math-microqr.txt',output:'math-microqr',format:'MicroQRCode',kind:'tiny',max:15},
