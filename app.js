@@ -3,8 +3,9 @@ import { gameDocument } from './runtime.js';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
-const DEFAULT_BARCODES = ['code_128','qr_code'];
-const ZXING_URL = 'https://unpkg.com/@zxing/browser@0.1.5/umd/zxing-browser.min.js';
+const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec'];
+const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec'];
+const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js';
 let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
@@ -22,14 +23,15 @@ document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click',
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
 if(location.hash) switchTab(location.hash.slice(1));
 
-async function acceptPayload(raw, mode='manual') {
+async function acceptPayload(raw, mode='manual', format='') {
   try {
     const game = await decodeGame(raw);
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    for (const label of [game.type.includes('QR') ? 'QR Code' : 'Code 128']) {
+    const labels={qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code'};
+    for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
     show('detected', true);
@@ -94,19 +96,33 @@ async function loadExternal(url, globalName) {
     document.head.append(script);
   });
 }
+async function getMatrixEngine() {
+  const lib=await loadExternal(WASM_SCRIPT,'ZXingWASM');
+  if (!lib.readBarcodes || !lib.writeBarcode) throw new Error('The matrix code engine is unavailable.');
+  if (!lib.__scandeckReady) {
+    lib.prepareZXingModule({overrides:{locateFile:(path,prefix)=>
+      path.endsWith('.wasm')?new URL('vendor/zxing-wasm/'+path,document.baseURI).href:prefix+path}});
+    lib.__scandeckReady=true;
+  }
+  return lib;
+}
 async function getScanner() {
   if (scanner) return scanner;
   if ('BarcodeDetector' in globalThis) {
     try {
-      const supported=await BarcodeDetector.getSupportedFormats();
-      const formats=DEFAULT_BARCODES.filter(x=>supported.includes(x));
-      if (formats.length===2) {scanner={kind:'native',engine:new BarcodeDetector({formats})};return scanner;}
-    } catch (_) { /* try fallback */ }
+      const formats=await BarcodeDetector.getSupportedFormats();
+      if (DEFAULT_BARCODES.every(x=>formats.includes(x))) {
+        scanner={kind:'native',engine:new BarcodeDetector({formats:DEFAULT_BARCODES})};
+        return scanner;
+      }
+    } catch (_) { /* use the local WASM decoder */ }
   }
-  const ZXingBrowser = await loadExternal(ZXING_URL,'ZXingBrowser');
-  const reader = new ZXingBrowser.BrowserMultiFormatReader();
-  scanner={kind:'zxing',engine:reader};return scanner;
+  const lib=await getMatrixEngine();
+  scanner={kind:'wasm',engine:lib};
+  return scanner;
 }
+const firstResult=results=>results.find(x=>x.text||x.rawValue);
+const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true};
 function stopCamera() {
   cameraToken++;live=false;clearTimeout(scanTimeout);
   if(scanStream)scanStream.getTracks().forEach(track=>track.stop());scanStream=null;
@@ -134,19 +150,22 @@ async function cameraLoop(token, engine) {
     try {
       const video=$('camera');
       if(video.readyState>=2){
-        let text='';
+        let text='',format='';
         if(engine.kind==='native'){
           const results=await engine.engine.detect(video);
-          text=results.find(x=>x.rawValue)?.rawValue||'';
+          const result=results.find(x=>x.rawValue);
+          text=result?.rawValue||'';format=result?.format||'';
         }else{
           const canvas=document.createElement('canvas');
           const w=video.videoWidth,h=video.videoHeight,scale=Math.min(1,1050/Math.max(w,h));
           canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));
           canvas.getContext('2d',{willReadFrequently:true}).drawImage(video,0,0,canvas.width,canvas.height);
-          try{text=String((await engine.engine.decodeFromCanvas(canvas)).getText())}catch(_){/* no code in frame */}
+          const image=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
+          const result=firstResult(await engine.engine.readBarcodes(image,wasmOptions));
+          text=result?.text||'';format=result?.format||'';
           canvas.width=canvas.height=1;
         }
-        if(live && token===cameraToken && text && await acceptPayload(text,'camera')) return;
+        if(live && token===cameraToken && text && await acceptPayload(text,'camera',format)) return;
       }
     } catch (error) {
       if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
@@ -161,16 +180,29 @@ addEventListener('pagehide',stopCamera);
 async function detectImage(file) {
   const engine=await getScanner();
   if(engine.kind==='native'){
-    let bitmap=null;
-    try{bitmap=await createImageBitmap(file);const result=await engine.engine.detect(bitmap);if(result.length)return result[0].rawValue}finally{bitmap?.close()}
-    // The native reader sometimes misses large QR codes; try ZXing once.
-    const lib=await loadExternal(ZXING_URL,'ZXingBrowser');
-    const reader=new lib.BrowserMultiFormatReader();
-    const url=URL.createObjectURL(file);
-    try{return String((await reader.decodeFromImageUrl(url)).getText())}finally{URL.revokeObjectURL(url)}
+    let bitmap;
+    try {
+      bitmap=await createImageBitmap(file);
+      const hit=(await engine.engine.detect(bitmap)).find(x=>x.rawValue);
+      if(hit)return {text:hit.rawValue,format:hit.format};
+    } finally {bitmap?.close()}
   }
-  const url=URL.createObjectURL(file);
-  try{return String((await engine.engine.decodeFromImageUrl(url)).getText())}finally{URL.revokeObjectURL(url)}
+  const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
+  try {
+    const hit=firstResult(await lib.readBarcodes(file,wasmOptions));
+    if(hit)return {text:hit.text,format:hit.format};
+  } catch (_) { /* SVG and some image encodings need a browser bitmap */ }
+  const bitmap=await createImageBitmap(file);
+  const canvas=document.createElement('canvas');
+  try {
+    canvas.width=bitmap.width;canvas.height=bitmap.height;
+    if (canvas.width*canvas.height>12000000) throw new Error('Image is too large to scan safely.');
+    const ctx=canvas.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(bitmap,0,0);
+    const hit=firstResult(await lib.readBarcodes(ctx.getImageData(0,0,canvas.width,canvas.height),wasmOptions));
+    if(hit)return {text:hit.text,format:hit.format};
+  } finally {bitmap.close();canvas.width=canvas.height=1}
+  throw Error('No supported game code was found in this image.');
 }
 async function uploadImage(file) {
   if(!file)return;
@@ -178,7 +210,7 @@ async function uploadImage(file) {
   if(live)stopCamera();
   resetDetected();
   status('Reading image...');
-  try { const raw=await detectImage(file);if(!raw)throw Error('No barcode or QR code found.');await acceptPayload(raw,'upload') }
+  try { const hit=await detectImage(file);await acceptPayload(hit.text,'upload',hit.format) }
   catch(error){status(`Could not read the image: ${error.message}`,true)}
 }
 $('image-input').addEventListener('change',async e=>{await uploadImage(e.target.files?.[0]);e.target.value=''});
@@ -201,12 +233,29 @@ $('try-ironpass').addEventListener('click',async()=>{
   catch(error){switchTab('scan');status('Ironpass could not load: '+error.message,true)}
 });
 
+async function playMatrixExample(name,title) {
+  try {
+    const response=await fetch('assets/'+name+'.txt');
+    if(!response.ok)throw Error('Game code not found.');
+    const game=await decodeGame(await response.text());
+    if(game.kind!=='html')throw Error('The code is not a complete HTML game.');
+    game.title=title;
+    playGame(game);
+  } catch(error) {switchTab('scan');status('Could not open '+title+': '+error.message,true)}
+}
+$('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix','Catch 10'));
+$('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory'));
+
 function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
-  $('create-label').textContent=format==='qr'?'Game code (HTML)':'Game code (JavaScript)';
-  $('create-source').placeholder=format==='qr'?'Paste your HTML game here':'Paste standalone JavaScript here';
-  $('create-help').textContent=format==='qr'?'QR codes can store more game data.':'Use standalone JavaScript without ScanDeck helpers. Long barcodes can be difficult to scan.';
+  const bar=format==='bar';
+  $('create-label').textContent=bar?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-source').placeholder=bar?'Paste standalone JavaScript here':'Paste a complete HTML game here';
+  $('create-help').textContent=bar?'Keep the JavaScript very short. Long Code 128 barcodes are hard to scan.':
+    format==='data-matrix'?'Data Matrix works best with small self-contained HTML games.':
+    format==='aztec'?'Aztec Code can store a compact HTML game.':
+    'QR codes can store more game data.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
@@ -215,7 +264,7 @@ function selectGenerator(format) {
 }
 document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click',()=>selectGenerator(b.dataset.format)));
 $('use-example').addEventListener('click',async()=>{
-  if(generatorFormat==='qr'){
+  if(generatorFormat!=='bar'){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
@@ -232,18 +281,25 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='qr'?await packHtml(input):packScript(input);
+    const payload=generatorFormat==='bar'?packScript(input):await packHtml(input);
     let svg;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       const qr=qrFactory(0,'L');qr.addData(payload,'Alphanumeric');qr.make();
       svg=displaySvg(qr.createSvgTag({cellSize:4,margin:4,scalable:true}));
-    } else svg=displaySvg(code128Svg(payload));
+    } else if(generatorFormat==='bar') {
+      svg=displaySvg(code128Svg(payload));
+    } else {
+      const lib=await getMatrixEngine();
+      const format=generatorFormat==='data-matrix'?'DataMatrix':'Aztec';
+      const result=await lib.writeBarcode(payload,{format,scale:5});
+      svg=displaySvg(result.svg);
+    }
     outputData={svg,payload,kind:generatorFormat};
     show('create-result',true);
     $('output-label').textContent='READY';
     $('output-stats').replaceChildren();
-    for(const s of [generatorFormat==='qr'?'QR Code ready':payload.length>190?'Barcode is long. It may be difficult to scan with a camera.':'Code 128 barcode ready']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
+    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='qr'?'QR Code ready':generatorFormat==='data-matrix'?'Data Matrix ready':'Aztec Code ready')]){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
     $('generated-payload').value=payload;
     for(const id of ['download-code','copy-code','test-code'])$(id).disabled=false;
     $('create-result').scrollIntoView({behavior:'smooth',block:'nearest'});

@@ -24,13 +24,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Build matrix games and scanner
+        run: npm run build
       - name: Run tests
         run: npm test
       - name: Prepare static site
         run: |
-          mkdir -p dist/assets
+          mkdir -p dist/assets dist/vendor/zxing-wasm
           cp index.html style.css app.js protocol.js runtime.js code128.js sw.js .nojekyll dist/
-          cp assets/favicon.svg assets/snake-code128.svg assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt dist/assets/
+          cp assets/favicon.svg assets/snake-code128.svg assets/ironpass-micro-v3-qr.png assets/ironpass-micro-v3.txt assets/catch-datamatrix.svg assets/catch-datamatrix.txt assets/memory-aztec.svg assets/memory-aztec.txt dist/assets/
+          cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

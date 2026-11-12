@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR Code</span><span>Code 128</span></div>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span></div>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -85,6 +85,20 @@
             <div class="game-body"><h3>Snake</h3><p>The whole game is in this barcode. Use WASD or arrow keys, or swipe on your phone.</p><small class="barcode-note">This is an extra-wide barcode. Phone cameras may not read it.</small><div class="game-actions"><button class="btn btn-primary" id="try-snake">Play</button><a class="btn" href="assets/snake-code128.svg" download>Download barcode</a></div></div>
           </article>
         </section>
+        <section class="game-group" aria-labelledby="dm-games-heading">
+          <h2 class="group-title" id="dm-games-heading">Data Matrix</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/catch-datamatrix.svg" target="_blank" rel="noopener noreferrer" aria-label="View Catch 10 Data Matrix code"><span class="game-code-paper"><img src="assets/catch-datamatrix.svg" alt="Data Matrix containing Catch 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Catch 10</h3><p>Tap the moving target ten times to win.</p><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.svg" download>Download Data Matrix</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="aztec-games-heading">
+          <h2 class="group-title" id="aztec-games-heading">Aztec Code</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/memory-aztec.svg" target="_blank" rel="noopener noreferrer" aria-label="View Pattern Memory Aztec code"><span class="game-code-paper"><img src="assets/memory-aztec.svg" alt="Aztec Code containing Pattern Memory" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Pattern Memory</h3><p>Watch the four colors, then repeat the growing pattern.</p><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.svg" download>Download Aztec</a></div></div>
+          </article>
+        </section>
       </div>
     </section>
 
@@ -96,6 +110,8 @@
           <div class="format-options" role="group" aria-labelledby="format-label">
             <button class="format-option selected" data-format="qr" aria-pressed="true"><strong>QR Code</strong><span>For small HTML games</span></button>
             <button class="format-option" data-format="bar" aria-pressed="false"><strong>Code 128</strong><span>For standalone JavaScript games</span></button>
+            <button class="format-option" data-format="data-matrix" aria-pressed="false"><strong>Data Matrix</strong><span>For tiny HTML games</span></button>
+            <button class="format-option" data-format="aztec" aria-pressed="false"><strong>Aztec Code</strong><span>For compact HTML games</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
           <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
@@ -121,7 +137,7 @@
         <ol class="about-steps"><li><span>01</span>Find a ScanDeck game code.</li><li><span>02</span>Scan it or upload its image.</li><li><span>03</span>Play in your browser.</li></ol>
         <div class="about-types">
           <div><h3>QR Code</h3><p>More space for bigger games.</p></div>
-          <div><h3>Code 128 barcode</h3><p>Less space, for very small games.</p></div>
+          <div><h3>Code 128 barcode</h3><p>Less space, for very small games.</p></div><div><h3>Data Matrix</h3><p>Compact square codes for tiny HTML games.</p></div><div><h3>Aztec Code</h3><p>Square codes with a central finder pattern.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

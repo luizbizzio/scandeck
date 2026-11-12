@@ -19,6 +19,8 @@ test('premise is clear on first visit', () => {
 test('games are clearly split by code type', () => {
   assert.match(html, /id="qr-games-heading"/);
   assert.match(html, /id="bar-games-heading"/);
+  assert.match(html, /id="dm-games-heading"/);
+  assert.match(html, /id="aztec-games-heading"/);
   assert.match(html, /Download QR/);
   assert.match(html, /Download barcode/);
 });
@@ -43,6 +45,8 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /id="use-example"/);
   assert.match(html, /data-format="qr"/);
   assert.match(html, /data-format="bar"/);
+  assert.match(html, /data-format="data-matrix"/);
+  assert.match(html, /data-format="aztec"/);
   assert.match(html, /id="create-error"/);
 });
 
@@ -55,7 +59,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected']) {
+  for (const id of ['scan-games','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -71,7 +75,7 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(html, /id="camera-panel"[^>]*hidden/);
   assert.match(html, /id="stop-camera"[^>]*hidden/);
   assert.match(html, /Scan a game/);
-  assert.match(html, /QR Code<\/span><span>Code 128/);
+  assert.match(html, /Code 128<\/span><span>Data Matrix<\/span><span>Aztec/);
   assert.match(script, /show\('scan-idle',false\)/);
   assert.match(script, /show\('scan-idle',true\)/);
   assert.match(script, /show\('stop-camera',true\)/);
