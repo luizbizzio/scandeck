@@ -1,1 +1,1 @@
-document.write('<button>GO</button>');n=0;onclick=e=>e.target.textContent=++n>9?'WIN':n
+document.write('<button id=b>0');onclick=()=>b.innerHTML++

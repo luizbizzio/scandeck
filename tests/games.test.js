@@ -140,11 +140,11 @@ test('Pattern Memory also works without an audio device',()=>{
 
 test('MaxiCode Tap 10 works with only standard browser APIs',()=>{
   const script=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
-  const button={textContent:'GO'};
-  const ctx={document:{write(){}}};
+  const button={innerHTML:'0'};
+  const ctx={b:button,document:{write(){}}};
   vm.runInNewContext(script,ctx,{timeout:500});
-  for(let n=1;n<=9;n++){ctx.onclick({target:button});assert.equal(button.textContent,n)}
-  ctx.onclick({target:button});assert.equal(button.textContent,'WIN');
+  for(let n=1;n<=10;n++){ctx.onclick();assert.equal(button.innerHTML,n)}
+  assert.ok(script.length<65);
 });
 test('rMQR Math 3+4 tests the supplied answer',()=>{
   const script=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();

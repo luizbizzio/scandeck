@@ -24,7 +24,7 @@ for (const game of matrixGames) {
   const max=game.max??1400;
   if (payload.length>max) throw new Error(game.format+' game is too large ('+payload.length+' > '+max+').');
   const result=await writeBarcode(payload,{format:game.format,scale:6});
-  if (!result.svg||!result.image) throw new Error(game.format+' did not produce SVG and PNG');
+  if (!result.svg||!result.image) throw new Error(game.format+' did not produce SVG and PNG: '+JSON.stringify({error:result.error,keys:Object.keys(result)}));
   // The barcode must be decoded from its actual pixels, not from copied payload metadata.
   const found=await readBarcodes(result.image,{formats:[game.format],tryHarder:true,maxNumberOfSymbols:1});
   if(!found.some(x=>x.text===payload))throw new Error(game.format+' failed its pixel round-trip');
