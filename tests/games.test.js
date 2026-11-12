@@ -151,7 +151,7 @@ test('Perfect Timing cycles the number and rewards clicking at seven',()=>{
 });
 test('Codebreaker only checks a guess when the GO button is clicked',()=>{
   const source=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
-  const a={value:'10'},b={innerText:'GO'},context={a,b,Math:{random:()=>.38},document:{write(){}}};
+  const a={value:'10'},b={innerText:'GO'},context={a,b,Date:{now:()=>37},document:{write(){}}};
   vm.runInNewContext(source,context,{timeout:500});
   assert.equal(context.n,37);
   assert.equal(context.t,7,'Focusing the input must not spend a guess');
@@ -159,7 +159,7 @@ test('Codebreaker only checks a guess when the GO button is clicked',()=>{
   b.onclick();assert.match(b.innerText,/UP/);
   a.value='90';b.onclick();assert.match(b.innerText,/DN/);
   a.value='37';b.onclick();assert.equal(b.innerText,'WIN');
-  const a2={value:'0'},b2={innerText:'GO'},other={a:a2,b:b2,Math:{random:()=>.8},document:{write(){}}};
+  const a2={value:'0'},b2={innerText:'GO'},other={a:a2,b:b2,Date:{now:()=>80},document:{write(){}}};
   vm.runInNewContext(source,other,{timeout:500});
   for(let n=0;n<7;n++)b2.onclick();
   assert.equal(b2.innerText,'LOSE');
