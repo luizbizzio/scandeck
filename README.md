@@ -12,12 +12,12 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | --- | --- | --- |
 | Ironpass Micro | QR Code | Defend your towers from enemy waves |
 | Snake | Code 128 | Use WASD or arrow keys on a computer, or swipe on a phone |
-| Catch 10 | Data Matrix | Tap the moving target ten times |
-| Pattern Memory | Aztec Code | Watch the color pattern and repeat it |
+| Catch 10 | Data Matrix | Tap ten moving targets in 20 seconds |
+| Pattern Memory | Aztec Code | Listen to four tones and repeat the growing pattern |
 
 Snake is an extreme storage experiment. Its full program is about **696 bytes** and its barcode is very wide. The Play button decodes the real bars, but most phone cameras may not be able to scan the whole barcode. Do not use it as the only scanning demo.
 
-The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. They do not need a game engine supplied by the website.
+The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. Catch 10 uses a 20-second countdown that starts with your first tap. Pattern Memory creates four notes with the browser's built-in Web Audio API and has a Start button to enable sound. No sound files or external game scripts are loaded. They do not need a game engine supplied by the website.
 
 ## What you can do
 
