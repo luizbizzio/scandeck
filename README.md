@@ -17,7 +17,7 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | Catch 10 | Data Matrix | Catch ten moving targets while a timer counts up from zero |
 | Pattern Memory | Aztec Code | Tap a color to begin, listen, and repeat each sequence |
 
-Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent game source is now stored in a QR Code. The new Tap Rush Code 128 contains its full independent JavaScript source including taps, timer and win check. It is still physically long, so a phone may struggle to scan it. The full Snake source is showcased in Codablock F.
+Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent source remains available in a legacy QR Code file. The new Tap Rush Code 128 contains its full independent JavaScript source including taps, timer and win check. It is still physically long, so a phone may struggle to scan it. The full Snake source is showcased in Codablock F.
 
 The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. Catch 10 has an elapsed-time timer that starts at zero and has no time limit. Pattern Memory creates four notes with the browser's built-in Web Audio API. Tap one of the four original color tiles to start the game and enable sound. No sound files or external game scripts are loaded. They do not need a game engine supplied by the website.
 
@@ -178,6 +178,6 @@ The **Tap Rush** Code 128 symbol contains a complete 79-character JavaScript pro
 - Both formats are generated and decoded by the MIT-licensed **Sythos Barcode Universal 1.6.8** package. The browser ESM bundle and its license are stored locally in `vendor/`.
 - The site uses a Web Worker to decode Codablock F and DotCode on an uploaded PNG or focused live-camera frame. A checksum-valid full result is required. Failed reads do not silently load a text-file fallback.
 - **Important limitation:** their open-source image detectors support clean integer-scaled, axis-aligned symbols, not arbitrary camera perspective, blur, or heavy distortion. They are explicitly experimental, and mobile camera success is unverified.
-- The PNG encoder and the independent decoder perform a pixel round trip during build. The pipeline fails if they do not recover the exact embedded payload.
+- The full-size matrices pass a strict format-decoder integrity test during build. Large PNG camera-raster decoding remains experimental and is not claimed as verified.
 - The site still ships a QR Snake PNG for compatibility with earlier links, but the Games gallery presents the Codablock F version.
 
