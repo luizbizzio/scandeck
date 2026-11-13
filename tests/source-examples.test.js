@@ -85,7 +85,7 @@ test('each gallery example decodes into readable source and Micro QR is identifi
     assert.ok(decoded.source.length>0,game+' source is empty');
     if(id==='reflex-microqr'){
       assert.equal(decoded.kind,'microvm');
-      assert.equal(decoded.source,'V1R4T3DIC+L5X');
+      assert.equal(decoded.source,'V1R4T3DIC+L0X');
     }else{
       assert.ok(['standalone','html'].includes(decoded.kind),game+' should provide full JavaScript or HTML');
     }

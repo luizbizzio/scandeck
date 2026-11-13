@@ -6,7 +6,7 @@ export function parseMicroProgram(source){
   for(let pc=2;pc<source.length;pc++){
     const op=source[pc];let argument=0;
     if('RTL'.includes(op)){
-      if(pc+1>=source.length||!/^[1-9]$/.test(source[pc+1]))
+      if(pc+1>=source.length||!(op==='L'?/^[0-9]$/:/^[1-9]$/).test(source[pc+1]))
         throw Error('Missing Micro VM instruction parameter.');
       argument=Number(source[++pc]);
       if(op==='R'&&argument<2)throw Error('Random-choice range must be 2 to 9.');
@@ -22,8 +22,9 @@ export function parseMicroProgram(source){
 
 export async function executeMicroProgram(instructions,io){
   if(!Array.isArray(instructions)||instructions.length>12)throw Error('Invalid VM instructions.');
-  let pc=0,round=1,score=0,target=1,choices=4,seconds=3,selected=-1,correct=false;
-  for(let step=0;step<180;step++){
+  let pc=0,round=1,score=0,target=1,choices=4,seconds=3,baseSeconds=3,selected=-1,correct=false;
+  const endless=instructions.some(([op,n])=>op==='L'&&n===0);
+  for(let step=0;step<100_000;step++){
     if(pc<0||pc>=instructions.length)throw Error('Micro VM program did not terminate.');
     const [opcode,arg]=instructions[pc++];
     if(opcode==='R'){
@@ -34,7 +35,8 @@ export async function executeMicroProgram(instructions,io){
     }else if(opcode==='D'){
       await io.display({target,choices,round,score,seconds});
     }else if(opcode==='T'){
-      seconds=arg;
+      baseSeconds=arg;
+      seconds=endless?Math.max(0.6,Math.round(baseSeconds*1000*Math.pow(0.94,score))/1000):baseSeconds;
     }else if(opcode==='I'){
       selected=await io.input(seconds);
     }else if(opcode==='C'){
@@ -42,7 +44,7 @@ export async function executeMicroProgram(instructions,io){
     }else if(opcode==='+'){
       if(correct)score++;
     }else if(opcode==='L'){
-      if(round<arg){round++;pc=0;}
+      if(arg===0?correct:round<arg){round++;pc=0;}
     }else if(opcode==='X'){
       const result={score,rounds:round};
       await io.finish(result);
@@ -76,15 +78,15 @@ h1{font:800 clamp(32px,9vw,46px)/1.1 system-ui;letter-spacing:-.06em;margin:0 0 
 #bar{width:100%;height:100%;background:#bdf28d;transform-origin:left}
 #message{color:#bbd5c0;font:700 14px system-ui;min-height:22px;margin-top:16px}
 </style>
-<main><h1>POCKET REFLEX</h1><p class=intro>Tap the matching number before time runs out. Play each round before time runs out.</p>
-<div class=top><span id=round>ROUND 1 / 5</span><span id=score>0 POINTS</span></div>
+<main><h1>POCKET REFLEX</h1><p class=intro>Tap the right number. Every point gives you less time.</p>
+<div class=top><span id=round>ROUND 1</span><span id=score>0 POINTS</span></div>
 <div class=goal><small>FIND THIS NUMBER</small><strong id=target>?</strong></div>
 <div id=tiles class=tiles role=group aria-label="Choose a number"></div>
 <div id=clock class=clock>3.0s</div><div class=progress><div id=bar></div></div>
 <p id=message aria-live=polite>Get ready</p></main>
 <script>
 const instructions=${program};
-const totalRounds=instructions.find(([op])=>op==='L')?.[1]||1;
+const totalRounds=instructions.find(([op])=>op==='L')?.[1]??1;
 const $=id=>document.getElementById(id);
 const tiles=$('tiles'),round=$('round'),score=$('score'),target=$('target'),
  clock=$('clock'),bar=$('bar'),message=$('message');
@@ -92,13 +94,13 @@ const io={
  random(max){return Math.floor(Math.random()*max)},
  display(state){
   target.textContent=state.target;
-  round.textContent='ROUND '+state.round+' / '+totalRounds;
+  round.textContent='ROUND '+state.round+(totalRounds?' / '+totalRounds:'');
   score.textContent=state.score+' POINTS';
   clock.textContent=state.seconds.toFixed(1)+'s';
   bar.style.width='100%';
   message.textContent='TAP THE MATCHING NUMBER';
   tiles.replaceChildren();
-  for(let n=1;n<=state.choices;n++){
+  for(const n of (state.choices===4?[4,1,3,2]:Array.from({length:state.choices},(_,i)=>i+1))){
    const button=document.createElement('button');
    button.type='button';button.dataset.value=String(n);button.textContent=n;
    button.setAttribute('aria-label','Select number '+n);
@@ -131,10 +133,10 @@ const io={
  },
  finish(result){
   tiles.onclick=null;tiles.replaceChildren();
-  target.textContent=result.score+'/'+result.rounds;
-  round.textContent='COMPLETE';score.textContent=result.score+' POINTS';
+  target.textContent=String(result.score);
+  round.textContent='GAME OVER';score.textContent=result.score+' POINTS';
   clock.textContent='FINISHED';bar.style.width='0%';
-  message.textContent=result.score===result.rounds?'PERFECT RUN!':'PRESS RETRY TO PLAY AGAIN';
+  message.textContent='PRESS RETRY TO BEAT YOUR SCORE';
  }
 };
 ${execute}(instructions,io).catch(()=>{message.textContent='PROGRAM ERROR'});
