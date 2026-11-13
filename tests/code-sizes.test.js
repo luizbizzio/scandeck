@@ -4,8 +4,8 @@ import {readFileSync,statSync} from 'node:fs';
 
 const root=new URL('../',import.meta.url);
 const html=readFileSync(new URL('index.html',root),'utf8');
-const source=readFileSync(new URL('app.js',root),'utf8');
-const css=readFileSync(new URL('style.css',root),'utf8');
+const source=readFileSync(new URL('src/app.js',root),'utf8');
+const css=readFileSync(new URL('src/style.css',root),'utf8');
 const manifest=JSON.parse(readFileSync(new URL('assets/code-sizes.json',root),'utf8'));
 
 test('each of the 12 game cards has code bytes, PNG file size and a visible check',()=>{
@@ -53,12 +53,12 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
 });
 
 test('one lightweight metadata request updates all sizes without decoding any images',()=>{
-  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=33'/);
+  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=34'/);
   assert.match(source,/function formatCodeSize\(/);
   assert.match(source,/querySelectorAll\('\.code-metadata\[data-code-asset\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-payload-size\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-png-size\]'\)/);
   assert.match(source,/if\(tab==='library'\)void loadCodeSizes\(\)/);
-  assert.match(html,/src="app\.js\?v=33"/);
-  assert.match(html,/href="style\.css\?v=33"/);
+  assert.match(html,/src="src\/app\.js\?v=34"/);
+  assert.match(html,/href="src\/style\.css\?v=34"/);
 });

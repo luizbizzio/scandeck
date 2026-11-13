@@ -24,7 +24,7 @@ Code generation and real-phone decoding are different problems. A perfect downlo
 | IRIS | Experimental ring/color detection. Use even light and a centered symbol |
 | ChromaQR | RGB planes are affected by screen brightness, camera white balance and blur |
 
-Standard Auto mode does not include IRIS, ChromaQR, Codablock F or DotCode. Select them explicitly. There is no debug scanner mode.
+Standard Auto mode does not include IRIS, ChromaQR, Codablock F or DotCode. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
 
 ## Test reports
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
 import {readBarcodes} from 'zxing-wasm';
-import {splitChromaPayload,joinChromaPayload,decodeChromaPixels} from '../chroma.js';
+import {splitChromaPayload,joinChromaPayload,decodeChromaPixels} from '../src/chroma.js';
 
 function pngPixels(filename){
   const bytes=readFileSync(new URL('../assets/'+filename,import.meta.url));

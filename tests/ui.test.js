@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const script = readFileSync(new URL('../app.js', import.meta.url), 'utf8');
-const css = readFileSync(new URL('../style.css', import.meta.url), 'utf8');
+const script = readFileSync(new URL('../src/app.js', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
 
 test('premise is clear on first visit', () => {
   assert.match(html, /The game is in the code\./);
@@ -130,7 +130,7 @@ test('every displayed and downloadable game code uses PNG',()=>{
   assert.match(script,/game\.png/);
 });
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
-  const {gameDocument}=await import('../runtime.js');
+  const {gameDocument}=await import('../src/runtime.js');
   const doc=gameDocument({kind:'standalone',title:'Perfect Timing',instructions:'TAP WHEN 7',
     source:'document.body.innerHTML=7'});
   const head=doc.slice(0,doc.indexOf('</head>'));
@@ -150,7 +150,7 @@ test('Every game has a real restart button',()=>{
 });
 
 test('the arcade design presents time, attempts, wires and a centered brick field',async()=>{
- const {gameDocument}=await import('../runtime.js');
+ const {gameDocument}=await import('../src/runtime.js');
  const timing=gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'});
  assert.match(timing,/YOUR TARGET/);
  assert.match(timing,/ELAPSED TIME/);
@@ -169,7 +169,7 @@ test('the arcade design presents time, attempts, wires and a centered brick fiel
 });
 
 test('inline barcode buttons are closed before player UI scripts',async()=>{
- const {gameDocument}=await import('../runtime.js');
+ const {gameDocument}=await import('../src/runtime.js');
  const frame=gameDocument({kind:'standalone',title:'Codebreaker',source:"document.write('<input id=a><button id=b>GO')"});
  assert.match(frame,/<\/script><\/button><script>/);
 });
@@ -177,7 +177,7 @@ test('inline barcode buttons are closed before player UI scripts',async()=>{
 test('arcade shell contains all games with a centered Snake and working replay controls',async()=>{
  assert.match(html,/class="game-app"/);assert.match(html,/class="game-viewport"/);
  assert.match(html,/sandbox="allow-scripts"/);assert.match(css,/\.game-app\{/);
- const {gameDocument}=await import('../runtime.js');
+ const {gameDocument}=await import('../src/runtime.js');
  assert.match(gameDocument({kind:'snake',source:'s=[27,26,25];f=45;I=180;T=()=>{}'}),/body\{display:grid;place-items:center\}/);
  assert.match(gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'}),/PLAY AGAIN/);
  assert.match(gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'}),/THE CODE WAS/);
@@ -235,7 +235,7 @@ test('Tap Rush is a five-second high-score challenge and its player shows a live
   assert.ok(!html.includes('Make ten taps in three seconds'));
   assert.ok(script.includes('AS MANY TAPS AS YOU CAN IN 5 SECONDS'));
   assert.ok(script.includes("game.source.startsWith('n=0;onclick=()=>n++||setTimeout')"),'Camera scans should get the correct Tap Rush title and scoreboard');
-  const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
+  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes('sd-rush-count'));
   assert.ok(runtime.includes('sd-rush-clock'));
   assert.ok(runtime.includes('TAPS IN 5 SECONDS'));
@@ -250,7 +250,7 @@ test('Pocket Reflex is a complete 13-character Micro VM program in the Micro QR 
   assert.ok(script.includes('V1R4T3DIC+L5X'));
   assert.ok(script.includes('packMicroVm(input)'));
   assert.ok(script.includes("V1|LO:"));
-  const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
+  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes("game.kind==='microvm'"));
   assert.ok(runtime.includes('microVmHtml'));
 });
@@ -275,7 +275,9 @@ test('mobile and desktop scanner selectors contain every format exactly once and
 });
 test('camera preview starts before WASM initialization; expensive experimental formats require focus',()=>{
   const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
-  assert.ok(open.indexOf("show('camera-panel',true)")<open.indexOf('await getScanner()'));
+  assert.ok(open.indexOf("show('camera-panel',true)")>=0);
+  assert.doesNotMatch(open,/await getScanner\(\)/,'Do not initialize heavy WASM on the UI thread during camera opening');
+  assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
   assert.match(script,/if\(mode==='iris'\)/);
   assert.match(script,/if\(mode==='chromaqr'\)/);
   assert.doesNotMatch(script,/mode==='auto'&&frame%4/);
@@ -289,8 +291,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/app\.js\?v=33/);
-  assert.match(html,/style\.css\?v=33/);
+  assert.match(html,/src\/app\.js\?v=34/);
+  assert.match(html,/src\/style\.css\?v=34/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{

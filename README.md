@@ -52,10 +52,10 @@ Open http://localhost:8000. The camera needs HTTPS or localhost. The build comma
 
 | Path | Purpose |
 | --- | --- |
-| `index.html`, `style.css` | Website |
-| `app.js`, `lib/` | Scanner, library, creator and camera helpers |
-| `protocol.js`, `runtime.js`, `microvm.js`, `maze.js` | Game data and playback |
-| `chroma.js`, `iris-worker.js`, `exotic-worker.js` | Experimental decoders |
+| `index.html`, `src/style.css` | Website |
+| `src/app.js`, `src/scanner-geometry.js`, `src/barcode-worker.js` | Scanner and camera processing |
+| `src/protocol.js`, `src/runtime.js`, `src/microvm.js`, `src/maze.js` | Game data and playback |
+| `src/chroma.js`, `src/iris-worker.js`, `src/exotic-worker.js` | Experimental decoders |
 | `examples/` | Original game sources |
 | `assets/` | Game-code images and payloads, mostly generated at build time |
 | `vendor/` | Local third-party decoder files |

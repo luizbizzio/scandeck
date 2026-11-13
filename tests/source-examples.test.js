@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {decodeGame} from '../protocol.js';
+import {decodeGame} from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const html=readFileSync(new URL('index.html',root),'utf8');
-const app=readFileSync(new URL('app.js',root),'utf8');
-const css=readFileSync(new URL('style.css',root),'utf8');
+const app=readFileSync(new URL('src/app.js',root),'utf8');
+const css=readFileSync(new URL('src/style.css',root),'utf8');
 
 const examples=[
   ['QR Code','ironpass-micro-v3-qr','Ironpass Micro'],

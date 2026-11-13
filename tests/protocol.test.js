@@ -3,9 +3,9 @@ import vm from 'node:vm';
 import {snakePayload} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packMicroQuiz,QR_LIMIT} from '../protocol.js';
-import {code128Svg,decodeCode128Svg} from '../code128.js';
-import {gameDocument} from '../runtime.js';
+import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packMicroQuiz,QR_LIMIT} from '../src/protocol.js';
+import {code128Svg,decodeCode128Svg} from '../src/code128.js';
+import {gameDocument} from '../src/runtime.js';
 test('base43 binary round trips',()=>{
   for(const n of [0,1,2,3,43,100,255,512,2779]){
     const bytes=Uint8Array.from({length:n},(_,i)=>(i*91+13)%256);
@@ -200,7 +200,7 @@ test('both RGB color formats store complete embedded game payloads as PNG',async
 });
 
 test('Micro QR controls randomly generated, solvable 6x6 mazes',async()=>{
- const {generateMaze}=await import('../maze.js');
+ const {generateMaze}=await import('../src/maze.js');
  const raw=packMicroQuiz('M36509');
  assert.equal(raw,'MQ:M36509');
  const game=await decodeGame(raw);

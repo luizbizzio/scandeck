@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
 import {BitMatrix,encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode} from '@sythos/js_barcode_universal';
-import {decodeGame} from '../protocol.js';
+import {decodeGame} from '../src/protocol.js';
 
 // Read the actual 1-bit indexed PNG bytes and reconstruct the exact modules.
 // This verifies the downloaded artwork itself, not an in-memory source string.
