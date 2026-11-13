@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=46';
-import { gameDocument } from './runtime.js?v=46';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=47';
+import { gameDocument } from './runtime.js?v=47';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=46';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=47';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=46',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=47',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -253,8 +253,8 @@ const focusTips={
   code128:'Scan upright or sideways. Keep every bar and both white side margins visible.',
   iris:'Center the colored circular code in the frame.',
   chromaqr:'Center the full colored QR symbol.',
-  codablockf:'Try landscape. All Codablock F rows must fit sharply without perspective.',
-  dotcode:'Hold the entire field of dots straight and sharply focused.'
+  codablockf:'Use the full-size PNG, not the small gallery preview. Keep every bar and white margin sharp.',
+  dotcode:'Open the full-size PNG on another screen. Keep all dots visible, sharp and evenly lit.'
 };
 function setScanFocus(mode){
   if(!['auto','qr','code128','datamatrix','aztec','pdf417','maxicode','microqr','rmqr','iris','chromaqr','codablockf','dotcode'].includes(mode))mode='auto';
@@ -542,7 +542,11 @@ async function cameraLoop(token){
               const chroma=await readCameraChroma(pixels);
               if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
-              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              // No software zoom: direct image pixels preserve tiny bars and dots.
+              // Alternate a full frame with two centered crops; the latter
+              // reject background noise without interpolating the barcode.
+              const roi=exoticCaptureRegion(canvas.width,canvas.height,frame);
+              const pixels=ctx.getImageData(roi.left,roi.top,roi.width,roi.height);
               const experimental=await readExoticPixels(pixels,mode,false,frame%5);
               if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }

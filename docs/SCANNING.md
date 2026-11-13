@@ -79,3 +79,7 @@ The build now tests DEFLATE window sizes from 9 through 15 and selects the short
 ## DotCode shape optimization
 
 The writer now tests several odd/even width-height candidates near a square shape against its complete Reed-Solomon decoder. It chooses a more balanced matrix only when it verifies all payload bytes. The default aspect-ratio layout remains a fallback. This improves on-screen framing without discarding the game's source.
+
+## Dedicated dense-barcode capture
+
+The experimental DotCode and Codablock F camera modes now retain nearly 2 MP of actual camera pixels and alternate full-frame capture with two centered crops. The crops operate directly on the camera raster without interpolation: software enlarging a one-pixel bar cannot recreate missing detail. Use the **full-size PNG on a second screen**, not the small Games card preview. Keep the symbol completely visible, with white margins and at least 3–4 actual display pixels per smallest module where possible. These capture changes are tested by automated geometry checks but remain unverified on physical phone cameras.

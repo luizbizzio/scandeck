@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=46/);
-  assert.match(html,/src\/style\.css\?v=46/);
+  assert.match(html,/src\/app\.js\?v=47/);
+  assert.match(html,/src\/style\.css\?v=47/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -422,4 +422,10 @@ test('experimental upload processes full-resolution photos without discarding 2M
  assert.match(photo,/for\(const phase of \[2,0\]\)/);
  assert.match(script,/getCapabilities\?\.\(\)/);
  assert.match(script,/focusMode\?\.includes\?\.\('continuous'\)/);
+});
+
+test('dense experimental camera uses direct full and cropped sensor pixels, not stretched images',()=>{
+ assert.match(script,/exoticCaptureRegion\(canvas\.width,canvas\.height,frame\)/);
+ assert.match(script,/ctx\.getImageData\(roi\.left,roi\.top,roi\.width,roi\.height\)/);
+ assert.match(script,/Use the full-size PNG, not the small gallery preview/);
 });

@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {captureDimensions,focusedCrop,scanPause} from '../src/scanner-geometry.js';
+import {captureDimensions,focusedCrop,scanPause,exoticCaptureRegion} from '../src/scanner-geometry.js';
 test('dense scanning keeps more camera pixels than auto without passing worker limits',()=>{
   const auto=captureDimensions(1920,1080,'auto');
   for(const mode of ['code128','pdf417','rmqr','codablockf','dotcode']){
     const size=captureDimensions(1920,1080,mode);
     assert.ok(size.width>auto.width,mode);
-    assert.ok(size.width*size.height<=(mode==='code128'?2_800_000:mode==='pdf417'||mode==='rmqr'?2_400_000:1_900_000),mode);
+    assert.ok(size.width*size.height<=(mode==='code128'?2_800_000:mode==='pdf417'||mode==='rmqr'?2_400_000:2_000_000),mode);
   }
   assert.deepEqual(captureDimensions(0,1080,'auto'),{width:1,height:1});
 });
@@ -42,4 +42,20 @@ test('rMQR alternates horizontal and vertical crop bands for rotated phone views
   const maxiA=focusedCrop(1920,1080,'maxicode',1);
   const maxiB=focusedCrop(1920,1080,'maxicode',3);
   assert.ok(maxiB.width<maxiA.width,'Dedicated MaxiCode pass should zoom into centered codes');
+});
+
+test('experimental camera scans preserve full sensor detail and use unscaled center crops',()=>{
+  const size=captureDimensions(1920,1080,'codablockf');
+  assert.ok(size.width*size.height>1_900_000,'Keep almost 2 MP of fine module detail');
+  assert.ok(size.width*size.height<=2_000_000,'Never exceed the worker bound');
+  const full=exoticCaptureRegion(size.width,size.height,0);
+  assert.deepEqual(full,{left:0,top:0,width:size.width,height:size.height});
+  for(const frame of [1,2]){
+    const crop=exoticCaptureRegion(size.width,size.height,frame);
+    assert.ok(crop.left>0&&crop.top>0);
+    assert.ok(crop.width<size.width&&crop.height<size.height);
+    assert.ok(crop.left+crop.width<=size.width&&crop.top+crop.height<=size.height);
+  }
+  assert.ok(exoticCaptureRegion(1920,1080,2).width<exoticCaptureRegion(1920,1080,1).width);
+  assert.throws(()=>exoticCaptureRegion(0,1080,2));
 });

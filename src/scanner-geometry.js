@@ -7,7 +7,7 @@ export function captureDimensions(width,height,mode='auto'){
   // Dedicated 1D/rMQR/Maxi readers need full detail to resolve thin modules.
   const highDetail=['code128','rmqr','maxicode','pdf417'].includes(mode);
   const maxEdge=mode==='code128'?2560:highDetail?2200:dense?1920:mode==='auto'?1280:mode==='iris'||mode==='chromaqr'?1680:1440;
-  const maxPixels=mode==='code128'?2_800_000:highDetail?2_400_000:dense?1_500_000:mode==='chromaqr'||mode==='iris'?1_200_000:1_000_000;
+  const maxPixels=mode==='code128'?2_800_000:highDetail?2_400_000:dense?1_950_000:mode==='chromaqr'||mode==='iris'?1_200_000:1_000_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }
@@ -40,6 +40,17 @@ export function focusedCrop(width,height,mode,phase=0){
     width:roiWidth,height:roiHeight,
     outputWidth:Math.max(1,Math.floor(roiWidth*s)),
     outputHeight:Math.max(1,Math.floor(roiHeight*s))};
+}
+// Move the camera's pixel window rather than scaling its tiny barcode modules.
+// Full-frame passes remain necessary for symbols that are not perfectly centered.
+export function exoticCaptureRegion(width,height,frame){
+  if(!Number.isFinite(width)||!Number.isFinite(height)||width<1||height<1)
+    throw Error('Invalid camera size');
+  const scale=frame%4===1?.86:frame%4===2?.70:1;
+  const w=Math.max(1,Math.floor(width*scale));
+  const h=Math.max(1,Math.floor(height*scale));
+  return {left:Math.floor((width-w)/2),top:Math.floor((height-h)/2),
+    width:w,height:h};
 }
 export function scanPause(mode){
   if(mode==='iris'||mode==='chromaqr')return 650;
