@@ -99,3 +99,7 @@ ZXing-C++ only partially supports reading MaxiCode and does not offer a general-
 ## Clean PNG decoding and camera FPS
 
 Uploaded MaxiCode/rMQR originals now get a dedicated pure-image decoding pass first, since the ZXing MaxiCode reader expects a clean aligned symbol. Video preview requests 24 fps (up to 30 when the device permits), while long-running decodes dynamically add up to 800 ms between attempts to avoid heating and frame drops. The preview stream remains independent of decode scheduling.
+
+## IRIS secondary camera detector
+
+The IRIS reader now detects the pale printed card, preserving the RGB corner markers and the complete disk. It tries marker-based perspective decoding and a bounded robust color decode on that crop, falling back to the original full frame. A simulated 690-pixel camera crop was verified against the embedded complete game. MaxiCode still has a known failure when its 1914px original image is reduced to an 846px camera-style card: ZXing's partial pure-image decoder does not resolve this. Keep that case unverified rather than incorrectly describing it as working.

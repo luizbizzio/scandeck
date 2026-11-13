@@ -3,6 +3,7 @@
 import { decodeColor } from '../vendor/iris/color.js';
 import { decodeColorMarkers } from '../vendor/iris/markers.js';
 import { decodeColorRobust } from '../vendor/iris/robust.js';
+import {cropIrisCard} from './iris-camera.js';
 
 self.onmessage=({data:job})=>{
   const {id,width,height,buffer}=job;
@@ -17,7 +18,14 @@ self.onmessage=({data:job})=>{
       try{text=decodeColor(grid).text}catch{}
     }
     if(!text){try{text=decodeColorMarkers(grid)?.text||''}catch{}}
-    if(!text){try{text=decodeColorRobust(grid,{budgetMs:1300}).text}catch{}}
+    if(!text){
+      const card=cropIrisCard(grid);
+      if(card){
+        try{text=decodeColorMarkers(card)?.text||''}catch{}
+        if(!text){try{text=decodeColorRobust(card,{budgetMs:850})?.text||''}catch{}}
+      }
+    }
+    if(!text){try{text=decodeColorRobust(grid,{budgetMs:1100})?.text||''}catch{}}
   }catch{}
   self.postMessage({id,text});
 };

@@ -52,3 +52,10 @@ test('MaxiCode and rMQR have camera-card normalization before a pure/regular sec
  assert.match(specialty,/export function findLightCard/);
  assert.match(specialty,/export function thresholdRgba/);
 });
+
+test('IRIS tries isolated RGB card and markers in a separate worker',()=>{
+ const worker=readFileSync(new URL('src/iris-worker.js',root),'utf8');
+ assert.match(worker,/cropIrisCard\(grid\)/);
+ assert.match(worker,/decodeColorMarkers\(card\)/);
+ assert.match(sw,/"src\/iris-camera\.js"/);
+});
