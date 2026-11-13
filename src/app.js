@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=40';
-import { gameDocument } from './runtime.js?v=40';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=41';
+import { gameDocument } from './runtime.js?v=41';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=40';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=41';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=40',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=41',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -54,7 +54,7 @@ function switchTab(tab) {
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', event=>{event.preventDefault();switchTab(b.dataset.tab)}));
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
-if(location.hash) switchTab(location.hash.slice(1));
+// Initial navigation runs after all module-level worker state is initialized.
 void loadCodeSizes();
 
 async function acceptPayload(raw, mode='manual', format='') {
@@ -860,3 +860,7 @@ $('test-code').addEventListener('click',async()=>{if(outputData)try{playGame(awa
 if('serviceWorker' in navigator && location.protocol==='https:') {
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
+
+// Avoid temporal dead-zone errors when opening a URL with #library/#create/#about.
+// switchTab() invokes stopCamera(), so initialize every worker and game handler first.
+if(location.hash) switchTab(location.hash.slice(1));

@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=40/);
-  assert.match(html,/src\/style\.css\?v=40/);
+  assert.match(html,/src\/app\.js\?v=41/);
+  assert.match(html,/src\/style\.css\?v=41/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -394,4 +394,22 @@ test('landscape mobile scanning keeps full-screen camera and supports rotated ba
   assert.match(script,/isPure:false/);
   assert.match(script,/tryRotate:true/);
   assert.match(script,/code128:'Scan upright or sideways/);
+});
+
+test('opening a hash URL never stops camera before workers and Play buttons initialize',()=>{
+  const initial=script.lastIndexOf('if(location.hash) switchTab(location.hash.slice(1));');
+  assert.ok(initial>0,'initial hash navigation must be present');
+  for(const prerequisite of [
+    'let irisWorker=null','const irisPending=new Map()',
+    'const exoticWaiting=new Map()','const barcodePending=new Map()',
+    "function stopCamera()", "$('try-breakout').addEventListener",
+    "$('try-dotcode-dodge').addEventListener", "$('try-micro').addEventListener",
+    "navigator.serviceWorker.register('sw.js')"
+  ]){
+    const position=script.indexOf(prerequisite);
+    assert.ok(position>=0,prerequisite+' must exist');
+    assert.ok(position<initial,prerequisite+' must initialize before initial hash navigation');
+  }
+  assert.equal(script.indexOf('if(location.hash) switchTab(location.hash.slice(1));'),initial,
+    'hash navigation must not also run at module startup');
 });
