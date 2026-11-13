@@ -4,7 +4,10 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 function runGame(filename,fps){
  const source=readFileSync(new URL('../examples/'+filename,import.meta.url),'utf8');
- const code=source.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
+ // These are our own fixed, one-script HTML fixtures, not arbitrary HTML.
+ // Use exact delimiters instead of treating a regex as an HTML parser.
+ const start=source.indexOf('<script>'),end=source.indexOf('</script>',start+8);
+ const code=start>=0&&end>start?source.slice(start+8,end):null;
  assert.ok(code,filename+' must contain a playable script');
  const pen={clearRect(){},fillRect(){},fillText(){}};
  const canvas={clientWidth:300,getContext:()=>pen};
