@@ -31,6 +31,9 @@ jobs:
       - name: Validate browser JavaScript
         run: |
           node --check app.js
+          node --check protocol.js
+          node --check runtime.js
+          node --check tools/build-matrix.mjs
           node --check chroma.js
           node --check iris-worker.js
           node --check sw.js
