@@ -16,7 +16,7 @@ const games=[
     input:'examples/snake-standalone.js',
     payload:source=>packScript(source),
     format:'codablockf',
-    encode:payload=>encodeCodablockF(payload,{rowHeight:5,separatorHeight:1}),
+    encode:payload=>encodeCodablockF(payload,{rows:36,columns:28,rowHeight:6,separatorHeight:1}),
     margin:12,scale:4
   },{
     name:'neon-dodge-dotcode',
@@ -35,6 +35,8 @@ for(const game of games){
   const matrix=game.encode(payload);
   // Public DotCode uses the independent BWIPP standard encoder for interoperability.
   // Sythos remains our strict local matrix integrity reference.
+  if(game.format==='codablockf'&&(matrix.width>420||matrix.height<160))
+    throw Error('Codablock F layout is too wide for practical camera framing');
   const png=game.format==='dotcode'
     ?await bwipjs.toBuffer({bcid:'dotcode',text:payload,scale:5,padding:20})
     :await toPNG(matrix,{scale:game.scale,margin:game.margin});
