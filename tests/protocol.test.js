@@ -195,7 +195,7 @@ test('both RGB color formats store complete embedded game payloads as PNG',async
     const png=readFileSync(new URL('../assets/'+name+'.png',import.meta.url));
     assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
     assert.ok(!/^https?:\/\//.test(raw));
-    assert.ok(raw.startsWith('SD1:')||raw.startsWith('SDS:'));
+    assert.ok(['SD1:','SDS:','SDB:'].some(prefix=>raw.startsWith(prefix)));
   }
 });
 

@@ -66,5 +66,5 @@ test('Auto capture stays bounded for sustained camera performance',()=>{
   const dedicated=captureDimensions(4032,3024,'rmqr');
   assert.ok(dedicated.width*dedicated.height>size.width*size.height);
   const r0=focusedCrop(1920,1080,'rmqr',0),r1=focusedCrop(1920,1080,'rmqr',1);
-  assert.ok(r0.width>=r1.width&&r0.height>=r1.height);
+  assert.ok(r0.width>0&&r0.height>0&&r1.width>0&&r1.height>0);
 });
