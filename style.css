@@ -140,3 +140,53 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 .game-app-footer{min-height:32px;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 16px;background:#101b14;border-top:1px solid #304233;color:#849b89;font:10px var(--mono);letter-spacing:.05em}
 .game-viewport .touch-controls{position:absolute;z-index:2;bottom:12px;left:12px}
 @media(max-width:700px){.game-overlay{padding:0}.game-app{height:100dvh;max-height:none;width:100%;border:0;border-radius:0}.game-app .game-top{padding:7px 9px}.game-app-footer{padding:6px 12px}.game-viewport .touch-controls{left:9px;bottom:10px}}
+
+/* Camera controls remain attached to the preview on every screen size. */
+.camera-panel{position:relative;overflow:hidden;background:#050706}
+.camera-stage video{object-fit:contain}
+.camera-close{position:absolute;z-index:12;top:12px;right:12px;display:flex;align-items:center;justify-content:center;gap:8px;min-width:90px;min-height:45px;border:1px solid #ffffff50;border-radius:11px;padding:9px 15px;background:#101812df;color:#fff;font:700 13px system-ui;box-shadow:0 4px 20px #0009;touch-action:manipulation}
+.camera-close span{font-size:17px}
+.camera-close:focus-visible,.camera-bottom select:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.camera-label{right:auto;left:12px;top:18px;z-index:11;padding:6px 10px}
+.camera-bottom{position:absolute;z-index:11;bottom:12px;left:12px;right:12px;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px;background:#07100bd9;border:1px solid #53624c78;border-radius:12px;backdrop-filter:blur(10px)}
+.camera-bottom label{color:#cbdacb;font:650 12px system-ui;white-space:nowrap}
+.camera-bottom select{min-width:0;max-width:220px;flex:1;color:#e8f3e9;background:#16231a;border:1px solid #61765f;border-radius:8px;padding:9px 8px;font:650 13px system-ui}
+.camera-bottom p{display:none}
+@media(max-width:700px){
+  html.camera-open,html.camera-open body{overflow:hidden!important;overscroll-behavior:none}
+  html.camera-open .camera-panel{
+    position:fixed!important;inset:0!important;z-index:1000!important;
+    display:block;width:100vw;width:100dvw;height:100vh;height:100dvh;
+    max-width:none;max-height:none;margin:0;padding:0;border:0;border-radius:0;
+    background:#020402
+  }
+  html.camera-open .camera-stage{width:100%;height:100%;position:relative;overflow:hidden}
+  html.camera-open .camera-stage video{width:100%;height:100%;object-fit:contain}
+  html.camera-open .camera-close{
+    position:absolute;top:calc(env(safe-area-inset-top, 0px) + 16px);
+    right:calc(env(safe-area-inset-right, 0px) + 15px);
+    min-height:48px;min-width:93px;padding:9px 15px
+  }
+  html.camera-open .camera-label{
+    top:calc(env(safe-area-inset-top, 0px) + 24px);
+    left:calc(env(safe-area-inset-left, 0px) + 16px);
+    max-width:calc(100% - 145px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+  }
+  html.camera-open .scan-graphic{width:min(74vw,74vh,340px);max-height:75dvh;opacity:.88}
+  html.camera-open .camera-bottom{
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 18px);
+    left:calc(env(safe-area-inset-left, 0px) + 14px);
+    right:calc(env(safe-area-inset-right, 0px) + 14px);
+    flex-wrap:wrap;justify-content:space-between;gap:7px 10px;
+    padding:13px 14px
+  }
+  html.camera-open .camera-bottom select{min-height:45px;max-width:60%;flex:1}
+  html.camera-open .camera-bottom p{
+    display:block;flex:0 0 100%;margin:0;color:#b8c8b9;text-align:center;
+    font:12px/1.4 system-ui
+  }
+}
+@media(max-width:340px){
+  html.camera-open .camera-bottom label{font-size:11px}
+  html.camera-open .camera-bottom select{max-width:65%;font-size:12px}
+}

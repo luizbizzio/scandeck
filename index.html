@@ -45,6 +45,20 @@
                   <video id="camera" playsinline muted autoplay aria-label="Live camera"></video>
                   <div class="scan-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
                   <span id="camera-label" class="camera-label">SCANNING</span>
+                  <button id="stop-camera" type="button" class="camera-close" aria-label="Close scanner" disabled hidden><span aria-hidden="true">✕</span> Close</button>
+                  <div class="camera-bottom">
+                    <label for="camera-mode">Scan format</label>
+                    <select id="camera-mode" aria-label="Camera scan format">
+                      <option value="auto">All formats</option>
+                      <option value="rmqr">rMQR</option>
+                      <option value="maxicode">MaxiCode</option>
+                      <option value="pdf417">PDF417</option>
+                      <option value="code128">Code 128</option>
+                      <option value="iris">IRIS</option>
+                      <option value="chromaqr">ChromaQR</option>
+                    </select>
+                    <p id="camera-tip">Keep the entire symbol inside the frame.</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -54,7 +68,7 @@
             <div class="scan-actions">
                 <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
                 <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
-                <button id="stop-camera" class="btn btn-small stop-camera" disabled hidden>Stop camera</button>
+                
               </div>
               <div class="status" id="status" role="status" aria-live="polite"><span id="status-text"></span></div>
               <details class="manual-entry"><summary>Paste game data instead</summary><div class="manual-inner"><label class="field-label" for="paste-input">Game data</label><textarea id="paste-input" rows="4" spellcheck="false" placeholder="Paste the code data here"></textarea><button id="decode-text" class="btn">Open game</button></div></details>
@@ -86,8 +100,8 @@
         <section class="game-group" aria-labelledby="bar-games-heading">
           <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
           <article class="surface game-card">
-            <a class="game-code-preview barcode-code-preview" href="assets/dice-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Lucky Six Code 128 barcode"><span class="game-code-paper"><img src="assets/dice-code128.png" alt="Code 128 containing the complete Lucky Six mini game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Lucky Six</h3><p>Tap to roll a die. Get a six to win. The entire short JavaScript game is stored inside the barcode.</p><small class="barcode-note">Code 128 has very little practical camera capacity. The full Snake game is now in QR Code.</small><div class="game-actions"><button class="btn btn-primary" id="try-dice">Play</button><a class="btn" href="assets/dice-code128.png" download>Download PNG</a></div></div>
+            <a class="game-code-preview barcode-code-preview" href="assets/lights-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Lights Out Code 128 barcode"><span class="game-code-paper"><img src="assets/lights-code128.png" alt="Code 128 containing the complete Lights Out mini game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Lights Out</h3><p>Turn off every light in a 4×4 grid. Each tap flips a tile and its neighbors. The barcode stores the complete puzzle in seven characters.</p><small class="barcode-note">This ultra-short barcode stores a puzzle level, not standalone JavaScript. The ScanDeck interpreter supplies the rules.</small><div class="game-actions"><button class="btn btn-primary" id="try-lights">Play</button><a class="btn" href="assets/lights-code128.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dm-games-heading">

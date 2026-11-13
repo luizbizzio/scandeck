@@ -68,7 +68,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Lucky Six':'TAP ANYWHERE TO ROLL · GET A SIX TO WIN','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
+  const hints={'Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -87,6 +87,7 @@ function closeGame() {
 $('exit-game').addEventListener('click',closeGame);
 $('retry-game').addEventListener('click',()=>{if(lastGame){$('game-frame').srcdoc='';$('game-frame').srcdoc=gameDocument(lastGame)}});
 addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&live){stopCamera();return}
   if (e.key==='Escape' && !$('game-overlay').hidden) { closeGame(); return; }
   if ($('game-overlay').hidden) return;
   const k={ArrowUp:'U',ArrowDown:'D',ArrowLeft:'L',ArrowRight:'R',w:'U',a:'L',s:'D',d:'R'}[e.key];
@@ -174,11 +175,28 @@ const firstResult=results=>results.find(x=>x.text||x.rawValue);
 const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryRotate:true,tryInvert:true,tryDenoise:true,tryDownscale:false};
 const FOCUS_FORMATS={pdf417:'PDF417',maxicode:'MaxiCode',rmqr:'RMQRCode',code128:'Code128'};
 const scanFocus=()=> $('scan-mode').value;
-$('scan-mode').addEventListener('change',()=>{
+const focusTips={
+  auto:'Keep the complete symbol in view.',
+  rmqr:'Hold the rectangular rMQR level and sharp. Try landscape.',
+  maxicode:'MaxiCode must be flat, upright and almost fill the square.',
+  pdf417:'Hold PDF417 horizontally with all rows visible.',
+  code128:'Keep the entire barcode visible from end to end.',
+  iris:'Center the colored circular code in the frame.',
+  chromaqr:'Center the full colored QR symbol.'
+};
+function setScanFocus(mode){
+  if(!['auto','rmqr','maxicode','pdf417','code128','iris','chromaqr'].includes(mode))mode='auto';
+  $('scan-mode').value=mode;
+  $('camera-mode').value=mode;
+  $('camera-panel').dataset.focus=mode;
   const selected=$('scan-mode').selectedOptions[0].textContent;
-  $('camera-label').textContent='SCANNING · '+selected.toUpperCase();
-  if(live)status('Scanning '+selected+'. Keep the full code sharp and inside the camera frame.');
-});
+  $('camera-label').textContent=mode==='auto'?'SCANNING':'SCANNING · '+selected.toUpperCase();
+  $('camera-tip').textContent=focusTips[mode];
+  if(live)status('Scanning '+selected+'. '+focusTips[mode]);
+}
+$('scan-mode').addEventListener('change',()=>setScanFocus($('scan-mode').value));
+$('camera-mode').addEventListener('change',()=>setScanFocus($('camera-mode').value));
+setScanFocus('auto');
 function centeredIrisFrame(video){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
   const canvas=document.createElement('canvas');
@@ -191,6 +209,7 @@ function stopCamera() {
   if(scanStream)scanStream.getTracks().forEach(track=>track.stop());scanStream=null;
   const video=$('camera');video.pause();video.srcObject=null;
   show('camera-panel',false);show('scan-idle',true);show('stop-camera',false);
+  document.documentElement.classList.remove('camera-open');
   $('start-camera').disabled=false;$('stop-camera').disabled=true;
 }
 async function startCamera() {
@@ -202,7 +221,9 @@ async function startCamera() {
     const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:15,max:24}},audio:false});
     scanStream=stream;$('camera').srcObject=stream;await $('camera').play();
     live=true;const token=++cameraToken;
-    show('scan-idle',false);show('camera-panel',true);show('stop-camera',true);$('camera-label').textContent='SCANNING';
+    show('scan-idle',false);show('camera-panel',true);show('stop-camera',true);
+    document.documentElement.classList.toggle('camera-open',matchMedia('(max-width:700px)').matches);
+    setScanFocus(scanFocus());
     $('stop-camera').disabled=false;status('Looking for a game code...');
     void cameraLoop(token,engine);
   } catch(error) {stopCamera();status('Could not open the camera. Check its permissions or upload an image.',true)}
@@ -212,17 +233,66 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:LO:|SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+}
+// Focused camera recovery for dense rectangular rMQR and rigid MaxiCode.
+// ZXing MaxiCode needs an upright, monochrome and essentially frontal symbol.
+function makeFocusedPixels(image,mode,monochrome=false){
+  const w=image.width,h=image.height,short=Math.min(w,h);
+  const roi=mode==='rmqr'
+    ?{w:Math.min(w,w*.95),h:Math.min(h,h*.68)}
+    :{w:short*.76,h:short*.76};
+  const maxW=mode==='rmqr'?1500:750;
+  const scale=Math.min(mode==='rmqr'?1.35:1.6,maxW/roi.w,1000/roi.h);
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(roi.w*scale));
+  canvas.height=Math.max(1,Math.round(roi.h*scale));
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(image,(w-roi.w)/2,(h-roi.h)/2,roi.w,roi.h,0,0,canvas.width,canvas.height);
+  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+  if(monochrome){
+    const data=pixels.data;
+    let min=255,max=0;
+    for(let i=0;i<data.length;i+=4){
+      const gray=(data[i]*77+data[i+1]*150+data[i+2]*29)>>8;
+      min=Math.min(min,gray);max=Math.max(max,gray);
+    }
+    // Use a moderate threshold instead of losing the thin MaxiCode dots.
+    const threshold=Math.round(min+(max-min)*.54);
+    for(let i=0;i<data.length;i+=4){
+      const v=((data[i]*77+data[i+1]*150+data[i+2]*29)>>8)>threshold?255:0;
+      data[i]=data[i+1]=data[i+2]=v;data[i+3]=255;
+    }
+  }
+  canvas.width=canvas.height=1;
+  return pixels;
+}
+async function readFocused(lib,source,mode,frame){
+  const format=FOCUS_FORMATS[mode];
+  if(!format)return null;
+  const useCrop=frame%2===0&&(mode==='rmqr'||mode==='maxicode');
+  const pix=useCrop?makeFocusedPixels(source,mode,mode==='maxicode'):
+    source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
+  const opts={
+    ...wasmOptions,formats:[format],
+    binarizer:useCrop?'GlobalHistogram':'LocalAverage',
+    isPure:useCrop&&mode==='maxicode',
+    tryDownscale:mode==='maxicode'&&useCrop,
+    tryDenoise:false,
+    tryRotate:mode!=='maxicode'
+  };
+  const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
+  return result||null;
 }
 async function cameraLoop(token,engine){
   let frame=0;
-  // Full-resolution source, focused formats and disabled ZXing downscale.
   while(live&&cameraToken===token&&!document.hidden){
-    try{
-      const video=$('camera');
-      if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
+    const video=$('camera');
+    if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
+      try{
         const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
-        const limit=mode==='code128'?2000:mode==='pdf417'||mode==='rmqr'?1800:1600;
+        const limit=mode==='code128'?1800:mode==='rmqr'?1600:mode==='maxicode'?1300:1300;
         const ratio=Math.min(1,limit/Math.max(video.videoWidth,video.videoHeight));
         const canvas=document.createElement('canvas');
         canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
@@ -230,23 +300,31 @@ async function cameraLoop(token,engine){
         const ctx=canvas.getContext('2d',{willReadFrequently:true});
         ctx.drawImage(video,0,0,canvas.width,canvas.height);
         const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+        let result=null;
         if(mode==='auto'||focused){
-          let result;
-          if(engine.kind==='native'&&!focused){
+          if(engine.kind==='native'&&mode==='auto'){
             result=(await engine.engine.detect(video)).find(x=>isGamePayload(x.rawValue));
           }else{
             const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
-            const results=await lib.readBarcodes(pixels,{...wasmOptions,formats:focused?[focused]:WASM_FORMATS});
-            result=firstResult(results.filter(x=>isGamePayload(x.text)));
+            if(mode==='rmqr'||mode==='maxicode'){
+              result=await readFocused(lib,canvas,mode,frame);
+            }else{
+              const formats=focused?[focused]:frame%3===0
+                ?['QRCode','DataMatrix','Aztec','Code128']
+                :frame%3===1?['PDF417','RMQRCode','MicroQRCode']:['MaxiCode'];
+              result=(await lib.readBarcodes(pixels,{
+                ...wasmOptions,formats,tryDenoise:false,tryRotate:mode!=='code128'
+              })).find(x=>isGamePayload(x.text));
+            }
           }
           const raw=result?.text||result?.rawValue;
           if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
         }
-        if((mode==='auto'&&frame%2===0)||mode==='chromaqr'){
+        if(mode==='chromaqr'||mode==='auto'&&frame%4===0){
           const chroma=await readChromaImage(pixels);
           if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
         }
-        if((mode==='auto'&&frame%2===1)||mode==='iris'){
+        if(mode==='iris'||mode==='auto'&&frame%4===2){
           const crop=centeredIrisFrame(video);
           const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
           crop.width=crop.height=1;
@@ -254,11 +332,11 @@ async function cameraLoop(token,engine){
         }
         canvas.width=canvas.height=1;
         frame++;
+      }catch(error){
+        if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
       }
-    }catch(error){
-      if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
     }
-    if(live&&token===cameraToken)await delay(250);
+    if(live&&token===cameraToken)await delay(220);
   }
 }
 $('start-camera').addEventListener('click',startCamera);
@@ -292,6 +370,11 @@ async function detectImage(file) {
     try{hit=firstResult(await lib.readBarcodes(pixels,wasmOptions))}
     catch(_){/* An unknown experimental format must not abort IRIS detection. */}
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
+    // Camera screenshots and photos may need a centered, monochrome pass.
+    for(const focusedFormat of ['rmqr','maxicode']){
+      const focused=await readFocused(lib,canvas,focusedFormat,0);
+      if(focused)return {text:focused.text,format:focused.format};
+    }
     const chroma=await readChromaImage(pixels);
     if(chroma)return {text:chroma,format:'ChromaQR'};
     // The IRIS decoder operates on <=2 MP to bound worker memory and mobile CPU.
@@ -334,7 +417,7 @@ async function playMatrixExample(name,title,format) {
     const hit=firstResult(await engine.readBarcodes(await response.blob(),{...wasmOptions,formats:[format]}));
     if(!hit?.text)throw Error('Could not read the game from its code image.');
     const game=await decodeGame(hit.text);
-    if(!['html','standalone','bytecode','maze'].includes(game.kind))throw Error('Unsupported embedded game program.');
+    if(!['html','standalone','bytecode','maze','lights'].includes(game.kind))throw Error('Unsupported embedded game program.');
     game.title=title;
     playGame(game);
   } catch(error) {switchTab('scan');status('Could not open '+title+': '+error.message,true)}
@@ -346,7 +429,7 @@ $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perf
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
 $('try-snake').addEventListener('click',()=>playMatrixExample('snake-qr','Snake','QRCode'));
-$('try-dice').addEventListener('click',()=>playMatrixExample('dice-code128','Lucky Six','Code128'));
+$('try-lights').addEventListener('click',()=>playMatrixExample('lights-code128','Lights Out','Code128'));
 
 // Every IRIS Play button reads the generated image using the actual color decoder.
 async function playIrisExample(name,title){
@@ -378,10 +461,10 @@ function selectGenerator(format) {
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
   const script=['bar','maxi','rmqr','chromaqr'].includes(format);
-  $('create-label').textContent=tiny?'Program (maze bytecode)':script?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-label').textContent=tiny?'Program (maze bytecode)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
-    format==='bar'?'Use at most 75 encoded characters including the SDS prefix. Larger games belong in a 2D code.':
+    format==='bar'?'For the shortest barcode use LO:5A36, a complete 4×4 Lights Out level (7 characters). JavaScript requires much more space.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
@@ -398,6 +481,8 @@ document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click'
 $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
     $('create-source').value='M36509';
+  }else if(generatorFormat==='bar'){
+    $('create-source').value='LO:5A36';
   }else if(!['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
@@ -458,7 +543,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroQuiz(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='bar'&&payload.length>75)throw Error('Code 128 is too wide for camera scanning. Keep the total code under 75 characters or use QR Code.');
     let svg,png;
     if(generatorFormat==='qr'){

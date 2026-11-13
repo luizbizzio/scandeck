@@ -78,6 +78,11 @@ export async function decodeGame(raw) {
   const trimmed = raw.trim();
   const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
+  if(value.startsWith('LO:')){
+    if(!/^LO:[0-9A-F]{4}$/.test(value)||value==='LO:0000')
+      throw new Error('Invalid Lights Out level. Use LO: followed by four uppercase hex digits.');
+    return {title:'Lights Out',type:'LO / CODE 128',kind:'lights',source:value.slice(3),payload:value,size:value.length};
+  }
   if(value.startsWith('MQ:')) {
     const code=packMicroQuiz(value);
     const isMaze=code[3]==='M';

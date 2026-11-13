@@ -95,7 +95,18 @@ Record: device model, OS version, browser version, code format, display or print
 
 - [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, MaxiCode, rMQR, IRIS and ChromaQR.
 - [ ] Create outputs PNG files, without exposing SVG downloads.
-- [ ] QR Snake carries the complete original standalone script. Short Code 128 Lucky Six also carries a full game.
+- [ ] QR Snake carries the complete original standalone script. Short Code 128 Lights Out carries a seven-character level; the shared interpreter supplies the game rules.
 - [ ] Test focused PDF417, MaxiCode and rMQR scanning from a second screen with a real mobile phone.
 - [ ] Test the compact 16-ring IRIS Wire Crisis and the RGB ChromaQR Chroma Rush under bright and dim lighting.
 - [ ] Compare default All formats with individual focused scanning; verify the camera runs without freezing.
+
+## Mobile full-screen and focused symbologies
+
+- [ ] Mobile Open camera covers the entire viewport and shows the full, uncropped video frame.
+- [ ] Close remains visible and reachable on phones with a notch, safe-area padding or small screens.
+- [ ] Scan format selection is accessible while the full-screen camera is running, with no horizontal overflow.
+- [ ] Switching rMQR or MaxiCode inside the camera immediately changes the focused decoding path.
+- [ ] rMQR: test centered cropped and full-frame scans at multiple sizes and orientations.
+- [ ] MaxiCode: test pure monochrome upright capture and straight-on image upload; do not promise arbitrary angle support.
+- [ ] Lights Out: Code 128 contains `LO:5A36` (7 characters), and the game wins after the encoded switches are toggled.
+- [ ] Confirm Esc and Close stop the camera tracks and restore page scrolling.

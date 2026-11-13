@@ -12,11 +12,11 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | --- | --- | --- |
 | Ironpass Micro | QR Code | Defend your towers from enemy waves |
 | Snake | QR Code | Use WASD or arrow keys on a computer, or swipe on a phone |
-| Lucky Six | Code 128 | Tap to roll; a six wins |
+| Lights Out | Code 128 | Solve a 4×4 switch puzzle stored in seven characters |
 | Catch 10 | Data Matrix | Catch ten moving targets while a timer counts up from zero |
 | Pattern Memory | Aztec Code | Tap a color to begin, listen, and repeat each sequence |
 
-Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent game source is now stored in a QR Code. A much shorter self-contained Lucky Six microgame takes the Code 128 slot.
+Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent game source is now stored in a QR Code. A seven-character Lights Out level takes the Code 128 slot. The code stores the puzzle data; the reusable ScanDeck player supplies the rules.
 
 The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. Catch 10 has an elapsed-time timer that starts at zero and has no time limit. Pattern Memory creates four notes with the browser's built-in Web Audio API. Tap one of the four original color tiles to start the game and enable sound. No sound files or external game scripts are loaded. They do not need a game engine supplied by the website.
 
@@ -58,7 +58,8 @@ These software tests **do not prove camera readability**. Please complete [the p
 | Prefix | Code type | What the code holds |
 | --- | --- | --- |
 | `SD1:` | QR / Data Matrix / Aztec | Raw Deflate HTML compressed into base43 text |
-| `SDS:` | Code 128 | Complete standalone JavaScript program |
+| `LO:` | Code 128 | Seven-character Lights Out level, with rules implemented by ScanDeck |
+| `SDS:` | Code 128 and other compatible formats | Complete standalone JavaScript program |
 | `SDJ:` | Code 128 (legacy) | Small JavaScript program that needs the old ScanDeck helper API |
 | `IP3:` | QR (legacy) | Original Ironpass Micro compressed HTML |
 | No prefix | Code 128 (legacy) | Exact original 126-byte Snake experiment |
@@ -71,7 +72,7 @@ The old `SDJ:` and 126-byte Snake formats are kept for backward compatibility. N
 
 ## How Create works
 
-For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, paste a short, standalone JavaScript game.
+For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, use a tiny level such as `LO:5A36` for Lights Out, or paste a short standalone JavaScript program. The tiny level needs the ScanDeck interpreter.
 
 After generating a code, you can test it, download the PNG, or copy the full encoded text. For a small, easy-to-scan result, use very short games. Code 128 gets physically wider with every extra character.
 
@@ -123,7 +124,7 @@ Large codes and MaxiCode in particular can be difficult to read from real camera
 
 ## Practical scanning limits
 
-The original Snake was over 700 JavaScript characters and produced a Code 128 symbol **7,759 modules wide**. That is not practical for a typical phone camera. The full self-contained Snake program is now in a QR Code, while the Code 128 contains a short self-contained Lucky Six game. Neither barcode relies on an external game URL.
+The original Snake was over 700 JavaScript characters and produced a Code 128 symbol **7,759 modules wide**. That is not practical for a typical phone camera. The full self-contained Snake program is now in a QR Code, while the Code 128 contains a solvable Lights Out level in just seven characters. The rules are implemented by the site, so this is bytecode rather than standalone JavaScript. Neither barcode relies on an external game URL.
 
 When scanning a dense code from another screen, open the complete PNG, not the small gallery thumbnail. Under **Scan**, set **Scanner focus** to the exact code type, keep it centered, and provide bright, even light. A PNG image that decodes in automated tests may still fail from an unfocused or low-resolution camera frame.
 
@@ -156,3 +157,15 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
 
 IRIS and ChromaQR decode generated PNG pixels independently. Physical mobile-camera testing remains necessary.
+
+
+## Mobile full-screen camera and focused reading
+
+On mobile, **Open camera** uses a full-viewport camera view that shows the entire video frame without cropping it. A **Close** button stays inside the top safe area, while the format selector remains accessible at the bottom. Switching formats inside the camera changes the scanner focus immediately. The CSS overlay does not rely on a platform Fullscreen API permission.
+
+For **rMQR**, select rMQR in the camera view and hold the long rectangular code straight and sharply focused, preferably with the phone in landscape if the symbol spans the display. The reader alternates full-frame and centered high-resolution attempts and tries distinct contrast processing.
+
+For **MaxiCode**, select MaxiCode, keep the symbol flat and upright, and move close enough for the code to almost fill the center square. The current ZXing decoder requires a pure black-and-white, essentially unrotated and unskewed MaxiCode image. ScanDeck attempts a centered, thresholded crop, but this limitation means **reliable mobile-camera scanning is not guaranteed**. A straight-on, sharply focused PNG upload is often more practical.
+
+The **Lights Out** Code 128 symbol contains `LO:5A36`, a seven-character puzzle level. Its full 4×4 board is constructed from that value using ScanDeck's shared Lights Out rules. It does not contain independent JavaScript. Any completely standalone game code would require a longer linear barcode.
+

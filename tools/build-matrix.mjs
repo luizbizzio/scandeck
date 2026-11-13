@@ -35,10 +35,12 @@ for (const game of matrixGames) {
 
 // Preserve the full self-contained Snake in a 2D QR so it can be scanned.
 const snake=packScript(readFileSync(new URL('examples/snake-standalone.js',root),'utf8').trim());
-const dice=packScript(readFileSync(new URL('examples/dice-code128.js',root),'utf8').trim());
+// Seven printable characters encode a complete solvable Lights Out level.
+// The rules and rendering are a reusable interpreter, not part of the barcode.
+const lights='LO:5A36';
 for(const game of [
   {name:'snake-qr',payload:snake,format:'QRCode',scale:8},
-  {name:'dice-code128',payload:dice,format:'Code128',scale:3}
+  {name:'lights-code128',payload:lights,format:'Code128',scale:5}
 ]){
   const result=await writeBarcode(game.payload,{format:game.format,scale:game.scale});
   if(!result.image)throw Error(game.name+' PNG generation failed');

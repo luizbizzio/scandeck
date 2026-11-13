@@ -27,7 +27,7 @@ test('games are clearly split by code type', () => {
 });
 
 test('games show their actual QR and Code 128 images with full-size links', () => {
-  for (const name of ['ironpass-micro-v3-qr.png','snake-qr.png','dice-code128.png']) {
+  for (const name of ['ironpass-micro-v3-qr.png','snake-qr.png','lights-code128.png']) {
     assert.match(html, new RegExp('href="assets/' + name.replace('.', '\\.') + '"'));
     assert.match(html, new RegExp('src="assets/' + name.replace('.', '\\.') + '"'));
   }
@@ -35,7 +35,7 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playMatrixExample\('snake-qr','Snake','QRCode'\)/);
-  assert.match(script, /playMatrixExample\('dice-code128','Lucky Six','Code128'\)/);
+  assert.match(script, /playMatrixExample\('lights-code128','Lights Out','Code128'\)/);
   assert.match(script, /fetch\('assets\/'\+name\+'\.png'\)/);
   assert.match(script, /getMatrixEngine\(\)/);
   assert.doesNotMatch(script, /decodeGame\(LEGACY_SNAKE\)/);
@@ -65,7 +65,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-dice','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
+  for (const id of ['scan-games','try-lights','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -119,7 +119,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
 
 test('every displayed and downloadable game code uses PNG',()=>{
   const gallery=html.split('id="library"')[1].split('id="create"')[0];
-  assert.ok(gallery.includes('assets/dice-code128.png'));
+  assert.ok(gallery.includes('assets/lights-code128.png'));
   assert.ok(gallery.includes('assets/snake-qr.png'));
   assert.doesNotMatch(gallery,/assets\/[\w-]+\.svg/);
   assert.match(html,/Download PNG/);
@@ -181,4 +181,35 @@ test('arcade shell contains all games with a centered Snake and working replay c
  assert.match(gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'}),/THE CODE WAS/);
  const wire=gameDocument({kind:'standalone',title:'Wire Crisis',source:'document.write("Test")'});
  assert.match(wire,/1600/);assert.match(wire,/ROUND /);
+});
+
+test('mobile camera fills the viewport with a safe close button and scan format picker',()=>{
+  assert.ok(html.includes('id="camera-mode"'));
+  assert.ok(html.includes('id="camera-tip"'));
+  const panel=html.indexOf('id="camera-panel"'),close=html.indexOf('id="stop-camera"'),actions=html.indexOf('class="scan-actions"');
+  assert.ok(panel<close&&close<actions,'Stop must be inside camera preview, not scanner actions.');
+  assert.match(css,/html\.camera-open \.camera-panel/);
+  assert.match(css,/position:fixed!important/);
+  assert.match(css,/height:100dvh/);
+  assert.match(css,/safe-area-inset-top/);
+  assert.match(css,/safe-area-inset-bottom/);
+  assert.match(css,/\.camera-stage video\{object-fit:contain\}/);
+  assert.match(script,/classList\.toggle\('camera-open'/);
+  assert.match(script,/classList\.remove\('camera-open'\)/);
+  assert.match(script,/\$\('camera-mode'\)\.addEventListener\('change'/);
+});
+test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
+  assert.match(script,/makeFocusedPixels\(/);
+  assert.match(script,/readFocused\(/);
+  assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
+  assert.match(script,/isPure:useCrop&&mode==='maxicode'/);
+  assert.match(script,/maxicode:'MaxiCode must be flat/);
+  assert.match(script,/rmqr:'Hold the rectangular rMQR/);
+});
+test('Code 128 gallery contains a seven-character Lights Out level',()=>{
+  assert.ok(html.includes('id="try-lights"'));
+  assert.ok(html.includes('lights-code128.png'));
+  assert.ok(!html.includes('Lucky Six'));
+  assert.ok(!html.includes('dice-code128'));
+  assert.match(script,/LO:5A36/);
 });
