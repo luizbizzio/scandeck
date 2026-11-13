@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {readBarcodes} from 'zxing-wasm';
-import {decode} from '@sythos/js_barcode_universal';
+import {decode,BitMatrix,decodeMaxiCode} from '@sythos/js_barcode_universal';
+import {recoverMaxiGrid} from '../src/maxi-grid.js';
 import {findLightCard,specialtyCandidates,thresholdRgba} from '../src/specialty-candidates.js';
 
 function photoOf(png){
@@ -39,6 +40,10 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
   assert.ok(candidates[0].image.width<candidates[0].image.height*8);
   assert.ok(candidates[1].image.width*candidates[1].image.height<=1_600_000);
   let success=false;
+  if(mode==='maxicode'){
+    console.log('Maxi original grid:',recoverMaxiGrid({width:png.width,height:png.height,data:new Uint8ClampedArray(png.data)},BitMatrix,decodeMaxiCode).length);
+    console.log('Maxi camera crop grid:',recoverMaxiGrid(candidates[0].image,BitMatrix,decodeMaxiCode).length);
+  }
   for(const candidate of candidates){
    const results=await readBarcodes(candidate.image,{
     formats:[format],maxNumberOfSymbols:1,tryHarder:false,tryRotate:mode==='rmqr',
