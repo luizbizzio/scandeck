@@ -25,6 +25,9 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
  test(mode+' locates a barcode on a dark photographic frame and reads it with ZXing',async()=>{
   const png=PNG.sync.read(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)));
   const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
+  const original=await readBarcodes({width:png.width,height:png.height,data:new Uint8ClampedArray(png.data)},
+    {formats:[format],maxNumberOfSymbols:1,isPure:mode==='maxicode',tryRotate:true});
+  console.log(mode,'original symbols:',original.map(x=>({len:x.text.length,format:x.format})));
   const photo=photoOf(png);
   const card=findLightCard(photo);
   console.log(mode,'PNG',png.width,png.height,'card',card);
