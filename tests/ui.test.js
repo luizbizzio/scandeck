@@ -290,7 +290,7 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
   assert.match(html,/app\.js\?v=28/);
-  assert.match(html,/style\.css\?v=28/);
+  assert.match(html,/style\.css\?v=29/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -308,4 +308,46 @@ test('expanding Paste game data cannot stretch the camera over the controls',()=
   const scanner=html.slice(html.indexOf('class="scan-workspace"'),html.indexOf('</section>\n        <p class="scan-explore"'));
   assert.ok(scanner.indexOf('id="scan-viewport"')<scanner.indexOf('class="scan-controls"'));
   assert.ok(scanner.indexOf('class="scan-controls"')<scanner.indexOf('class="manual-entry"'));
+});
+
+test('Paste game data is a full-width section below the camera and scan controls',()=>{
+  const scanner=html.slice(html.indexOf('<section class="surface scanner"'),html.indexOf('<p class="scan-explore">'));
+  const status=scanner.indexOf('id="status"');
+  const manual=scanner.indexOf('<details class="manual-entry">');
+  assert.ok(manual>status,'manual input should follow the full camera and controls row');
+  assert.match(scanner,/class="status"[^>]*>[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<details class="manual-entry">/);
+  assert.match(css,/\.scanner>\.manual-entry>\.manual-inner\{display:grid/);
+  assert.match(css,/\.scanner>\.manual-entry textarea\{grid-column:1/);
+  assert.match(css,/@media\(max-width:700px\)\{\s*\.scanner>\.manual-entry>\.manual-inner\{grid-template-columns:minmax\(0,1fr\)/);
+});
+test('game cards contain only gameplay descriptions, no experimental titles or technical notes',()=>{
+  const gallery=html.slice(html.indexOf('id="library"'),html.indexOf('id="create"'));
+  assert.doesNotMatch(gallery,/\(Experimental\)/);
+  assert.doesNotMatch(gallery,/class="barcode-note"/);
+  const cards=[...gallery.matchAll(/<article class="surface game-card">([\s\S]*?)<\/article>/g)];
+  assert.equal(cards.length,12);
+  for(const [,card] of cards){
+    const body=card.split('<div class="game-body">')[1];
+    assert.match(body,/^<h3>[^<]+<\/h3><p>[^<]+<\/p>/);
+    const description=body.match(/^<h3>[^<]+<\/h3><p>([^<]+)<\/p>/)?.[1]||'';
+    assert.ok(description.length>35);
+    assert.doesNotMatch(description,/barcode|javascript|html|camera|symbol|standalone|code|embedded|decoder|experiment|scan/i);
+  }
+});
+test('About explains origin and use of all 12 formats with history source links',()=>{
+  const about=html.slice(html.indexOf('id="about"'),html.indexOf('</main>'));
+  assert.match(about,/Meet the 12 code formats/);
+  const cards=[...about.matchAll(/<article class="about-code-card">([\s\S]*?)<\/article>/g)];
+  assert.equal(cards.length,12);
+  for(const format of ['QR Code','Code 128','Codablock F','DotCode','Data Matrix','Aztec Code','PDF417','MaxiCode','Micro QR','rMQR','IRIS','ChromaQR']){
+    assert.ok(cards.some(([,card])=>card.includes('<h3>'+format+'</h3>')),format+' must have a history card');
+  }
+  for(const [,card] of cards){
+    assert.match(card,/class="about-code-heading"/);
+    assert.match(card,/class="about-source"/);
+    assert.match(card,/href="https:\/\//);
+    assert.match(card,/rel="noopener noreferrer"/);
+  }
+  assert.match(about,/Only compatible game codes work/);
+  assert.match(css,/\.about-types>\.about-code-card\{display:flex/);
 });

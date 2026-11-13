@@ -155,3 +155,11 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] On mobile and desktop, status and sizes wrap within the card, with no horizontal overflow.
 - [ ] Test loading the Games tab directly via `#library` and by clicking the Games tab; one metadata request fills all cards.
 - [ ] Check offline reload after service-worker activation and verify generated PNGs match the metadata manifest.
+
+## Scan layout and Code history
+
+- [ ] Desktop Scan page: expanding "Paste game data instead" displays one full-width form below the camera/controls row; no tall empty area beside the textarea.
+- [ ] Mobile Scan page at 320, 375 and 430 pixels: pasted text field and Open game button fit within the scanner; scanner camera mode remains full-screen.
+- [ ] All 12 library cards have gameplay-only descriptions; no "Experimental" suffix or technical note appears within game text.
+- [ ] The About page includes 12 history cards, creation years where established, short B1-English explanations and working source links.
+- [ ] The About section accurately distinguishes independent games from Pocket Reflex's VM bytecode and describes camera scanning limitations outside game-card descriptions.
