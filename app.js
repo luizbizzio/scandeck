@@ -81,10 +81,32 @@ async function acceptPayload(raw, mode='manual', format='') {
 $('decode-text').addEventListener('click',()=>{resetDetected();void acceptPayload($('paste-input').value)});
 $('paste-input').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){resetDetected();void acceptPayload($('paste-input').value)}});
 $('play-detected').addEventListener('click',()=>selectedGame&&playGame(selectedGame));
+function showGameSource(game,title=game.title){
+  const kind=game.kind==='microvm'?'Micro VM bytecode'
+    :game.kind==='html'?'HTML and JavaScript'
+    :game.kind==='standalone'?'JavaScript':'Game instructions';
+  const source=String(game.source||'');
+  if(!source)throw Error('The game has no readable source data.');
+  $('source-heading').textContent=title+' source';
+  $('source-description').textContent=game.kind==='microvm'
+    ?'The complete game instructions are inside the Micro QR. The generic ScanDeck interpreter runs this bytecode.'
+    :kind+' recovered from the game code. This is the actual stored program, not a sample or external file.';
+  $('source-view').textContent=source;
+  $('copy-source').textContent='Copy code';
+  if(!$('source-dialog').open)$('source-dialog').showModal();
+}
 $('inspect-detected').addEventListener('click',()=>{
-  if (!selectedGame) return;
-  $('source-view').textContent=selectedGame.source;
-  $('source-dialog').showModal();
+  if(selectedGame)showGameSource(selectedGame);
+});
+$('copy-source').addEventListener('click',async()=>{
+  const button=$('copy-source');
+  try{
+    await navigator.clipboard.writeText($('source-view').textContent||'');
+    button.textContent='Copied';
+  }catch(error){
+    button.textContent='Copy failed';
+  }
+  setTimeout(()=>{button.textContent='Copy code'},1600);
 });
 $('close-source').addEventListener('click',()=>$('source-dialog').close());
 $('about-create').addEventListener('click',()=>switchTab('create'));
@@ -530,6 +552,31 @@ async function readCatalogGame(name){
   }
   return catalogPromises.get(name);
 }
+// Inspect the exact decompressed game program. Unlike the preview, this view
+// never executes game code. The cached payload is identical to the barcode data.
+$('library').addEventListener('click',async event=>{
+  const button=event.target.closest('button[data-source-asset]');
+  if(!button)return;
+  const name=button.dataset.sourceAsset;
+  const title=button.dataset.sourceTitle;
+  button.disabled=true;
+  const original=button.textContent;
+  button.textContent='Loading...';
+  try{
+    // Ironpass uses a different basename for its PNG and encoded text.
+    const payloadName=name==='ironpass-micro-v3-qr'?'ironpass-micro-v3':name;
+    const game=await readCatalogGame(payloadName);
+    showGameSource(game,title);
+  }catch(error){
+    $('source-heading').textContent=title+' source';
+    $('source-description').textContent='Could not load the game code. Try again.';
+    $('source-view').textContent=error.message||String(error);
+    if(!$('source-dialog').open)$('source-dialog').showModal();
+  }finally{
+    button.disabled=false;
+    button.textContent=original;
+  }
+});
 async function openCatalogGame(name,title){
   try{
     const game=await readCatalogGame(name);

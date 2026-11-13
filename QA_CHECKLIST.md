@@ -163,3 +163,12 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] All 12 library cards have gameplay-only descriptions; no "Experimental" suffix or technical note appears within game text.
 - [ ] The About page includes 12 history cards, creation years where established, short B1-English explanations and working source links.
 - [ ] The About section accurately distinguishes independent games from Pocket Reflex's VM bytecode and describes camera scanning limitations outside game-card descriptions.
+
+## Code examples and source viewer
+
+- [ ] The 12 About history cards show a real PNG for their matching code type, with a full-size link and a game-name caption.
+- [ ] Each Games card has **View source** next to **Download**, including on narrow mobile screens.
+- [ ] View source loads the exact decoded program from the matching encoded text asset, not a canned example, and it never executes game code.
+- [ ] The Ironpass QR card loads `ironpass-micro-v3.txt` even though the PNG name ends in `-qr`.
+- [ ] The dialog distinguishes HTML/JavaScript from Pocket Reflex's bytecode, and Copy code copies exactly what is displayed.
+- [ ] Source dialog is responsive on a small phone and handles malformed or unavailable data without locking buttons.

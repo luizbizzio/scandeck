@@ -50,6 +50,6 @@ test('one lightweight metadata request updates all sizes without decoding any im
   assert.match(source,/row\.querySelector\('\[data-payload-size\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-png-size\]'\)/);
   assert.match(source,/if\(tab==='library'\)void loadCodeSizes\(\)/);
-  assert.match(html,/src="app\.js\?v=28"/);
-  assert.match(html,/href="style\.css\?v=29"/);
+  assert.match(html,/src="app\.js\?v=30"/);
+  assert.match(html,/href="style\.css\?v=30"/);
 });

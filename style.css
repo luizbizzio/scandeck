@@ -269,3 +269,32 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   .about-types>.about-code-card{padding:19px}
   .about-section-heading{margin-top:30px}
 }
+
+/* Real barcode examples beneath each format's history. */
+.about-code-example{display:block;border:1px solid #37483b;border-radius:10px;overflow:hidden;margin:2px 0 17px;background:#111a14;color:var(--text);text-decoration:none;transition:border-color .15s,transform .15s}
+.about-code-example:hover{border-color:#9ed985}
+.about-code-example:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.about-example-preview{height:155px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:15px;background:#f6f8f4}
+.about-example-preview img{display:block;width:100%;height:100%;object-fit:contain}
+.about-example-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 13px}
+.about-example-footer>span:first-child{display:grid;gap:3px;min-width:0}
+.about-example-footer small{font:700 10px/1.2 var(--mono);letter-spacing:.09em;color:#8ea592}
+.about-example-footer strong{font:650 12px/1.35 system-ui;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.about-example-open{font:650 11px/1.3 system-ui;color:var(--accent);white-space:nowrap}
+@media(max-width:700px){.about-example-preview{height:138px}}
+
+/* Source viewer uses the decoded source instead of the encoded barcode envelope. */
+.game-actions .btn-source{white-space:nowrap}
+.source-dialog-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+#source-dialog{width:min(920px,calc(100vw - 24px));max-height:min(88dvh,840px);overflow:hidden}
+#source-dialog .dialog-head{align-items:center;gap:15px}
+#source-dialog .dialog-head>div:first-child{min-width:0}
+#source-dialog #source-heading{font-size:19px;line-height:1.3;overflow-wrap:anywhere;margin-top:5px}
+#source-dialog #source-description{line-height:1.6;margin:13px 0 15px}
+#source-dialog #source-view{max-height:calc(min(88dvh,840px) - 158px);min-height:130px;overflow:auto;overscroll-behavior:contain;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;tab-size:2}
+@media(max-width:700px){
+  .game-actions .btn-source{flex:1 1 110px}
+  #source-dialog{padding:15px}
+  #source-dialog .dialog-head{flex-wrap:wrap}
+  #source-dialog #source-view{max-height:calc(88dvh - 205px)}
+}

@@ -8,6 +8,8 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 
 ## Games
 
+Every Games card has a **View source** button beside Download. It opens the actual decoded HTML or JavaScript stored in the code, with a Copy code action. Pocket Reflex shows its 13-character Micro VM bytecode instead. The About page also displays a real PNG example for every code format, with a link to its full-size image.
+
 The Games cards now describe only gameplay. Their status ticks and exact Code / PNG sizes are shown separately. The About tab has a short history of each of the 12 code formats, with a source link for further reading.
 
 Each game card shows two exact sizes: **Code**, the bytes embedded in the symbol, and **PNG**, the size of the downloadable image. The sizes are calculated at build time from the actual encoded payload and generated PNG. A **green check** means the full HTML/JavaScript program is embedded. A **blue check** means the program is only partially independent: Pocket Reflex stores its 13-byte VM bytecode, but requires ScanDeck's generic interpreter. The file-size indicators do not measure camera readability.
