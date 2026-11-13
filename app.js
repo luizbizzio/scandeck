@@ -240,13 +240,13 @@ const focusTips={
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
   microqr:'Move closer to the small Micro QR without cutting off the edges.',
-  rmqr:'Turn your phone sideways if needed. Keep the entire rectangular rMQR sharply focused.'
+  rmqr:'Turn your phone sideways if needed. Keep the entire rectangular rMQR sharply focused.',
   maxicode:'MaxiCode must be flat, upright and almost fill the square.',
-  pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.'
-  code128:'Try landscape. Keep the full barcode and both white side margins visible.'
+  pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.',
+  code128:'Try landscape. Keep the full barcode and both white side margins visible.',
   iris:'Center the colored circular code in the frame.',
   chromaqr:'Center the full colored QR symbol.',
-  codablockf:'Try landscape. All Codablock F rows must fit sharply without perspective.'
+  codablockf:'Try landscape. All Codablock F rows must fit sharply without perspective.',
   dotcode:'Hold the entire field of dots straight and sharply focused.'
 };
 function setScanFocus(mode){
@@ -262,6 +262,14 @@ function setScanFocus(mode){
 $('scan-mode').addEventListener('change',()=>setScanFocus($('scan-mode').value));
 $('camera-mode').addEventListener('change',()=>setScanFocus($('camera-mode').value));
 setScanFocus('auto');
+function isMobileCamera(){
+  return matchMedia('(max-width:700px), (pointer:coarse)').matches;
+}
+function syncCameraLayout(){
+  if(live)document.documentElement.classList.toggle('camera-open',isMobileCamera());
+}
+addEventListener('resize',syncCameraLayout);
+addEventListener('orientationchange',syncCameraLayout);
 function centeredIrisFrame(video){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
   const canvas=document.createElement('canvas');
@@ -302,7 +310,7 @@ async function startCamera() {
     show('camera-panel',true);
     show('stop-camera',true);
     $('stop-camera').disabled=false;
-    document.documentElement.classList.toggle('camera-open',matchMedia('(max-width:700px)').matches);
+    document.documentElement.classList.toggle('camera-open',isMobileCamera());
     setScanFocus(scanFocus());
     status('Camera ready. Initializing code reader...');
     const engine=await getScanner();
@@ -403,10 +411,10 @@ async function readFocused(lib,source,mode,frame){
   const opts={
     ...wasmOptions,formats:[format],
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
-    isPure:useCrop&&mode==='maxicode',
+    isPure:false,
     tryDownscale:mode==='maxicode'&&useCrop,
     tryDenoise:false,
-    tryRotate:mode!=='maxicode'
+    tryRotate:true
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
@@ -439,7 +447,7 @@ async function cameraLoop(token,engine){
                 ?['QRCode','DataMatrix','Aztec','Code128']
                 :frame%3===1?['PDF417','RMQRCode','MicroQRCode']:['MaxiCode'];
               result=(await lib.readBarcodes(pixels,{
-                ...wasmOptions,formats,tryDenoise:false,tryRotate:mode!=='code128'
+                ...wasmOptions,formats,tryDenoise:false,tryRotate:true
               })).find(x=>isGamePayload(x.text));
             }
           }
