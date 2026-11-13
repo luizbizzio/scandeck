@@ -239,3 +239,17 @@ test('Tap Rush is a five-second high-score challenge and its player shows a live
   assert.ok(runtime.includes('sd-rush-clock'));
   assert.ok(runtime.includes('TAPS IN 5 SECONDS'));
 });
+
+test('Pocket Reflex is a complete 13-character Micro VM program in the Micro QR PNG',()=>{
+  assert.ok(html.includes('Pocket Reflex'));
+  assert.ok(!html.includes('Pocket Maze'));
+  assert.ok(html.includes('assets/reflex-microqr.png'));
+  assert.ok(!html.includes('assets/math-microqr.png'));
+  assert.ok(script.includes("playMatrixExample('reflex-microqr','Pocket Reflex','MicroQRCode')"));
+  assert.ok(script.includes('V1R4T3DIC+L5X'));
+  assert.ok(script.includes('packMicroVm(input)'));
+  assert.ok(script.includes("V1|LO:"));
+  const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
+  assert.ok(runtime.includes("game.kind==='microvm'"));
+  assert.ok(runtime.includes('microVmHtml'));
+});

@@ -1,4 +1,4 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
@@ -69,7 +69,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Tap Rush':'AS MANY TAPS AS YOU CAN IN 5 SECONDS · FIRST TAP STARTS TIMER','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
+  const hints={'Tap Rush':'AS MANY TAPS AS YOU CAN IN 5 SECONDS · FIRST TAP STARTS TIMER','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Reflex':'FIND THE MATCHING NUMBER · 5 ROUNDS · 3 SECONDS EACH','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -236,7 +236,7 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:LO:|SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:V1|LO:|SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
 let exoticWorker=null,exoticSeq=0;
@@ -478,7 +478,7 @@ $('try-catch').addEventListener('click',()=>playMatrixExample('catch-datamatrix'
 $('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','Pattern Memory','Aztec'));
 $('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf417','Brick Rush','PDF417'));
 $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perfect Timing','MaxiCode'));
-$('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
+$('try-micro').addEventListener('click',()=>playMatrixExample('reflex-microqr','Pocket Reflex','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
 $('try-taprush').addEventListener('click',()=>playMatrixExample('taprush-code128','Tap Rush','Code128'));
 async function playExoticExample(name,title,format){
@@ -532,9 +532,9 @@ function selectGenerator(format) {
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
   const script=['bar','maxi','rmqr','chromaqr','codablockf'].includes(format);
-  $('create-label').textContent=tiny?'Program (maze bytecode)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
-  $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
-  $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
+  $('create-label').textContent=tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-source').placeholder=tiny?'V1R4T3DIC+L5X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
+  $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and five-round loop). A generic interpreter runs the instructions. Not standalone JavaScript.':
     format==='bar'?'The Tap Rush example uses 65 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
     format==='codablockf'?'Codablock F stores the full standalone JavaScript in stacked rows. Camera scanning is experimental.':
     format==='dotcode'?'DotCode stores a complete compressed HTML game. ScanDeck uses an experimental strict DotCode reader.':
@@ -553,7 +553,7 @@ function selectGenerator(format) {
 document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click',()=>selectGenerator(b.dataset.format)));
 $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
-    $('create-source').value='M36509';
+    $('create-source').value='V1R4T3DIC+L5X';
   }else if(generatorFormat==='bar'){
     $('create-source').value='n=0;onclick=()=>n++||setTimeout(()=>{alert(n);onclick=0},5e3)';
   }else if(!['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)){
@@ -616,7 +616,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroQuiz(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
     if(generatorFormat==='qr'){
@@ -651,7 +651,7 @@ $('generate').addEventListener('click',async()=>{
     show('create-result',true);
     $('output-label').textContent='READY';
     $('output-stats').replaceChildren();
-    for(const s of [generatorFormat==='bar'?'Short Code 128 PNG ready':generatorFormat==='microqr'?'Micro QR bytecode ready (requires ScanDeck interpreter)':generatorFormat.toUpperCase()+' PNG ready',payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
+    for(const s of [generatorFormat==='bar'?'Short Code 128 PNG ready':generatorFormat==='microqr'?'Complete 13-byte VM program ready (generic interpreter required)':generatorFormat.toUpperCase()+' PNG ready',payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
     $('generated-payload').value=payload;
     for(const id of ['download-code','copy-code','test-code'])$(id).disabled=false;
     $('create-result').scrollIntoView({behavior:'smooth',block:'nearest'});

@@ -119,3 +119,12 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Both new format options are available in Scan and Create, with only PNG image exports.
 - [ ] Physical camera test: scan the full Codablock F and DotCode symbols on two phones, and document any read failure without claiming unsupported perspective correction.
 - [ ] Confirm the worker has a timeout and the scanner remains responsive when it cannot locate either symbol.
+
+## Pocket Reflex Micro VM
+
+- [ ] Micro QR PNG holds exactly `V1R4T3DIC+L5X` (13 ASCII characters) and decodes through ZXing.
+- [ ] Test the same full VM program through ScanDeck Scan, library Play and Create.
+- [ ] Target 1–4 changes per round; all four buttons are usable on mobile.
+- [ ] Each of the five rounds waits no more than three seconds; correct answers score one point.
+- [ ] Final results show a score out of five and Retry regenerates the random targets.
+- [ ] Confirm the interpreter executes only validated VM opcodes and cannot execute JS from the payload.

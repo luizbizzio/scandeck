@@ -1,3 +1,4 @@
+import {microVmHtml} from './microvm.js';
 import {mazeDocument} from './maze.js';
 /* Every game is rendered in an opaque-origin, scripts-only sandbox.
    Strict CSP stops outgoing requests; malicious game code may still waste CPU.
@@ -27,6 +28,7 @@ export function gameDocument(game) {
     '<script>(()=>{const seed='+seed+';let bits=0,moves=0,started=0,done=false,elapsed=0;const board=document.getElementById("board"),moveLabel=document.getElementById("moves"),timer=document.getElementById("timer"),msg=document.getElementById("msg");const flip=(mask,n)=>{mask^=1<<n;const x=n%4,y=n>>2;if(x)mask^=1<<(n-1);if(x<3)mask^=1<<(n+1);if(y)mask^=1<<(n-4);if(y<3)mask^=1<<(n+4);return mask};for(let n=0;n<16;n++){let b=document.createElement("button");b.type="button";b.setAttribute("aria-label","Tile "+(n+1));b.onclick=()=>tap(n);board.append(b)}const tiles=[...board.children];function render(){tiles.forEach((t,i)=>{const on=!!(bits&(1<<i));t.classList.toggle("on",on);t.setAttribute("aria-pressed",String(on))});moveLabel.textContent=moves+" MOVES"}function resetGame(){bits=0;for(let n=0;n<16;n++)if(seed&(1<<n))bits=flip(bits,n);moves=0;elapsed=0;started=0;done=false;timer.textContent="0:00";msg.textContent="CAN YOU CLEAR THE GRID?";render()}function tap(n){if(done)return;if(!started)started=Date.now();bits=flip(bits,n);moves++;render();if(!bits){done=true;msg.textContent="GRID CLEARED IN "+moves+" MOVES";board.querySelectorAll("button").forEach(b=>b.disabled=true)}}document.getElementById("reset").onclick=()=>{tiles.forEach(b=>b.disabled=false);resetGame()};setInterval(()=>{if(!started||done)return;elapsed=(Date.now()-started)/1000|0;timer.textContent=(elapsed/60|0)+":"+String(elapsed%60).padStart(2,"0")},250);resetGame()})()</script>';
     return shell(html);
   }
+  if(game.kind==='microvm')return shell(microVmHtml(game.source));
   if(game.kind==='maze')return mazeDocument(game,CSP);
   if(game.kind==='bytecode') {
     // The entire arithmetic instruction lives in the code. The player UI and

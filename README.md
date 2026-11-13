@@ -16,6 +16,7 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | Neon Dodge | DotCode (experimental) | Switch lanes to dodge obstacles as speed increases |
 | Catch 10 | Data Matrix | Catch ten moving targets while a timer counts up from zero |
 | Pattern Memory | Aztec Code | Tap a color to begin, listen, and repeat each sequence |
+| Pocket Reflex | Micro QR | Match the displayed number across five three-second rounds; full 13-character VM program inside |
 
 Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent source remains available in a legacy QR Code file. The new Tap Rush Code 128 contains its full independent JavaScript source including tap counting, the five-second timer and the final score. It is still physically long, so a phone may struggle to scan it. The full Snake source is showcased in Codablock F.
 
@@ -105,12 +106,12 @@ The ScanDeck source is under the MIT license. See [LICENSE](LICENSE). The bundle
 
 ## Extra code experiments
 
-The site also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micro Math** (Micro QR) and **Math Check** (rMQR).
+The site also contains **Brick Rush** (PDF417), **Perfect Timing** (MaxiCode), **Pocket Reflex** (Micro QR) and **Codebreaker** (rMQR).
 
 - **PDF417:** contains a compressed, complete HTML/JavaScript Breakout game.
 - **MaxiCode:** contains a short, standalone JavaScript tap counter.
 - **rMQR:** contains a short, standalone JavaScript math game.
-- **Micro QR:** due to its very low data capacity, contains a tiny `MQ:Q2+2=4` bytecode instruction. **This is not independent JavaScript**. ScanDeck provides a general-purpose arithmetic-question interpreter and input UI. It is deliberately labeled separately from complete standalone games.
+- **Micro QR:** carries the complete 13-character Pocket Reflex virtual-machine program `V1R4T3DIC+L5X`: random number 1–4, display, three-second limit, input, compare, score and five-round loop. It is **not independent JavaScript**; the generic Micro VM executes these instructions.
 
 Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.
 
@@ -133,7 +134,7 @@ When scanning a dense code from another screen, open the complete PNG, not the s
 
 - **Brick Rush (PDF417):** a slower Breakout game with twelve bricks, three lives, scoring, pointer/keyboard control and replay. Complete HTML and JavaScript are inside the PDF417.
 - **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
-- **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
+- **Pocket Reflex (Micro QR):** the entire 13-character interactive program is in the image, with game operations encoded as Micro VM instructions. The generic interpreter supplies input/output services, but no maze algorithm, premade game level or game-specific decision rules.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
 - **Chroma Rush (ChromaQR):** ten color targets, three lives, progressively faster reaction times and replay. The full HTML game is embedded across the RGB channels.
 - **Wire Crisis (IRIS):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in IRIS.
@@ -142,7 +143,7 @@ IRIS and ChromaQR both have browser image decoders. Real mobile-camera testing i
 
 ## UX fixes in the player
 
-Pocket Maze is now accepted by Play after the scanner decodes its Micro QR level. Standalone JavaScript games have a generic dark player, readable input controls, instructions and a clear visual result for boolean feedback. Their game-specific program logic remains embedded in the respective code.
+Pocket Reflex runs its bytecode after the scanner decodes the Micro QR. Standalone JavaScript games have a generic dark player, readable input controls, instructions and a clear visual result for boolean feedback. Their game-specific program logic remains embedded in the respective code.
 
 Perfect Timing uses a randomized millisecond target and offers Play Again after each result. Codebreaker submits only on the GO button, preventing input focus from spending a turn. Chroma Rush is now a color-word attention game: tap the color of the letters, not the word, before the visible timer expires. Wire Crisis has colored R, G and B controls and an explicit requested wire and round count. Color-code scanning is still experimental.
 
@@ -152,7 +153,7 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 
 - **Perfect Timing (MaxiCode):** choose a new millisecond-derived target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
-- **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
+- **Pocket Reflex (Micro QR):** every gameplay operation fits into 13 ASCII characters. A reusable Micro VM executes the operations. This is a complete bytecode program, not a self-contained JavaScript/HTML application. Legacy Pocket Maze payloads remain readable for compatibility.
 - **Chroma Rush (ChromaQR):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
 - **Wire Crisis (IRIS):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
@@ -181,3 +182,7 @@ The **Tap Rush** Code 128 symbol contains a complete 61-character JavaScript pro
 - The full-size matrices pass a strict format-decoder integrity test during build. Large PNG camera-raster decoding remains experimental and is not claimed as verified.
 - The site still ships a QR Snake PNG for compatibility with earlier links, but the Games gallery presents the Codablock F version.
 
+
+## Micro QR data capacity and Pocket Reflex
+
+Micro QR M4 holds up to **15 binary bytes** at L, **13** at M, or **9** at Q error correction. Alphanumeric mode can hold **21**, **18**, or **13** supported characters respectively. The Pocket Reflex program `V1R4T3DIC+L5X` has 13 ASCII characters, contains all its gameplay commands, and fits inside the symbol. It uses a generic interpreter, not a hidden Pocket Reflex algorithm in ScanDeck. The interpreter and HTML layout are **not** stored in the code, so the format does not contain independent JavaScript. Small real-world camera scans still require device testing.

@@ -1,3 +1,4 @@
+import {parseMicroProgram} from './microvm.js';
 /** ScanDeck wire formats. No code execution happens in this module. */
 export const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:';
 export const QR_LIMIT = 4296; // Version 40, level L, alphanumeric mode (theoretical maximum).
@@ -66,6 +67,11 @@ export function packScript(script) {
   if (/<\/script/i.test(source)) throw new Error('Do not put a closing script tag in the code.');
   return `SDS:${source}`;
 }
+export function packMicroVm(text){
+  const program=String(text||'').trim();
+  parseMicroProgram(program);
+  return program;
+}
 export function packMicroQuiz(text) {
   const value=text.trim().startsWith('MQ:')?text.trim():'MQ:'+text.trim();
   if(value.length>15 || !/^MQ:(?:Q[0-9][+*-][0-9]=[0-9]{1,2}|M[0-9A-F]{4}[1-9])$/.test(value))
@@ -82,6 +88,10 @@ export async function decodeGame(raw) {
     if(!/^LO:[0-9A-F]{4}$/.test(value)||value==='LO:0000')
       throw new Error('Invalid Lights Out level. Use LO: followed by four uppercase hex digits.');
     return {title:'Lights Out',type:'LO / CODE 128',kind:'lights',source:value.slice(3),payload:value,size:value.length};
+  }
+  if(value.startsWith('V1')){
+    const program=packMicroVm(value);
+    return {title:'Pocket Reflex',type:'MICRO VM / MICRO QR',kind:'microvm',source:program,payload:program,size:program.length};
   }
   if(value.startsWith('MQ:')) {
     const code=packMicroQuiz(value);
