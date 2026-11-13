@@ -1,4 +1,4 @@
-# ScanDeck beta release checklist
+# ScanDeck release QA checklist
 
 Do not mark the camera checks as passed until tested on real devices. Unit tests and generated image decoding cannot replace them.
 
@@ -50,7 +50,7 @@ Do not mark the camera checks as passed until tested on real devices. Unit tests
 - [ ] README, About, version, game descriptions, and license are correct.
 - [ ] Test the public Pages URL on a fresh phone, with no saved site data.
 - [ ] Have one other person test the app without instructions.
-- [ ] Keep the public version marked beta until the real camera checks pass.
+- [ ] Verify the public version is 1.0.0 and distinguish experimental camera support from verified results.
 
 ## Suggested feedback form
 
@@ -62,8 +62,9 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
 - [ ] rMQR: solve the math puzzle using the input field.
-- [ ] JAB Code: experimental original; no camera decoder yet; Play sample must not be presented as a scan.
-- [ ] Ultracode: experimental original; no camera decoder yet; Play sample must not be presented as a scan.
+- [ ] IRIS Chroma Rush: the complete game decodes from the image pixels, with no fallback payload lookup.
+- [ ] IRIS Wire Crisis: the complete game decodes from the image pixels, with no fallback payload lookup.
+- [ ] IRIS: validate camera framing, focus, lighting and perspective on real mobile devices.
 
 ## Redesigned games
 - [ ] Brick Rush: slow ball, bouncing angles, three lives, 15 bricks, touch controls and restart

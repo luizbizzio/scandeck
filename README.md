@@ -4,7 +4,7 @@
 
 ScanDeck is a small open-source game console in your browser. Games are stored **inside** QR codes, Code 128 barcodes, Data Matrix codes, and Aztec codes. The data is game code, not a website link.
 
-**Status: 0.2.0 beta.** The software can generate and decode the official examples, but reading codes with real phone cameras still needs more testing. Large codes may be hard or impossible to scan reliably.
+**Status: 1.0.0.** The software generates and decodes sample codes, but real mobile-camera reliability still needs testing. Large codes may be hard or impossible to scan reliably.
 
 ## Games
 
@@ -111,16 +111,16 @@ The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micr
 
 Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.
 
-## Experimental color codes: JAB Code and Ultracode
+## Experimental IRIS color codes
 
-- **Color Path (JAB Code):** a compressed, complete HTML game encoded into an eight-color symbol with the experimental etiket writer. It has **not** passed an independent image-decoding check.
-- **Color Match (Ultracode):** a standalone JavaScript program encoded by the Zint barcode generator. The program is held in the color symbol, not a URL.
+- **Chroma Rush (IRIS):** the complete compressed HTML game is inside a circular eight-color IRIS symbol.
+- **Wire Crisis (IRIS):** a complete standalone JavaScript game is stored in a separate IRIS symbol.
+- The codes use the MIT-licensed reference implementation from [AllTerrainDeveloper/iris](https://github.com/AllTerrainDeveloper/iris), pinned to commit `4a59a8b165afd1633f497188bd47ff8e8c98640c`. The library's MIT license is retained in `vendor/iris/LICENSE`.
+- Both codes include three RGB registration markers. The build generates SVG and PNG images, then verifies data recovery from the actual RGB pixel arrays. Play loads the generated PNG and runs the IRIS image decoder in a Web Worker.
+- Camera and uploaded-image scanning try the normal ZXing formats and then the IRIS marker-aware and geometric decoders. Scanning remains experimental: automatic pixel tests do not establish reliability with real mobile-camera captures.
+- No game source is fetched from a remote URL or service. The entire game payload is inside each IRIS image.
 
-**JAB Code and Ultracode are not supported by the in-browser ZXing scanner.** The gallery shows only the original colored symbols. The Play sample button loads bundled game data, not image-decoded pixels.
-
-The JAB writer is experimental and cannot be represented as independently verified. Real-camera scanning support for both color formats requires new decoders.
-
-The MaxiCode Perfect Timing game uses a randomized millisecond target. Browser scanning supports QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR. JAB Code and Ultracode remain experimental encoding demonstrations without an in-browser pixel decoder.
+The MaxiCode Perfect Timing game uses a randomized millisecond target. Other scanner formats are QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR.
 
 ## Redesigned games
 
@@ -128,10 +128,10 @@ The MaxiCode Perfect Timing game uses a randomized millisecond target. Browser s
 - **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
 - **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
-- **Chroma Rush (JAB Code):** ten color targets, three lives, progressively faster reaction times and replay. The complete HTML game is embedded in the experimental color code.
-- **Wire Crisis (Ultracode):** remember and cut two wires in order across five timed rounds. Wrong cuts and expired timers end the game. The compact, self-contained JavaScript is encoded in Ultracode.
+- **Chroma Rush (IRIS):** ten color targets, three lives, progressively faster reaction times and replay. The full HTML game is embedded in the color code.
+- **Wire Crisis (IRIS):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in IRIS.
 
-JAB Code and Ultracode still have no independent browser image decoding. Camera reading requires dedicated decoder integration and real-device testing.
+IRIS supports browser image decoding through a local worker. Real-phone camera performance still requires manual validation.
 
 ## UX fixes in the beta player
 
@@ -146,8 +146,8 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 - **Perfect Timing (MaxiCode):** choose a new millisecond-derived target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
 - **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
-- **Chroma Rush (JAB):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
-- **Wire Crisis (Ultracode):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
+- **Chroma Rush (IRIS):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
+- **Wire Crisis (IRIS):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
 
-The colored-symbol encoders still lack verified browser decoders. Play sample loads the original data bundle; it does not emulate a camera scan.
+The IRIS reader decodes each generated PNG image's pixels. A physical mobile-camera test remains necessary.

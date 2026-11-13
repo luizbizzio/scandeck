@@ -26,8 +26,6 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Install Ultracode encoder
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq zint
       - name: Build all game codes and scanner
         run: npm run build
       - name: Run tests
@@ -35,7 +33,9 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p dist/assets dist/vendor/zxing-wasm
-          cp index.html style.css app.js protocol.js runtime.js maze.js code128.js sw.js .nojekyll dist/
+          cp index.html style.css app.js iris-worker.js protocol.js runtime.js maze.js code128.js sw.js .nojekyll dist/
+          mkdir -p dist/vendor/iris
+          cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
           cp assets/*.svg assets/*.png assets/*.txt dist/assets/
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
           cp vendor/qrcode-generator.js dist/vendor/

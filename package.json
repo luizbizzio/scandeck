@@ -13,7 +13,6 @@
   "license": "MIT",
   "dependencies": {
     "zxing-wasm": "3.1.6",
-    "qrcode-generator": "2.0.4",
-    "etiket": "1.0.0"
+    "qrcode-generator": "2.0.4"
   }
 }

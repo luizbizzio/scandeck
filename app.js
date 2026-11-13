@@ -1,4 +1,4 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, QR_LIMIT } from './protocol.js';
+import { decodeGame, packHtml, packScript, packMicroQuiz, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 const $ = id => document.getElementById(id);
@@ -28,11 +28,13 @@ async function acceptPayload(raw, mode='manual', format='') {
     const game = await decodeGame(raw);
     if(format==='MaxiCode'&&game.kind==='standalone')game.title='Perfect Timing';
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
+    if(format==='IRIS'&&game.kind==='standalone'&&game.source.startsWith("document.write('<p id=t>"))game.title='Wire Crisis';
+    if(format==='IRIS'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    const labels={qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
+    const labels={IRIS:'IRIS',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
     for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
@@ -113,6 +115,43 @@ async function getMatrixEngine() {
   }
   return lib;
 }
+// The color IRIS decoder runs in a module worker to avoid blocking camera preview.
+let irisWorker=null,irisSeq=0;
+const irisPending=new Map();
+function failIrisWorker(){
+  if(irisWorker){irisWorker.terminate();irisWorker=null}
+  for(const p of irisPending.values()){clearTimeout(p.timer);p.resolve('')}
+  irisPending.clear();
+}
+function getIrisWorker(){
+  if(!irisWorker){
+    irisWorker=new Worker(new URL('./iris-worker.js',import.meta.url),{type:'module'});
+    irisWorker.onmessage=({data})=>{
+      const pending=irisPending.get(data?.id);
+      if(!pending)return;
+      clearTimeout(pending.timer);irisPending.delete(data.id);
+      pending.resolve(typeof data.text==='string'?data.text:'');
+    };
+    irisWorker.onerror=failIrisWorker;
+  }
+  return irisWorker;
+}
+function readIrisPixels(image){
+  const {width,height,data}=image;
+  if(width*height>2_000_000)return Promise.resolve('');
+  const rgb=new Uint8Array(width*height*3);
+  for(let i=0,j=0;i<data.length;i+=4,j+=3){
+    rgb[j]=data[i];rgb[j+1]=data[i+1];rgb[j+2]=data[i+2];
+  }
+  return new Promise(resolve=>{
+    const id=++irisSeq;
+    const timer=setTimeout(failIrisWorker,2500);
+    irisPending.set(id,{resolve,timer});
+    try{getIrisWorker().postMessage({id,width,height,buffer:rgb.buffer},[rgb.buffer])}
+    catch{clearTimeout(timer);irisPending.delete(id);resolve('')}
+  });
+}
+
 async function getScanner() {
   if (scanner) return scanner;
   if ('BarcodeDetector' in globalThis) {
@@ -151,33 +190,39 @@ async function startCamera() {
     void cameraLoop(token,engine);
   } catch(error) {stopCamera();status('Could not open the camera. Check its permissions or upload an image.',true)}
 }
-async function cameraLoop(token, engine) {
-  // Only one decode is active at any time. No requestAnimationFrame processing or parallel workers.
-  while(live && cameraToken===token && !document.hidden){
-    try {
+async function cameraLoop(token,engine){
+  // One scan per iteration: ZXing for standard codes, IRIS in an off-thread worker.
+  while(live&&cameraToken===token&&!document.hidden){
+    try{
       const video=$('camera');
       if(video.readyState>=2){
+        const canvas=document.createElement('canvas');
+        const width=video.videoWidth,height=video.videoHeight;
+        const scale=Math.min(1,900/Math.max(width,height));
+        canvas.width=Math.max(1,Math.round(width*scale));
+        canvas.height=Math.max(1,Math.round(height*scale));
+        const ctx=canvas.getContext('2d',{willReadFrequently:true});
+        ctx.drawImage(video,0,0,canvas.width,canvas.height);
+        const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
         let text='',format='';
         if(engine.kind==='native'){
-          const results=await engine.engine.detect(video);
-          const result=results.find(x=>x.rawValue);
+          const result=(await engine.engine.detect(video)).find(x=>x.rawValue);
           text=result?.rawValue||'';format=result?.format||'';
         }else{
-          const canvas=document.createElement('canvas');
-          const w=video.videoWidth,h=video.videoHeight,scale=Math.min(1,1050/Math.max(w,h));
-          canvas.width=Math.max(1,Math.round(w*scale));canvas.height=Math.max(1,Math.round(h*scale));
-          canvas.getContext('2d',{willReadFrequently:true}).drawImage(video,0,0,canvas.width,canvas.height);
-          const image=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
-          const result=firstResult(await engine.engine.readBarcodes(image,wasmOptions));
+          const result=firstResult(await engine.engine.readBarcodes(pixels,wasmOptions));
           text=result?.text||'';format=result?.format||'';
-          canvas.width=canvas.height=1;
         }
-        if(live && token===cameraToken && text && await acceptPayload(text,'camera',format)) return;
+        if(!text&&live&&cameraToken===token){
+          text=await readIrisPixels(pixels);
+          if(text)format='IRIS';
+        }
+        canvas.width=canvas.height=1;
+        if(live&&token===cameraToken&&text&&await acceptPayload(text,'camera',format))return;
       }
-    } catch (error) {
+    }catch(error){
       if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
     }
-    if(live && token===cameraToken) await delay(450);
+    if(live&&token===cameraToken)await delay(450);
   }
 }
 $('start-camera').addEventListener('click',startCamera);
@@ -206,8 +251,11 @@ async function detectImage(file) {
     if (canvas.width*canvas.height>12000000) throw new Error('Image is too large to scan safely.');
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
     ctx.drawImage(bitmap,0,0);
-    const hit=firstResult(await lib.readBarcodes(ctx.getImageData(0,0,canvas.width,canvas.height),wasmOptions));
+    const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+    const hit=firstResult(await lib.readBarcodes(pixels,wasmOptions));
     if(hit)return {text:hit.text,format:hit.format};
+    const iris=await readIrisPixels(pixels);
+    if(iris)return {text:iris,format:'IRIS'};
   } finally {bitmap.close();canvas.width=canvas.height=1}
   throw Error('No supported game code was found in this image.');
 }
@@ -260,18 +308,20 @@ $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perf
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
 
-// Samples use the actual payload bundled with each original colored symbol.
-async function playColorExample(name,title){
+// Every IRIS Play button reads the generated image using the actual color decoder.
+async function playIrisExample(name,title){
   try{
-    const response=await fetch('assets/'+name+'.txt');
-    if(!response.ok)throw Error('Sample not available.');
-    const game=await decodeGame(await response.text());
+    const response=await fetch('assets/'+name+'.png');
+    if(!response.ok)throw Error('IRIS image not found');
+    const hit=await detectImage(await response.blob());
+    if(hit.format!=='IRIS')throw Error('IRIS decoder did not read the image');
+    const game=await decodeGame(hit.text);
     game.title=title;
     playGame(game);
-  }catch(error){switchTab('scan');status('Could not load '+title+': '+error.message,true)}
+  }catch(error){switchTab('scan');status('Could not scan '+title+': '+error.message,true)}
 }
-$('try-jab').addEventListener('click',()=>playColorExample('colorpath-jab','Chroma Rush'));
-$('try-ultra').addEventListener('click',()=>playColorExample('colormatch-ultra','Wire Crisis'));
+$('try-iris-chroma').addEventListener('click',()=>playIrisExample('iris-chroma','Chroma Rush'));
+$('try-iris-wire').addEventListener('click',()=>playIrisExample('iris-wire','Wire Crisis'));
 
 function selectGenerator(format) {
   generatorFormat=format;
@@ -286,7 +336,7 @@ function selectGenerator(format) {
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
     format==='data-matrix'?'Data Matrix works best with small self-contained HTML games.':
-    format==='aztec'?'Aztec Code can store a compact HTML game.':'QR codes can store more game data.';
+    format==='aztec'?'Aztec Code can store a compact HTML game.':format==='iris'?'IRIS stores the full game in a colored circular symbol. Use ScanDeck to scan it.':'QR codes can store more game data.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
@@ -303,6 +353,10 @@ $('use-example').addEventListener('click',async()=>{
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
   }
 });
+async function packIrisHtml(input){
+  if(!/<(?:canvas|html|body|svg|div|script)\b/i.test(input))throw Error('Paste an HTML game, not plain text.');
+  return 'SD1:'+base43Encode(await deflateRaw(input));
+}
 function displaySvg(svg) {
   const box=$('output-preview');box.innerHTML=svg;
   const el=box.querySelector('svg');if(!el)throw Error('Image generation failed.');
@@ -314,7 +368,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr'].includes(generatorFormat)?packScript(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     let svg;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
@@ -322,6 +376,9 @@ $('generate').addEventListener('click',async()=>{
       svg=displaySvg(qr.createSvgTag({cellSize:4,margin:4,scalable:true}));
     } else if(generatorFormat==='bar') {
       svg=displaySvg(code128Svg(payload));
+    } else if(generatorFormat==='iris') {
+      const {encodeColor,renderColorSVG}=await import('./vendor/iris/color.js');
+      svg=displaySvg(renderColorSVG(encodeColor(payload,{markers:true}),{style:'slices'}));
     } else {
       const lib=await getMatrixEngine();
       const format=({ 'data-matrix':'DataMatrix',aztec:'Aztec',pdf:'PDF417',maxi:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode' })[generatorFormat];

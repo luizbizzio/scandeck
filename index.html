@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span></div>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>IRIS color</span></div>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -127,18 +127,15 @@
             <div class="game-body"><h3>Codebreaker</h3><p>Guess a new number from 0 to 98. UP and DOWN clues are separate from your seven remaining attempts.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.svg" download>Download rMQR</a></div></div>
           </article>
         </section>
-        <section class="game-group" aria-labelledby="jab-games-heading">
-          <h2 class="group-title" id="jab-games-heading">JAB Code <small>(Experimental)</small></h2>
+        <section class="game-group" aria-labelledby="iris-games-heading">
+          <h2 class="group-title" id="iris-games-heading">IRIS <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/colorpath-jab.svg" target="_blank" rel="noopener noreferrer" aria-label="View JAB Code code"><span class="game-code-paper"><img src="assets/colorpath-jab.svg" alt="JAB Code containing Chroma Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View JAB Code ↗</span></a>
-            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the written word. Clear instructions, a separated timer, score and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-jab">Play sample</button><a class="btn" href="assets/colorpath-jab.svg" download>Download JAB Code</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/iris-chroma.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size IRIS Chroma Rush code"><span class="game-code-paper"><img src="assets/iris-chroma.svg" alt="IRIS color symbol containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View IRIS ↗</span></a>
+            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the written word. Clear instructions, a separated timer, score and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-iris-chroma">Play</button><a class="btn" href="assets/iris-chroma.svg" download>Download IRIS</a></div></div>
           </article>
-        </section>
-        <section class="game-group" aria-labelledby="ultra-games-heading">
-          <h2 class="group-title" id="ultra-games-heading">Ultracode <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/colormatch-ultra.svg" target="_blank" rel="noopener noreferrer" aria-label="View Ultracode code"><span class="game-code-paper"><img src="assets/colormatch-ultra.svg" alt="Ultracode containing Wire Crisis" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View Ultracode ↗</span></a>
-            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="game-actions"><button class="btn btn-primary" id="try-ultra">Play sample</button><a class="btn" href="assets/colormatch-ultra.svg" download>Download Ultracode</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/iris-wire.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size IRIS Wire Crisis code"><span class="game-code-paper"><img src="assets/iris-wire.svg" alt="IRIS color symbol containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View IRIS ↗</span></a>
+            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="game-actions"><button class="btn btn-primary" id="try-iris-wire">Play</button><a class="btn" href="assets/iris-wire.svg" download>Download IRIS</a></div></div>
           </article>
         </section>
       </div>
@@ -158,6 +155,7 @@
             <button class="format-option" data-format="maxi" aria-pressed="false"><strong>MaxiCode</strong><span>For tiny JavaScript games</span></button>
             <button class="format-option" data-format="microqr" aria-pressed="false"><strong>Micro QR</strong><span>For compact VM bytecode</span></button>
             <button class="format-option" data-format="rmqr" aria-pressed="false"><strong>rMQR</strong><span>For short JavaScript games</span></button>
+            <button class="format-option" data-format="iris" aria-pressed="false"><strong>IRIS color</strong><span>For full HTML games</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
           <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
@@ -178,7 +176,7 @@
     <section class="page" id="about" aria-labelledby="about-title">
       <div class="section-heading"><h1 id="about-title">Games inside codes.</h1><p>ScanDeck is a small game console in your browser.</p></div>
       <div class="about-content">
-        <p class="about-lead">Most QR codes open a website. ScanDeck is different. The code contains the game itself. Scan it here, and play.</p><p class="about-note">Beta version. For safety, only play game codes from sources you trust. Very large codes may be hard to scan with a phone.</p>
+        <p class="about-lead">Most QR codes open a website. ScanDeck is different. The code contains the game itself. Scan it here, and play.</p><p class="about-note">Experimental IRIS decoding is under active development. For safety, only play game codes from sources you trust. Very large codes may be hard to scan with a phone.</p>
         <h2>How it works</h2>
         <ol class="about-steps"><li><span>01</span>Find a ScanDeck game code.</li><li><span>02</span>Scan it or upload its image.</li><li><span>03</span>Play in your browser.</li></ol>
         <div class="about-types">
@@ -187,7 +185,7 @@
           <div><h3>PDF417</h3><p>Rows of bars for larger games.</p></div>
           <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
           <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
-          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>JAB Code</h3><p>Experimental color barcode. Camera scanning is not supported yet.</p></div><div><h3>Ultracode</h3><p>Experimental multicolor code. Camera scanning is not supported yet.</p></div>
+          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>IRIS</h3><p>Experimental eight-color circular code. Scan with the built-in IRIS camera decoder.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

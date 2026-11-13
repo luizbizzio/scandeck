@@ -212,7 +212,7 @@ test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
 });
 test('Wire Crisis memorization increases from 3 to 7 colors over 5 rounds',()=>{
  const src=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
- assert.ok(src.length<=248,'Entire program must still fit Ultracode');
+ assert.ok(src.length<=1024,'Wire Crisis must stay a compact standalone game');
  const t={innerHTML:''},ctx={t,document:{write(){}},Math:{random:()=>0}};
  vm.runInNewContext(src,ctx,{timeout:500});
  assert.equal(t.innerHTML,'RRR');

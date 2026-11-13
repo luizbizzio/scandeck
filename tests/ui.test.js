@@ -50,7 +50,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','maxi','microqr','rmqr'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','maxi','microqr','rmqr','iris'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -89,14 +89,20 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
-test('experimental color cards show only the requested barcode symbol',()=>{
-  for(const name of ['jab-games-heading','ultra-games-heading'])assert.ok(html.includes('id="'+name+'"'));
-  for(const id of ['try-jab','try-ultra'])assert.ok(script.includes("$('"+id+"')"));
-  assert.ok(html.includes('assets/colorpath-jab.svg'));
-  assert.ok(html.includes('assets/colormatch-ultra.svg'));
-  assert.ok(!html.includes('colorpath-scan.svg')&&!html.includes('colormatch-scan.svg'));
-  assert.ok(script.includes("playColorExample('colorpath-jab','Chroma Rush')"));
-  assert.ok(script.includes("playColorExample('colormatch-ultra','Wire Crisis')"));
+test('both colored games use actual IRIS symbols and image decoding',()=>{
+  assert.ok(html.includes('id="iris-games-heading"'));
+  assert.ok(html.includes('assets/iris-chroma.svg'));
+  assert.ok(html.includes('assets/iris-wire.svg'));
+  assert.ok(!html.includes('JAB Code')&&!html.includes('Ultracode'));
+  for(const id of ['try-iris-chroma','try-iris-wire']){
+    assert.ok(html.includes('id="'+id+'"'));
+    assert.ok(script.includes("$('"+id+"')"));
+  }
+  assert.ok(script.includes('playIrisExample('));
+  assert.ok(script.includes('readIrisPixels('));
+  assert.ok(script.includes("format='IRIS'"));
+  assert.ok(!script.includes('playColorExample('));
+  assert.ok(!html.includes('colorpath-jab.svg')&&!html.includes('colormatch-ultra.svg'));
 });
 
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
