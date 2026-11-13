@@ -68,3 +68,10 @@ for(const g of games){
     }
   });
 }
+
+test('Codablock F standalone Snake retains input and game logic while reducing source size',()=>{
+ const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8').trim();
+ assert.ok(source.length<=705,'Keep Snake game concise');
+ for(const check of ['onkeydown=onmessage','onpointerdown','onpointerup','s.includes(h)','setInterval','LOSE','WIN'])
+   assert.ok(source.includes(check),'Missing Snake feature: '+check);
+});
