@@ -36,7 +36,8 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playExoticExample\('snake-codablockf','Snake','codablockf'\)/);
   assert.match(script, /playMatrixExample\('taprush-code128','Tap Rush','Code128'\)/);
-  assert.match(script, /fetch\('assets\/'\+name\+'\.png'\)/);
+  assert.match(script, /fetch\('assets\/'\+name\+'\.txt'/);
+  assert.match(script, /catalogPromises=new Map\(\)/);
   assert.match(script, /getMatrixEngine\(\)/);
   assert.doesNotMatch(script, /decodeGame\(LEGACY_SNAKE\)/);
   assert.match(script, /show\('touch-controls',game.kind==='snake'\|\|game.kind==='micro'\)/);
@@ -252,4 +253,42 @@ test('Pocket Reflex is a complete 13-character Micro VM program in the Micro QR 
   const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes("game.kind==='microvm'"));
   assert.ok(runtime.includes('microVmHtml'));
+});
+
+test('Scan header uses a compact, optional list instead of overflowing twelve format badges',()=>{
+  assert.match(html, /<details class="scan-formats-details"><summary>12 code formats<\/summary>/);
+  assert.match(css, /\.scan-formats-details/);
+  assert.match(css, /\.scanner-heading\{position:relative/);
+});
+test('mobile and desktop scanner selectors contain every format exactly once and remain synchronized',()=>{
+  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','maxicode','microqr','rmqr','iris','chromaqr','codablockf','dotcode'];
+  for(const id of ['scan-mode','camera-mode']){
+    const fragment=html.slice(html.indexOf('id="'+id+'"'));
+    const select=fragment.slice(0,fragment.indexOf('</select>'));
+    for(const mode of modes){
+      const occurrences=select.match(new RegExp('<option value="'+mode+'">','g'))||[];
+      assert.equal(occurrences.length,1,id+' should list '+mode+' exactly once');
+    }
+  }
+  assert.match(script,/\$\('camera-mode'\)\.value=mode/);
+  assert.match(script,/\$\('scan-mode'\)\.value=mode/);
+});
+test('camera preview starts before WASM initialization; expensive experimental formats require focus',()=>{
+  const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
+  assert.ok(open.indexOf("show('camera-panel',true)")<open.indexOf('await getScanner()'));
+  assert.match(script,/if\(mode==='iris'\)/);
+  assert.match(script,/if\(mode==='chromaqr'\)/);
+  assert.doesNotMatch(script,/mode==='auto'&&frame%4/);
+  assert.match(html,/Auto \(standard codes\)/);
+});
+test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
+  const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
+  assert.match(item,/cache:'force-cache'/);
+  assert.match(item,/catalogPromises\.set\(name,promise\)/);
+  assert.match(item,/microvm/);
+  assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
+  assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
+  assert.doesNotMatch(item,/readBarcodes\(/);
+  assert.match(html,/app\.js\?v=26/);
+  assert.match(html,/style\.css\?v=26/);
 });

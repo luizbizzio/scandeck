@@ -1,4 +1,4 @@
-import {microVmHtml} from './microvm.js';
+import {microVmHtml} from './microvm.js?v=26';
 import {mazeDocument} from './maze.js';
 /* Every game is rendered in an opaque-origin, scripts-only sandbox.
    Strict CSP stops outgoing requests; malicious game code may still waste CPU.

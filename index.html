@@ -7,8 +7,8 @@
   <meta name="description" content="Tiny games stored inside QR codes and barcodes. Scan a code and play.">
   <title>ScanDeck | Games inside codes</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="style.css">
-  <script type="module" src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=26">
+  <script type="module" src="app.js?v=26"></script>
 </head>
 <body>
 <div class="shell">
@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>Codablock F</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div>
+            <details class="scan-formats-details"><summary>12 code formats</summary><div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>Codablock F</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div></details>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -49,14 +49,7 @@
                   <div class="camera-bottom">
                     <label for="camera-mode">Scan format</label>
                     <select id="camera-mode" aria-label="Camera scan format">
-                      <option value="auto">All formats</option>
-                      <option value="rmqr">rMQR</option>
-                      <option value="maxicode">MaxiCode</option>
-                      <option value="pdf417">PDF417</option>
-                      <option value="code128">Code 128</option>
-                      <option value="iris">IRIS</option>
-                      <option value="chromaqr">ChromaQR</option><option value="dotcode">DotCode</option><option value="dotcode">DotCode</option><option value="codablockf">Codablock F</option><option value="codablockf">Codablock F</option>
-                    </select>
+                      <option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="codablockf">Codablock F</option><option value="dotcode">DotCode</option></select>
                     <p id="camera-tip">Keep the entire symbol inside the frame.</p>
                   </div>
                 </div>
@@ -64,11 +57,10 @@
             </div>
             <div class="scan-controls">
               <div class="scan-guide"><h3>Ready to play?</h3><p>Use your camera or upload an image of a ScanDeck game code.</p></div>
-              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">All formats</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="rmqr">rMQR</option><option value="code128">Code 128</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option></select></div>
-            <div class="scan-actions">
+              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="codablockf">Codablock F</option><option value="dotcode">DotCode</option></select></div>
+              <div class="scan-actions">
                 <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
                 <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
-                
               </div>
               <div class="status" id="status" role="status" aria-live="polite"><span id="status-text"></span></div>
               <details class="manual-entry"><summary>Paste game data instead</summary><div class="manual-inner"><label class="field-label" for="paste-input">Game data</label><textarea id="paste-input" rows="4" spellcheck="false" placeholder="Paste the code data here"></textarea><button id="decode-text" class="btn">Open game</button></div></details>

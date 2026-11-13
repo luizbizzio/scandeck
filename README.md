@@ -161,6 +161,14 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 IRIS and ChromaQR decode generated PNG pixels independently. Physical mobile-camera testing remains necessary.
 
 
+## Scanner interface and fast library previews
+
+The Scan page now keeps the list of supported formats in a compact, expandable menu. The focused-format selectors on desktop and inside the mobile camera contain the same choices without duplicates. The camera preview becomes visible before the WebAssembly scanner finishes loading. **Auto (standard codes)** scans the regular monochrome formats; select IRIS, ChromaQR, Codablock F or DotCode explicitly to run their more expensive experimental decoders.
+
+The **Play** buttons in the Games library now open a cached copy of the exact encoded game payload from a local `.txt` asset. This avoids decoding a large PNG and initializing WebAssembly every time a library example is opened. The PNGs remain the complete, self-contained barcodes. Build and tests verify that the original payloads can be recovered from the symbols. **Uploading or photographing a code still invokes the actual barcode decoder; it never uses the library's cached copies as fallback.**
+
+Pocket Reflex uses the `microvm` game type. It is accepted by the library player as well as the camera and upload paths. The HTML entry point and its JavaScript modules have versioned URLs to avoid a browser loading incompatible files from different releases.
+
 ## Mobile full-screen camera and focused reading
 
 On mobile, **Open camera** uses a full-viewport camera view that shows the entire video frame without cropping it. A **Close** button stays inside the top safe area, while the format selector remains accessible at the bottom. Switching formats inside the camera changes the scanner focus immediately. The CSS overlay does not rely on a platform Fullscreen API permission.

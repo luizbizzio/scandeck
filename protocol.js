@@ -1,4 +1,4 @@
-import {parseMicroProgram} from './microvm.js';
+import {parseMicroProgram} from './microvm.js?v=26';
 /** ScanDeck wire formats. No code execution happens in this module. */
 export const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:';
 export const QR_LIMIT = 4296; // Version 40, level L, alphanumeric mode (theoretical maximum).

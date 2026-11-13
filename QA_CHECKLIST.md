@@ -128,3 +128,14 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Each of the five rounds waits no more than three seconds; correct answers score one point.
 - [ ] Final results show a score out of five and Retry regenerates the random targets.
 - [ ] Confirm the interpreter executes only validated VM opcodes and cannot execute JS from the payload.
+
+## Scanner layout and library performance
+
+- [ ] Scan page at 320 px, 375 px, 768 px and desktop widths: no horizontal overflow, no duplicate options, and expandable format list stays in the scanner.
+- [ ] The two scan-format selectors remain synchronized when changed, including IRIS, ChromaQR, DotCode and Codablock F.
+- [ ] Camera preview appears before the decoder has initialized and Close always stops media tracks.
+- [ ] Auto mode scans standard formats; experimental modes only run when explicitly selected.
+- [ ] Pocket Reflex Play opens without Unsupported embedded game program; its 13-byte VM game executes correctly.
+- [ ] Open all 12 library games twice in succession; second Play reuses the decoded payload, with no WASM image decoding.
+- [ ] Test PNG upload and physical camera scan for several formats to confirm the optimized library does not bypass genuine decoding.
+- [ ] Reload a tab previously opened on an old version; HTML, modules and the new service worker should update together.

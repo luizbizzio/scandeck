@@ -190,3 +190,25 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   html.camera-open .camera-bottom label{font-size:11px}
   html.camera-open .camera-bottom select{max-width:65%;font-size:12px}
 }
+
+/* Scanner layout: available formats are disclosed on demand, not squeezed into the heading. */
+.scanner-heading{position:relative;min-width:0;align-items:flex-start}
+.scan-formats-details{margin-left:auto;flex:0 0 auto;min-width:0;max-width:100%;position:relative}
+.scan-formats-details>summary{list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;border:1px solid #3d5141;border-radius:8px;color:#b5cebd;background:#17221a;padding:9px 12px;font:650 12px system-ui;white-space:nowrap}
+.scan-formats-details>summary::-webkit-details-marker{display:none}
+.scan-formats-details>summary::after{content:'⌄';font-size:15px;color:var(--accent)}
+.scan-formats-details[open]>summary::after{content:'⌃'}
+.scan-formats-details .scan-formats{position:absolute;top:calc(100% + 8px);right:0;z-index:10;width:min(345px,calc(100vw - 64px));max-width:100%;padding:12px;border:1px solid #445b48;border-radius:10px;background:#121c15;box-shadow:0 16px 40px #000a;gap:7px}
+.scan-formats-details .scan-formats span{font-size:11px}
+.scanner .scan-controls,.scanner .scan-mode-row,.scanner .scan-actions{min-width:0;max-width:100%}
+.scanner .scan-mode-row select,.camera-bottom select{overflow:hidden;text-overflow:ellipsis}
+.scanner .scan-mode-row{flex-wrap:wrap;align-items:center}
+.scanner .scan-mode-row label{min-width:94px}
+.scanner .scan-mode-row select{flex:1 1 140px;width:auto;max-width:100%}
+@media(max-width:480px){
+  .scanner-heading{align-items:center;flex-wrap:nowrap}
+  .scanner-heading h2{min-width:0}
+  .scan-formats-details>summary{font-size:11px;padding:8px 10px}
+  .scan-formats-details .scan-formats{right:0}
+  .scanner .scan-mode-row select{min-width:0}
+}
