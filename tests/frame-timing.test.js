@@ -2,13 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
+// Test fixtures contain exactly one fixed <script> block. Parse its literal
+// delimiters, not arbitrary HTML, to avoid CodeQL's bad-tag-filter warning.
+function fixtureScript(source,filename){
+ const start=source.indexOf('<script>');
+ const end=start<0?-1:source.indexOf('</script>',start+8);
+ const code=end>start?source.slice(start+8,end):'';
+ assert.ok(code,filename+' must contain a playable script');
+ return code;
+}
 function runGame(filename,fps){
  const source=readFileSync(new URL('../examples/'+filename,import.meta.url),'utf8');
- // These are our own fixed, one-script HTML fixtures, not arbitrary HTML.
- // Use exact delimiters instead of treating a regex as an HTML parser.
- const start=source.indexOf('<script>'),end=source.indexOf('</script>',start+8);
- const code=start>=0&&end>start?source.slice(start+8,end):null;
- assert.ok(code,filename+' must contain a playable script');
+ const code=fixtureScript(source,filename);
  const pen={clearRect(){},fillRect(){},fillText(){}};
  const canvas={clientWidth:300,getContext:()=>pen};
  const context={c:canvas,s:{innerText:''},Math,requestAnimationFrame(fn){context.next=fn}};
@@ -30,7 +35,7 @@ test('Neon Dodge scrolls at the same speed at 30 and 60 FPS',()=>{
 
 test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
  const html=readFileSync(new URL('../examples/neon-dodge-dotcode.html',import.meta.url),'utf8');
- const src=html.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
+ const src=fixtureScript(html,'neon-dodge-dotcode.html');
  const g={fillRect(){},fillText(){},set fillStyle(x){},set font(x){}};
  const c={getContext:()=>g};
  const state={c,Math,requestAnimationFrame(fn){state.next=fn}};
