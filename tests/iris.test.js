@@ -43,3 +43,19 @@ for(const name of ['iris-chroma','iris-wire']){
     assert.ok(expected.startsWith('SD1:')||expected.startsWith('SDS:'));
   });
 }
+
+test('large IRIS games remain decodable after mobile-sized nearest-neighbor resizing',()=>{
+  const original=readRgbPng('iris-chroma');
+  const maxSide=1300,scale=Math.min(1,maxSide/Math.max(original.width,original.height));
+  const width=Math.round(original.width*scale),height=Math.round(original.height*scale);
+  const data=new Uint8Array(width*height*3);
+  for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+    const sourceX=Math.min(original.width-1,Math.floor((x+.5)*original.width/width));
+    const sourceY=Math.min(original.height-1,Math.floor((y+.5)*original.height/height));
+    const from=(sourceY*original.width+sourceX)*3,to=(y*width+x)*3;
+    data[to]=original.data[from];data[to+1]=original.data[from+1];data[to+2]=original.data[from+2];
+  }
+  assert.ok(width*height<=1_690_000);
+  const expected=readFileSync(new URL('../assets/iris-chroma.txt',import.meta.url),'utf8');
+  assert.equal(decodeColor({width,height,data}).text,expected);
+});
