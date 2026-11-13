@@ -27,6 +27,7 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
   const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
   const photo=photoOf(png);
   const card=findLightCard(photo);
+  console.log(mode,'PNG',png.width,png.height,'card',card);
   assert.ok(card,'The white card must be located without knowing its code');
   assert.ok(card.width<photo.width*.9,'Card should not be mistaken for the whole dark frame');
   const candidates=specialtyCandidates(photo,mode);
@@ -39,6 +40,7 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
     formats:[format],maxNumberOfSymbols:1,tryHarder:false,tryRotate:mode==='rmqr',
     tryDownscale:false,...candidate.options
    });
+   console.log(mode,'candidate',candidate.image.width,candidate.image.height,results.map(x=>x.text?.length));
    if(results.some(r=>r.text===expected))success=true;
   }
   assert.ok(success,'Preprocessed raw image must preserve the full embedded game');
