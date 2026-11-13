@@ -63,3 +63,7 @@ The previous DotCode image was 1941 × 1371 pixels and exceeded the experimental
 ## Camera matrix recovery
 
 Focused Codablock F and DotCode now attempt to recover a real module grid from the camera's white card region and verify every candidate using the respective strict barcode decoder. Module dimensions are generated with the published PNGs, but neither the payload nor a game ID is used as a hint. Automated tests cover centered, resized images and two-degree in-plane tilt on both symbols. Larger perspective distortion, blur, missing modules, and third-party decoder interoperability remain unverified. Expensive generic image scans are skipped for dense Codablock F video frames to avoid lengthy worker timeouts; arbitrary layouts still require a more capable detector.
+
+## Perspective-aware white-card recovery
+
+The experimental reader additionally isolates the largest light card component in a camera frame, finds its four image corners, and samples a projectively corrected symbol matrix. The decoder must verify all Codablock F checksums or DotCode error correction before accepting a game; no game bytes are passed as hints. The original front-facing detector remains available on alternating frames. A camera-ready code still needs adequate on-screen module size and focus. Tests include synthetic perspective-distorted raw pixel frames.

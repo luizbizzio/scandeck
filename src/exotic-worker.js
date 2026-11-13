@@ -2,7 +2,7 @@
 // Strict Codablock-F and DotCode decoding, isolated from the camera UI thread.
 import {BitMatrix,decode,decodeCodablockF,decodeDotCode} from '../vendor/sythos-barcode.esm.js';
 import {EXOTIC_SHAPES} from './exotic-shapes.js';
-import {sampleKnownGrid} from './exotic-grid.js';
+import {sampleKnownGrid,samplePerspectiveGrid} from './exotic-grid.js';
 self.onmessage=({data:task})=>{
   const {id,format,width,height,buffer,exact=false,phase=0}=task||{};
   let text='';
@@ -31,7 +31,9 @@ self.onmessage=({data:task})=>{
       const strict=format==='codablockf'?decodeCodablockF:decodeDotCode;
       // Extract and checksum-verify an actual matrix before expensive
       // orientation-scanning heuristics. This works on scaled, frontal photos.
-      text=sampleKnownGrid(image,EXOTIC_SHAPES[format],BitMatrix,strict);
+      text=phase%3===2
+        ?samplePerspectiveGrid(image,EXOTIC_SHAPES[format],format==='codablockf'?12:10,BitMatrix,strict)
+        :sampleKnownGrid(image,EXOTIC_SHAPES[format],BitMatrix,strict);
       // The general detector is expensive even for a clean PNG, so only run
       // it occasionally. It cannot be the primary real-time camera path.
       const tryDecode=input=>decode(input,{formats:[format]})
