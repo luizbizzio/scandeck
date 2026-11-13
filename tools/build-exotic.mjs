@@ -14,14 +14,14 @@ const games=[
   {
     name:'snake-codablockf',
     input:'examples/snake-standalone.js',
-    payload:source=>packScript(source),
+    payload:source=>'SDZ:'+deflateRawSync(Buffer.from(source)).toString('base64'),
     format:'codablockf',
     encode:payload=>encodeCodablockF(payload,{rows:36,columns:28,rowHeight:6,separatorHeight:1}),
     margin:12,scale:4
   },{
     name:'neon-dodge-dotcode',
     input:'examples/neon-dodge-dotcode.html',
-    payload:source=>'SD1:'+base43Encode(deflateRawSync(Buffer.from(source))),
+    payload:source=>'SDH:'+deflateRawSync(Buffer.from(source)).toString('base64'),
     format:'dotcode',
     encode:payload=>encodeDotCode(payload,{aspectRatio:1}),
     margin:10,scale:5
@@ -35,7 +35,7 @@ for(const game of games){
   const matrix=game.encode(payload);
   // Public DotCode uses the independent BWIPP standard encoder for interoperability.
   // Sythos remains our strict local matrix integrity reference.
-  if(game.format==='codablockf'&&(matrix.width>420||matrix.height<160))
+  if(game.format==='codablockf'&&(matrix.width>420||matrix.height<100))
     throw Error('Codablock F layout is too wide for practical camera framing');
   const png=game.format==='dotcode'
     ?await bwipjs.toBuffer({bcid:'dotcode',text:payload,scale:5,padding:20})
@@ -47,7 +47,7 @@ for(const game of games){
     throw Error(game.name+' failed complete matrix decode integrity check');
   writeFileSync(asset(game.name+'.png'),Buffer.from(png));
   writeFileSync(asset(game.name+'.txt'),payload);
-  console.log(game.format+' | '+game.name+' | '+payload.length+' characters | '+matrix.width+'×'+matrix.height+' modules | complete matrix round-trip verified');
+  console.log(game.format+' | '+game.name+' | '+source.length+' source characters -> '+payload.length+' code characters | '+matrix.width+'×'+matrix.height+' modules | complete matrix round-trip verified');
 }
 copyFileSync(new URL('node_modules/@sythos/js_barcode_universal/bundle/sythos-barcode.esm.js',root),
  new URL('vendor/sythos-barcode.esm.js',root));

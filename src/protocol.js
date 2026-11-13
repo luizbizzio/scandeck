@@ -54,6 +54,29 @@ export async function deflateRaw(text) {
   if (bytes.length > MAX_SOURCE_BYTES) throw new Error('The source is too large.');
   return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer());
 }
+// Base64 is more compact than base43 for Codablock F and DotCode, which encode ASCII.
+export function base64Encode(bytes){
+  let binary='';
+  for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+  return btoa(binary);
+}
+export function base64Decode(text){
+  if(typeof text!=='string'||text.length>80_000||!text.length||
+     !/^[A-Za-z0-9+/]+={0,2}$/.test(text)||text.length%4!==0)
+    throw Error('Invalid compressed game encoding.');
+  return Uint8Array.from(atob(text),ch=>ch.charCodeAt(0));
+}
+export async function packCompactHtml(html){
+  const source=String(html).trim();
+  if(!/<(?:canvas|html|body|svg|div|script)\b/i.test(source))
+    throw Error('Paste a full HTML game, not plain text.');
+  return 'SDH:'+base64Encode(await deflateRaw(source));
+}
+export async function packCompactScript(script){
+  const source=String(script).trim();
+  packScript(source);
+  return 'SDZ:'+base64Encode(await deflateRaw(source));
+}
 export async function packHtml(html) {
   if (!/<(?:canvas|html|body|svg|div|script)\b/i.test(html)) throw new Error('Paste an HTML game, not plain text.');
   const packed = `SD1:${base43Encode(await deflateRaw(html))}`;
@@ -97,6 +120,21 @@ export async function decodeGame(raw) {
     const code=packMicroQuiz(value);
     const isMaze=code[3]==='M';
     return {title:isMaze?'Pocket Maze':'Micro Math',type:'MQ / MICRO QR',kind:isMaze?'maze':'bytecode',source:code.slice(3),payload:code,size:code.length};
+  }
+  if(value.startsWith('SDH:')){
+    const html=await inflateRaw(base64Decode(value.slice(4)));
+    if(!/<(?:script|canvas|body|html|svg|div)\b/i.test(html))
+      throw Error('Compressed payload is not an HTML game.');
+    const heading=html.match(/<h[1-3][^>]*>([^<]{1,60})<\/h[1-3]>/i);
+    return {title:heading?heading[1].trim():'Custom game',type:'SDH / DOTCODE',kind:'html',
+      source:html,payload:value,size:new TextEncoder().encode(html).length};
+  }
+  if(value.startsWith('SDZ:')){
+    const script=await inflateRaw(base64Decode(value.slice(4)));
+    if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
+      throw Error('Invalid compressed JavaScript game.');
+    return {title:'Standalone Barcode Game',type:'SDZ / CODABLOCK F',kind:'standalone',
+      source:script,payload:value,size:script.length};
   }
   if (value.startsWith('IP3:') || value.startsWith('SD1:')) {
     const legacy = value.startsWith('IP3:');

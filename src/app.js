@@ -1,4 +1,4 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=41';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=41';
 import { gameDocument } from './runtime.js?v=41';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
@@ -376,7 +376,7 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:V1|LO:|SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:V1|LO:|SD1:|SDH:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
 let exoticWorker=null,exoticSeq=0;
@@ -797,7 +797,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='codablockf'?await packCompactScript(input):generatorFormat==='dotcode'?await packCompactHtml(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
     if(generatorFormat==='qr'){
@@ -807,13 +807,13 @@ $('generate').addEventListener('click',async()=>{
     } else if(generatorFormat==='bar') {
       svg=displaySvg(code128Svg(payload));
     } else if(generatorFormat==='iris') {
-      const {encodeColor,renderColorSVG}=await import('./vendor/iris/color.js');
+      const {encodeColor,renderColorSVG}=await import('../vendor/iris/color.js');
       svg=displaySvg(renderColorSVG(encodeColor(payload,{markers:true}),{style:'slices'}));
     } else if(generatorFormat==='chromaqr'){
       const factory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       svg=displaySvg(chromaSvg(encodeChroma(factory,payload)));
     } else if(generatorFormat==='codablockf'||generatorFormat==='dotcode'){
-      const {encodeCodablockF,encodeDotCode,toPNG}=await import('./vendor/sythos-barcode.esm.js');
+      const {encodeCodablockF,encodeDotCode,toPNG}=await import('../vendor/sythos-barcode.esm.js');
       const matrix=generatorFormat==='codablockf'
         ?encodeCodablockF(payload,{rowHeight:5,separatorHeight:1})
         :encodeDotCode(payload,{aspectRatio:1});

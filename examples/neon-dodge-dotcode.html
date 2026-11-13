@@ -1,13 +1,10 @@
-<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="margin:0;min-height:100dvh;display:grid;place-items:center;background:#09120e;color:#c9f5b2;font:17px system-ui"><canvas id=c width=280 height=430 style="width:min(90vw,280px);max-height:85dvh;touch-action:manipulation;background:#122219;border:1px solid #365640;border-radius:14px"></canvas><script>
-g=c.getContext('2d');p=0;o=-50;v=0;s=0;dead=0;h=0;
-c.onclick=()=>dead?(dead=0,s=0,o=-50,p=0):p^=1;
-function f(t=0){d=h&&t?Math.min(4,(t-h)/16.667):1;h=t;
-g.fillStyle='#122219';g.fillRect(0,0,280,430);
-g.fillStyle='#294332';g.fillRect(137,0,6,430);
-if(!dead){o+=(6.8+s/11)*d;if(o>430){o=-40;v=Math.random()*2|0;s++}if(o>343&&o<397&&v==p)dead=1}
-g.fillStyle='#ec6d7b';g.fillRect(34+v*142,o,70,32);
-g.fillStyle='#b7f879';g.fillRect(51+p*142,365,36,36);
+<!doctype html><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0;min-height:100dvh;display:grid;place-items:center;background:#09120e;color:#c9f5b2"><canvas id=c width=280 height=430 style="width:min(90vw,280px);max-height:85dvh;touch-action:manipulation;background:#122219;border:1px solid #365640;border-radius:14px"></canvas><script>
+g=c.getContext('2d');p=s=dead=h=0;o=-50;v=0;a=3.6;
+c.onclick=()=>dead?(dead=s=p=0,o=-50,a=3.6):p^=1;
+function f(t=0){d=h&&t?Math.min(3,(t-h)/16.667):1;h=t;
+g.fillStyle='#122219';g.fillRect(0,0,280,430);g.fillStyle='#294332';g.fillRect(137,0,6,430);
+if(!dead){a=Math.min(14,a+.009*d);k=o;o+=a*d;if(o>430){o=-40;v=Math.random()*2|0;s++}if(k<397&&o>343&&v==p)dead=1}
+g.fillStyle='#ec6d7b';g.fillRect(34+v*142,o,70,32);g.fillStyle='#b7f879';g.fillRect(51+p*142,365,36,36);
 g.fillStyle='#e9ffdb';g.font='bold 21px system-ui';g.fillText(dead?'CRASH · TAP TO RETRY':'DODGE · '+s,15,32);
-requestAnimationFrame(f)
-}f()
+requestAnimationFrame(f)}f()
 </script>

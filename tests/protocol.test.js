@@ -3,7 +3,7 @@ import vm from 'node:vm';
 import {snakePayload} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packMicroQuiz,QR_LIMIT} from '../src/protocol.js';
+import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packCompactHtml,packCompactScript,packMicroQuiz,QR_LIMIT} from '../src/protocol.js';
 import {code128Svg,decodeCode128Svg} from '../src/code128.js';
 import {gameDocument} from '../src/runtime.js';
 test('base43 binary round trips',()=>{
@@ -223,4 +223,17 @@ test('Micro QR controls randomly generated, solvable 6x6 mazes',async()=>{
  assert.match(gameDocument(game),/POCKET MAZE/);
  assert.match(gameDocument(game),/NEW MAZE/);
  assert.throws(()=>packMicroQuiz('MFFFF9'),/entrance and exit/);
+});
+
+test('compressed full HTML and standalone JavaScript preserve source bytes and reject invalid frames',async()=>{
+  const html='<!doctype html><canvas id=c></canvas><script>c.width=100;onclick=()=>c.width++</script>';
+  const script="document.body.textContent='Snake';onkeydown=e=>document.title=e.key";
+  const denseHtml=await packCompactHtml(html),denseScript=await packCompactScript(script);
+  assert.match(denseHtml,/^SDH:[A-Za-z0-9+/=]+$/);
+  assert.match(denseScript,/^SDZ:[A-Za-z0-9+/=]+$/);
+  const [a,b]=await Promise.all([decodeGame(denseHtml),decodeGame(denseScript)]);
+  assert.equal(a.kind,'html');assert.equal(a.source,html);assert.equal(a.payload,denseHtml);
+  assert.equal(b.kind,'standalone');assert.equal(b.source,script);assert.equal(b.payload,denseScript);
+  await assert.rejects(()=>decodeGame('SDH:NOT-VALID'),/Invalid compressed game encoding/);
+  await assert.rejects(()=>decodeGame('SDZ:AAAA'),/Invalid|decompress|format|stream|deflate/i);
 });
