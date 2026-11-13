@@ -14,6 +14,8 @@
   "dependencies": {
     "zxing-wasm": "3.1.6",
     "qrcode-generator": "2.0.4",
-    "@sythos/js_barcode_universal": "1.6.8"
+    "@sythos/js_barcode_universal": "1.6.8",
+    "bwip-js": "4.11.4",
+    "pngjs": "7.0.0"
   }
 }

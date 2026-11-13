@@ -4,6 +4,9 @@ import {readFileSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
 import {BitMatrix,encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode} from '@sythos/js_barcode_universal';
 import {decodeGame} from '../src/protocol.js';
+import {decode} from '@sythos/js_barcode_universal';
+import {PNG} from 'pngjs';
+import bwipjs from 'bwip-js';
 
 // Read the actual 1-bit indexed PNG bytes and reconstruct the exact modules.
 // This verifies the downloaded artwork itself, not an in-memory source string.
@@ -52,8 +55,17 @@ for(const g of games){
     assert.ok(!/^https?:\/\//.test(payload));
     const png=readFileSync(new URL('../assets/'+g.asset+'.png',import.meta.url));
     assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-    const matrix=pngGrid(g.asset,g.format==='codablockf'?4:5,g.format==='codablockf'?12:10);
-    const decoded=g.format==='codablockf'?decodeCodablockF(matrix):decodeDotCode(matrix);
-    assert.equal(decoded?.text,payload);
+    if(g.format==='codablockf'){
+      const matrix=pngGrid(g.asset,4,12);
+      assert.equal(decodeCodablockF(matrix)?.text,payload);
+    }else{
+      // Verify the emitted PNG is exactly the standard BWIPP encoder output.
+      const standard=await bwipjs.toBuffer({bcid:'dotcode',text:payload,scale:5,padding:20});
+      assert.deepEqual(png,standard,'Public DotCode must use the standard writer');
+      const decoded=PNG.sync.read(png);
+      const image={width:decoded.width,height:decoded.height,data:decoded.data};
+      const hits=decode(image,{formats:['dotcode'],profile:'camera',tryHarder:true});
+      assert.ok(hits.some(hit=>hit.text===payload),'Independent DotCode output must be readable by the embedded scanner');
+    }
   });
 }
