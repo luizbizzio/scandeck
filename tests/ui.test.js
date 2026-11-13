@@ -206,7 +206,7 @@ test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
   assert.match(script,/isPure:false/);
   assert.match(script,/maxicode:'MaxiCode must be flat/);
-  assert.match(script,/rmqr:'Hold the rectangular rMQR/);
+  assert.match(script,/rmqr:'Turn your phone sideways/);
 });
 test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
   assert.ok(html.includes('id="try-taprush"'));
