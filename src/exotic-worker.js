@@ -1,6 +1,8 @@
 // MIT-licensed Sythos Barcode Universal 1.6.8.
 // Strict Codablock-F and DotCode decoding, isolated from the camera UI thread.
 import {BitMatrix,decode,decodeCodablockF,decodeDotCode} from '../vendor/sythos-barcode.esm.js';
+import {EXOTIC_SHAPES} from './exotic-shapes.js';
+import {sampleKnownGrid} from './exotic-grid.js';
 self.onmessage=({data:task})=>{
   const {id,format,width,height,buffer,exact=false,phase=0}=task||{};
   let text='';
@@ -26,9 +28,15 @@ self.onmessage=({data:task})=>{
       if(result?.text)text=result.text;
     }else{
       const image={width,height,data};
-      const tryDecode=input=>decode(input,{formats:[format],profile:'camera',tryHarder:true})
+      const strict=format==='codablockf'?decodeCodablockF:decodeDotCode;
+      // Extract and checksum-verify an actual matrix before expensive
+      // orientation-scanning heuristics. This works on scaled, frontal photos.
+      text=sampleKnownGrid(image,EXOTIC_SHAPES[format],BitMatrix,strict);
+      // The general detector is expensive even for a clean PNG, so only run
+      // it occasionally. It cannot be the primary real-time camera path.
+      const tryDecode=input=>decode(input,{formats:[format]})
         .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
-      text=tryDecode(image);
+      if(!text&&phase===0)text=tryDecode(image);
       if(!text&&phase===1){
         // High-contrast pass for slightly washed-out display captures.
         let min=255,max=0;

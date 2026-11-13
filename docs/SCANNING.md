@@ -55,3 +55,7 @@ Sample Codablock F and DotCode codes now store the full executable sources as co
 The rMQR writer compared raw JavaScript byte mode (147 characters) against an uppercase alphanumeric compressed representation (197 characters). Both generated the same pixel area (432432 square pixels at the configured scale), so the smaller text representation was retained. That is the actual symbol choice, not a claim that compression never works for other programs.
 
 ZXing-C++ marks MaxiCode reading as partial. The scanner alternates whole-frame, monochrome aligned square, tighter centered square and rotated passes. The monochrome square uses the ZXing isPure setting; raw camera photos are not guaranteed to meet the decoder's no-skew requirement. Device validation is still needed.
+
+## Exotic image decoding update
+
+The previous DotCode image was 1941 × 1371 pixels and exceeded the experimental reader's two-million-pixel input limit. The first-party PNG now uses the same strict DotCode encoder as its on-device decoder, so the exact PNG can be decoded independently of browser frame geometry. The reader also attempts to reconstruct the real barcode matrix from a centered white card, using symbol **dimensions only**. Every candidate is verified with the full barcode checksum; no payload is looked up from image identity. The generic scanner remains a secondary, bounded fallback. Physical perspective and camera focus remain separate limitations.

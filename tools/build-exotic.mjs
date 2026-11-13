@@ -10,6 +10,7 @@ const root=new URL('../',import.meta.url);
 const asset=n=>new URL('assets/'+n,root);
 mkdirSync(asset(''),{recursive:true});
 mkdirSync(new URL('vendor/',root),{recursive:true});
+const generatedShapes={};
 const games=[
   {
     name:'snake-codablockf',
@@ -55,9 +56,10 @@ for(const game of games){
   // Sythos remains our strict local matrix integrity reference.
   if(game.format==='codablockf'&&(matrix.width>420||matrix.height<100))
     throw Error('Codablock F layout is too wide for practical camera framing');
-  const png=game.format==='dotcode'
-    ?await bwipjs.toBuffer({bcid:'dotcode',text:payload,scale:5,padding:20})
-    :await toPNG(matrix,{scale:game.scale,margin:game.margin});
+  // Use the exact writer expected by our strict image decoder. BWIPP's
+  // previous 1941×1371 DotCode PNG exceeded the camera image safety limit.
+  const png=await toPNG(matrix,{scale:game.scale,margin:game.margin});
+  generatedShapes[game.format]=[matrix.width,matrix.height];
   // Check all data codewords, row checks and error correction using the
   // format's strict matrix decoder. Physical camera decoding is separate.
   const result=game.format==='codablockf'?decodeCodablockF(matrix):decodeDotCode(matrix);
@@ -67,6 +69,8 @@ for(const game of games){
   writeFileSync(asset(game.name+'.txt'),payload);
   console.log(game.format+' | '+game.name+' | '+source.length+' source characters -> '+payload.length+' code characters | '+matrix.width+'×'+matrix.height+' modules | complete matrix round-trip verified');
 }
+writeFileSync(new URL('src/exotic-shapes.js',root),
+  '/* Geometry only, generated at build time. */\nexport const EXOTIC_SHAPES='+JSON.stringify(generatedShapes)+';\n');
 copyFileSync(new URL('node_modules/@sythos/js_barcode_universal/bundle/sythos-barcode.esm.js',root),
  new URL('vendor/sythos-barcode.esm.js',root));
 copyFileSync(new URL('node_modules/@sythos/js_barcode_universal/LICENSE',root),

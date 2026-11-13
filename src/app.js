@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=42';
-import { gameDocument } from './runtime.js?v=42';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=43';
+import { gameDocument } from './runtime.js?v=43';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=42';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=43';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=42',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=43',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -409,7 +409,7 @@ function readExoticPixels(image,format,exact=false,phase=0){
   const rgba=new Uint8ClampedArray(data); // don't detach ZXing's camera image
   return new Promise(resolve=>{
     const id=++exoticSeq;
-    const timer=setTimeout(resetExoticWorker,4500);
+    const timer=setTimeout(resetExoticWorker,9000);
     exoticWaiting.set(id,{timer,resolve});
     try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer,exact,phase},[rgba.buffer])}
     catch{clearTimeout(timer);exoticWaiting.delete(id);resolve('')}
