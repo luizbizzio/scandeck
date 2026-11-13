@@ -29,12 +29,20 @@ export function sampleKnownGrid(image,dimensions,BitMatrix,decode){
   const insetY=Math.max(1,Math.floor((pb-pt)*.008));
   let minX=w,minY=h,maxX=0,maxY=0,dark=0;
   const stride=Math.max(1,Math.floor(Math.max(w,h)/1400));
-  for(let y=pt+insetY;y<pb-insetY;y+=stride)
-    for(let x=pl+insetX;x<pr-insetX;x+=stride)
+  for(let y=pt+insetY;y<pb-insetY;y+=stride){
+    // A tilted white page has dark triangles inside its bounding rectangle.
+    // Do not mistake those background corners for the barcode itself.
+    let first=pr,last=pl,bright=0;
+    for(let x=pl;x<pr;x+=stride)if(gray(x,y)>185){
+      first=Math.min(first,x);last=Math.max(last,x);bright++;
+    }
+    if(bright<Math.max(3,Math.floor((pr-pl)/stride*.05)))continue;
+    for(let x=Math.max(pl+insetX,first+stride);x<Math.min(pr-insetX,last-stride);x+=stride)
       if(gray(x,y)<120){
         minX=Math.min(minX,x);minY=Math.min(minY,y);
         maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);dark++;
       }
+  }
   if(dark<cols*rows*.03||maxX<=minX||maxY<=minY)return '';
   const inkWidth=maxX-minX+stride,inkHeight=maxY-minY+stride;
   const centerX=(minX+maxX+stride)/2,centerY=(minY+maxY+stride)/2;
@@ -49,13 +57,13 @@ export function sampleKnownGrid(image,dimensions,BitMatrix,decode){
     if(sx<.65||sy<.65||Math.max(sx,sy)>Math.min(sx,sy)*2.5)continue;
     // A few degrees of phone tilt are common even with a flat screen.
     // Reconstruct the unrotated rectangle from its axis-aligned ink bounds.
-    for(const angle of [0,-.035,.035,-.07,.07]){
+    for(const angle of [0,-.035,.035]){
       const co=Math.cos(angle),si=Math.abs(Math.sin(angle));
       const divisor=co*co-si*si;
       const basisWidth=(inkWidth*co-inkHeight*si)/divisor;
       const basisHeight=(inkHeight*co-inkWidth*si)/divisor;
       if(basisWidth<=0||basisHeight<=0)continue;
-      for(const scale of angle===0?[1,1.018,.982,1.045,.955]:[1,1.018,.982]){
+      for(const scale of angle===0?[1,1.008,.992,1.018,.982]:[1,1.008,.992]){
         const wide=basisWidth*scale,high=basisHeight*scale;
         const m=new BitMatrix(cols,rows);
         for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
