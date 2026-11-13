@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=49/);
-  assert.match(html,/src\/style\.css\?v=49/);
+  assert.match(html,/src\/app\.js\?v=50/);
+  assert.match(html,/src\/style\.css\?v=50/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -432,7 +432,8 @@ test('dense experimental camera uses direct full and cropped sensor pixels, not 
 
 test('exotic gallery pictures open the original PNG directly',()=>{
   for(const name of ['snake-codablockf','neon-dodge-dotcode']){
-    assert.ok(html.includes('href="assets/'+name+'.png" target="_blank"'));
+    assert.ok(html.includes('href="assets/'+name+'.png"'));
+    assert.doesNotMatch(html,new RegExp('href="assets/'+name+'\\.png" target="_blank"'));
     assert.ok(!html.includes('data-scan-ready="'+name+'"'));
   }
   assert.doesNotMatch(html,/id="scan-ready-dialog"/);
@@ -444,3 +445,17 @@ test('auto excludes ChromaQR decoding and keeps focused ChromaQR selection',()=>
   assert.doesNotMatch(script,/mode==='auto'&&frame%5===4/);
 });
 
+
+test('all game previews open a large in-page dialog, with fit and actual-size modes',()=>{
+  assert.match(html,/id="code-image-dialog"/);
+  assert.match(html,/id="code-image-full"/);
+  assert.match(html,/id="code-image-zoom"/);
+  assert.match(script,/event\.target\.closest\('a\.game-code-preview, a\.about-code-example'\)/);
+  assert.match(script,/event\.preventDefault\(\)/);
+  assert.match(script,/codeImageDialog\.showModal\(\)/);
+  assert.match(script,/codeImageDialog\.classList\.toggle\('actual-size'\)/);
+  assert.match(css,/#code-image-dialog\.actual-size #code-image-full/);
+  const gallery=html.slice(html.indexOf('<section class="page" id="library"'),html.indexOf('<section class="page" id="create"'));
+  assert.equal((gallery.match(/class="game-code-preview/g)||[]).length,12);
+  assert.equal((html.match(/class="about-code-example"/g)||[]).length,12);
+});

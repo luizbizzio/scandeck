@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=49';
-import { gameDocument } from './runtime.js?v=49';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=50';
+import { gameDocument } from './runtime.js?v=50';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=49';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=50';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=49',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=50',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -668,6 +668,32 @@ $('scan-viewport').addEventListener('drop',e=>{e.preventDefault();void uploadIma
 // Library Play uses a fast cached copy of the exact game bytes embedded in each PNG.
 // Physical scans and image uploads still decode the barcode. CI verifies image-to-payload
 // integrity for every published game code, including the experimental color formats.
+// Reuse one modal for all game and About code images: no extra tab or popup.
+const codeImageDialog=$('code-image-dialog'),codeImage=$('code-image-full');
+document.addEventListener('click',event=>{
+  const anchor=event.target.closest('a.game-code-preview, a.about-code-example');
+  if(!anchor||!anchor.href)return;
+  const target=new URL(anchor.href,location.href);
+  if(target.origin!==location.origin||!/^\/assets\/[a-z0-9-]+\.png$/.test(target.pathname))return;
+  event.preventDefault();
+  codeImage.src=target.pathname;
+  codeImage.alt=anchor.querySelector('img')?.alt||'Full game code';
+  const title=anchor.closest('article')?.querySelector('h3')?.textContent?.trim()||'Game code';
+  $('code-image-heading').textContent=title+' · full code';
+  codeImageDialog.classList.remove('actual-size');
+  $('code-image-zoom').setAttribute('aria-pressed','false');
+  $('code-image-zoom').textContent='Actual size';
+  if(!codeImageDialog.open)codeImageDialog.showModal();
+});
+$('close-code-image').addEventListener('click',()=>codeImageDialog.close());
+$('code-image-zoom').addEventListener('click',()=>{
+  const full=codeImageDialog.classList.toggle('actual-size');
+  $('code-image-zoom').setAttribute('aria-pressed',String(full));
+  $('code-image-zoom').textContent=full?'Fit to window':'Actual size';
+});
+codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src')});
+codeImageDialog.addEventListener('click',event=>{if(event.target===codeImageDialog)codeImageDialog.close()});
+
 const catalogPromises=new Map();
 let bundledCatalog=null;
 try{

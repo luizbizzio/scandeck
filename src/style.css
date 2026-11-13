@@ -347,3 +347,15 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   html.camera-open .camera-bottom select{min-height:40px}
 }
 
+
+/* In-page full code viewer, with opt-in pixel-for-pixel zoom for dense formats. */
+#code-image-dialog{width:min(1250px,calc(100vw - 24px));max-width:none;max-height:94dvh;overflow:hidden;padding:16px}
+#code-image-dialog .dialog-head{gap:12px}
+#code-image-dialog .dialog-head>div:first-child{min-width:0}
+#code-image-heading{font-size:19px;overflow-wrap:anywhere}
+#code-image-dialog .code-image-viewport{display:grid;place-items:center;max-height:calc(94dvh - 140px);min-height:180px;overflow:auto;overscroll-behavior:contain;margin:16px 0 10px;padding:14px;background:#f7f9f7;border-radius:9px}
+#code-image-full{display:block;width:auto;height:auto;max-width:100%;max-height:calc(94dvh - 170px);object-fit:contain;image-rendering:pixelated}
+#code-image-dialog.actual-size .code-image-viewport{display:block;text-align:center}
+#code-image-dialog.actual-size #code-image-full{max-width:none;max-height:none;margin:auto}
+#code-image-dialog p{margin:0}
+@media(max-width:700px){#code-image-dialog{padding:12px}#code-image-dialog .dialog-head{flex-wrap:wrap}#code-image-dialog .source-dialog-actions{width:100%;justify-content:space-between}}

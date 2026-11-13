@@ -35,7 +35,8 @@ test('About includes a genuine example image and full-size PNG link for every hi
     assert.ok(card.includes('src="assets/'+id+'.'+ext+'"'),format+' must preview the exact PNG');
     assert.ok(card.includes('EXAMPLE'),format+' example caption is missing');
     assert.ok(card.includes('<strong>'+game+'</strong>'),format+' example must name its actual game');
-    assert.match(card,/class="about-code-example"[^>]*href="assets\/[a-z0-9-]+\.(?:png|svg)"[^>]*target="_blank" rel="noopener noreferrer"/);
+    assert.match(card,/class="about-code-example"[^>]*href="assets\/[a-z0-9-]+\.(?:png|svg)"/);
+    assert.doesNotMatch(card,/target="_blank"/);
     assert.match(card,/loading="lazy" decoding="async"/);
   }
   assert.match(css,/\.about-example-preview img\{display:block;width:100%;height:100%;object-fit:contain/);
