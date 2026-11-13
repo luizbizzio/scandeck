@@ -476,6 +476,7 @@ async function readFocused(lib,source,mode,frame){
     tryDenoise:false, // expensive morphology hurts continuous camera scans
     tryRotate:true,
     retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
+    specialty:!useCrop&&(mode==='rmqr'||mode==='maxicode')?mode:null,
     retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%4===3
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));

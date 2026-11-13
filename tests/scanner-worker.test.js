@@ -43,3 +43,12 @@ test('continuous scanner recycles worker memory without affecting camera streams
   assert.match(app,/\+\+irisReads>=16/);
   assert.match(app,/options\.formats\?\.length===1\?4500:2300/);
 });
+
+test('MaxiCode and rMQR have camera-card normalization before a pure/regular second decode',()=>{
+ const specialty=readFileSync(new URL('src/specialty-candidates.js',root),'utf8');
+ assert.match(app,/specialty:!useCrop&&/);
+ assert.match(worker,/getSpecialtyPreprocessor/);
+ assert.match(worker,/specialtyCandidates\(pixels,specialty\)/);
+ assert.match(specialty,/export function findLightCard/);
+ assert.match(specialty,/export function thresholdRgba/);
+});

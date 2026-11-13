@@ -1,6 +1,12 @@
 /* Long-running camera decoders run away from the UI thread.
    Only one request is sent at a time, and closing the camera terminates this worker. */
-let decoderPromise=null;
+let decoderPromise=null,preprocessorPromise=null;
+function getSpecialtyPreprocessor(){
+  if(!preprocessorPromise)preprocessorPromise=import('./specialty-candidates.js').catch(error=>{
+    preprocessorPromise=null;throw error;
+  });
+  return preprocessorPromise;
+}
 function rotatePixels(image,clockwise){
   const {width,height,data}=image;
   const out=new Uint8ClampedArray(data.length);
@@ -37,7 +43,7 @@ self.onmessage=async({data:task})=>{
       const {decodeChromaPixels}=await import('./chroma.js');
       result=await decodeChromaPixels(pixels,(image,opts)=>zxing.readBarcodes(image,opts))||'';
     }else if(mode==='standard'){
-      const {retryRotated=false,retryBinarizer=false,...readOptions}=options||{};
+      const {retryRotated=false,retryBinarizer=false,specialty=null,...readOptions}=options||{};
       let hits=await zxing.readBarcodes(pixels,readOptions);
       if(!hits.some(hit=>hit.text)&&retryBinarizer){
         const binarizer=readOptions.binarizer==='LocalAverage'?'GlobalHistogram':'LocalAverage';
@@ -48,6 +54,17 @@ self.onmessage=async({data:task})=>{
         for(const clockwise of [true,false]){
           hits=await zxing.readBarcodes(rotatePixels(pixels,clockwise),{...readOptions,tryRotate:false});
           if(hits.some(hit=>hit.text))break;
+        }
+      }
+      if(!hits.some(hit=>hit.text)&&(specialty==='maxicode'||specialty==='rmqr')){
+        const {specialtyCandidates}=await getSpecialtyPreprocessor();
+        for(const candidate of specialtyCandidates(pixels,specialty)){
+          const more=await zxing.readBarcodes(candidate.image,{
+            ...readOptions,...candidate.options,
+            tryDownscale:false,tryDenoise:false,tryRotate:specialty==='rmqr',
+            tryHarder:false
+          });
+          if(more.some(hit=>hit.text)){hits=more;break}
         }
       }
       result=hits.filter(hit=>typeof hit.text==='string'&&hit.text.length).map(hit=>({text:hit.text,format:hit.format})).slice(0,2);
