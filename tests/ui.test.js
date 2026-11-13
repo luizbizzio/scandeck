@@ -205,7 +205,7 @@ test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
-  assert.match(script,/isPure:false/);
+  assert.match(script,/isPure:monochrome/);
   assert.match(script,/maxicode:'MaxiCode must be flat/);
   assert.match(script,/rmqr:'Turn your phone sideways/);
 });
@@ -391,7 +391,7 @@ test('landscape mobile scanning keeps full-screen camera and supports rotated ba
   assert.match(script,/addEventListener\('resize',syncCameraLayout\)/);
   assert.match(script,/document\.documentElement\.classList\.toggle\('camera-open',isMobileCamera\(\)\)/);
   assert.match(script,/\.\.\.wasmOptions,formats,tryDenoise:false,tryRotate:true/);
-  assert.match(script,/isPure:false/);
+  assert.match(script,/isPure:monochrome/);
   assert.match(script,/tryRotate:true/);
   assert.match(script,/code128:'Scan upright or sideways/);
 });

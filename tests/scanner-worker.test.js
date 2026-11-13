@@ -29,3 +29,11 @@ test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/retryRotated:mode==='code128'/);
  assert.doesNotMatch(worker,/window\.|document\./);
 });
+
+test('new compact Codablock F and DotCode payloads reach the experimental reader',()=>{
+ const exotic=readFileSync(new URL('src/exotic-worker.js',root),'utf8');
+ assert.match(exotic,/SDH:/);
+ assert.match(exotic,/SDZ:/);
+ assert.match(app,/SDH:/);
+ assert.match(app,/SDZ:/);
+});

@@ -49,3 +49,9 @@ The Codablock F generator now explicitly uses a more balanced 36-row/28-column l
 ## Compact game data
 
 Sample Codablock F and DotCode codes now store the full executable sources as compressed deflate/base64 payloads (`SDZ` for JavaScript, `SDH` for complete HTML) instead of expanding the source in the code. On scan, ScanDeck decompresses the payload locally and shows the original code in View source. Legacy `SDS` and `SD1` payloads remain readable. This reduces density but does not establish camera compatibility, especially for the experimental DotCode reader.
+
+## rMQR and MaxiCode practical limits
+
+The rMQR writer compared raw JavaScript byte mode (147 characters) against an uppercase alphanumeric compressed representation (197 characters). Both generated the same pixel area (432432 square pixels at the configured scale), so the smaller text representation was retained. That is the actual symbol choice, not a claim that compression never works for other programs.
+
+ZXing-C++ marks MaxiCode reading as partial. The scanner alternates whole-frame, monochrome aligned square, tighter centered square and rotated passes. The monochrome square uses the ZXing isPure setting; raw camera photos are not guaranteed to meet the decoder's no-skew requirement. Device validation is still needed.
