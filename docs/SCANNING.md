@@ -103,3 +103,7 @@ Uploaded MaxiCode/rMQR originals now get a dedicated pure-image decoding pass fi
 ## IRIS secondary camera detector
 
 The IRIS reader now detects the pale printed card, preserving the RGB corner markers and the complete disk. It tries marker-based perspective decoding and a bounded robust color decode on that crop, falling back to the original full frame. A simulated 690-pixel camera crop was verified against the embedded complete game. MaxiCode still has a known failure when its 1914px original image is reduced to an 846px camera-style card: ZXing's partial pure-image decoder does not resolve this. Keep that case unverified rather than incorrectly describing it as working.
+
+## Dedicated clean-PNG input checks
+
+The two pure-image tests now run as distinct single-format reads, first MaxiCode and then rMQR. This prevents a multi-format reader from skipping the specialized MaxiCode branch. Camera scans still rely on live frame preprocessing, and physically reduced MaxiCode is a documented open issue. Full-code image previews open inside the same page with a fit/actual-size dialog; download remains separate.

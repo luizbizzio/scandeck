@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=50';
-import { gameDocument } from './runtime.js?v=50';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=51';
+import { gameDocument } from './runtime.js?v=51';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=50';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=51';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=50',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=51',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -588,14 +588,16 @@ async function detectImage(file) {
   const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
   // PNG uploads are already isolated symbols. The MaxiCode reader needs this
   // explicit pure-image pass; all-format scanning can fail on clean MaxiCode.
-  try{
-    const isolated=await lib.readBarcodes(file,{
-      ...wasmOptions,formats:['MaxiCode','RMQRCode'],isPure:true,
-      tryHarder:false,tryDownscale:false,tryDenoise:false
-    });
-    const hit=isolated.find(item=>isGamePayload(item.text));
-    if(hit)return {text:hit.text,format:hit.format};
-  }catch{/* Continue with the general image reader. */}
+  for(const format of ['MaxiCode','RMQRCode']){
+    try{
+      const isolated=await lib.readBarcodes(file,{
+        ...wasmOptions,formats:[format],isPure:true,
+        tryHarder:false,tryDownscale:false,tryDenoise:false
+      });
+      const hit=isolated.find(item=>isGamePayload(item.text));
+      if(hit)return {text:hit.text,format:hit.format};
+    }catch{/* Continue with the next image reader. */}
+  }
   try {
     const hit=firstResult(await lib.readBarcodes(file,wasmOptions));
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};

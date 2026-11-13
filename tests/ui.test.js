@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=50/);
-  assert.match(html,/src\/style\.css\?v=50/);
+  assert.match(html,/src\/app\.js\?v=51/);
+  assert.match(html,/src\/style\.css\?v=51/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -462,7 +462,8 @@ test('all game previews open a large in-page dialog, with fit and actual-size mo
 
 test('MaxiCode/rMQR uploads get a pure-image pass and the camera dynamically limits CPU use',()=>{
  const upload=script.slice(script.indexOf('async function detectImage('),script.indexOf('async function uploadImage('));
- assert.match(upload,/formats:\['MaxiCode','RMQRCode'\],isPure:true/);
+ assert.match(upload,/for\(const format of \['MaxiCode','RMQRCode'\]\)/);
+ assert.match(upload,/formats:\[format\],isPure:true/);
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
  assert.match(script,/slowDecodeBackoff=elapsed>750/);
  assert.match(script,/frameRate:\{ideal:24,max:30\}/);
