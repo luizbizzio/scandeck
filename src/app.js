@@ -21,7 +21,7 @@ function formatCodeSize(bytes){
 }
 async function loadCodeSizes(){
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=34',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=35',{cache:'force-cache'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
