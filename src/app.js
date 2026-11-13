@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=45';
-import { gameDocument } from './runtime.js?v=45';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=46';
+import { gameDocument } from './runtime.js?v=46';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=45';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=46';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=45',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=46',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -350,6 +350,13 @@ async function startCamera() {
     });
     if(token!==cameraToken){stream.getTracks().forEach(t=>t.stop());return}
     scanStream=stream;
+    // Request continuous hardware autofocus on devices that advertise it.
+    // Unsupported constraints must never prevent the camera from opening.
+    try{
+      const track=stream.getVideoTracks()[0],caps=track?.getCapabilities?.();
+      if(caps?.focusMode?.includes?.('continuous'))
+        void track.applyConstraints({advanced:[{focusMode:'continuous'}]}).catch(()=>{});
+    }catch{}
     $('camera').srcObject=stream;
     await $('camera').play();
     if(token!==cameraToken){stopCamera();return}
@@ -585,11 +592,37 @@ async function detectImage(file) {
       const focused=await readFocused(lib,canvas,focusedFormat,0);
       if(focused)return {text:focused.text,format:focused.format};
     }
+    // High-resolution photos often exceed the worker's 2 MP safety bound.
+    // Retain a full-view and a zoomed center view, both under the bound,
+    // so the matrix reader actually receives their pixels.
+    const exoticImages=[];
+    if(pixels.width*pixels.height<=1_900_000)exoticImages.push(pixels);
+    else{
+      const work=document.createElement('canvas'),cx=work.getContext('2d',{willReadFrequently:true});
+      const size=captureDimensions(bitmap.width,bitmap.height,'codablockf');
+      work.width=size.width;work.height=size.height;
+      cx.drawImage(bitmap,0,0,work.width,work.height);
+      exoticImages.push(cx.getImageData(0,0,work.width,work.height));
+      const ratio=.70;
+      const boxW=bitmap.width*ratio,boxH=bitmap.height*ratio;
+      cx.clearRect(0,0,work.width,work.height);
+      cx.drawImage(bitmap,(bitmap.width-boxW)/2,(bitmap.height-boxH)/2,boxW,boxH,0,0,work.width,work.height);
+      exoticImages.push(cx.getImageData(0,0,work.width,work.height));
+      work.width=work.height=1;
+    }
     for(const exotic of ['codablockf','dotcode']){
-      const exact=await readExoticPixels(pixels,exotic,true);
-      if(exact)return {text:exact,format:exotic==='codablockf'?'CodablockF':'DotCode'};
-      const found=await readExoticPixels(pixels,exotic);
-      if(found)return {text:found,format:exotic==='codablockf'?'CodablockF':'DotCode'};
+      const format=exotic==='codablockf'?'CodablockF':'DotCode';
+      if(pixels.width*pixels.height<=1_900_000){
+        const exact=await readExoticPixels(pixels,exotic,true);
+        if(exact)return {text:exact,format};
+      }
+      for(const candidate of exoticImages){
+        // Perspective and upright-grid retries use the same strict checksum.
+        for(const phase of [2,0]){
+          const found=await readExoticPixels(candidate,exotic,false,phase);
+          if(found)return {text:found,format};
+        }
+      }
     }
     const chroma=await readChromaImage(pixels);
     if(chroma)return {text:chroma,format:'ChromaQR'};

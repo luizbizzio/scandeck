@@ -38,7 +38,9 @@ self.onmessage=({data:task})=>{
       // it occasionally. It cannot be the primary real-time camera path.
       const tryDecode=input=>decode(input,{formats:[format]})
         .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDC:|SDB:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
-      const genericOk=format==='dotcode'||width*height<=280000;
+      // The generic detector is CPU-heavy on megapixel frames and can stall the
+      // camera worker. Use strict sampled grids for large images instead.
+      const genericOk=width*height<=450000;
       if(!text&&genericOk&&phase===0)text=tryDecode(image);
       if(!text&&genericOk&&phase===1){
         // High-contrast pass for slightly washed-out display captures.

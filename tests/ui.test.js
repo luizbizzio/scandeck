@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=45/);
-  assert.match(html,/src\/style\.css\?v=45/);
+  assert.match(html,/src\/app\.js\?v=46/);
+  assert.match(html,/src\/style\.css\?v=46/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -412,4 +412,14 @@ test('opening a hash URL never stops camera before workers and Play buttons init
   }
   assert.equal(script.indexOf('if(location.hash) switchTab(location.hash.slice(1));'),initial,
     'hash navigation must not also run at module startup');
+});
+
+test('experimental upload processes full-resolution photos without discarding 2MP+ images',()=>{
+ const photo=script.slice(script.indexOf('async function detectImage('),script.indexOf('async function uploadImage('));
+ assert.match(photo,/const exoticImages=\[\]/);
+ assert.match(photo,/captureDimensions\(bitmap\.width,bitmap\.height,'codablockf'\)/);
+ assert.match(photo,/exoticImages\.push\(cx\.getImageData/);
+ assert.match(photo,/for\(const phase of \[2,0\]\)/);
+ assert.match(script,/getCapabilities\?\.\(\)/);
+ assert.match(script,/focusMode\?\.includes\?\.\('continuous'\)/);
 });

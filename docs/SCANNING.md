@@ -67,3 +67,7 @@ Focused Codablock F and DotCode now attempt to recover a real module grid from t
 ## Perspective-aware white-card recovery
 
 The experimental reader additionally isolates the largest light card component in a camera frame, finds its four image corners, and samples a projectively corrected symbol matrix. The decoder must verify all Codablock F checksums or DotCode error correction before accepting a game; no game bytes are passed as hints. The original front-facing detector remains available on alternating frames. A camera-ready code still needs adequate on-screen module size and focus. Tests include synthetic perspective-distorted raw pixel frames.
+
+## Dense-code camera and upload performance
+
+Exotic camera scans now alternate strict frontal and projective quadrilateral sampling instead of sending megapixel frames through the expensive generic detector. When available, continuous camera autofocus is requested without blocking preview. Uploaded photos above the 2-megapixel decoder bound get a downscaled full view and a centered, higher-detail crop. Both views are tested with exact checksums. DotCode and Codablock F sample programs were further minified without removing their games. These changes are tested on simulated images; physical device read rates remain unverified.

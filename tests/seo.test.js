@@ -33,5 +33,5 @@ test('metadata and structured data describe actual site',()=>{
 test('camera helper is part of published offline site',()=>{
   assert.match(workflow,/cp src\/\*\.js src\/style\.css dist\/src\//);
   assert.match(sw,/src\/scanner-geometry\.js/);
-  assert.match(html,/src\/app\.js\?v=45/);
+  assert.match(html,/src\/app\.js\?v=46/);
 });
