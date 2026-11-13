@@ -17,7 +17,7 @@ self.onmessage=({data:job})=>{
       try{text=decodeColor(grid).text}catch{}
     }
     if(!text){try{text=decodeColorMarkers(grid)?.text||''}catch{}}
-    if(!text){try{text=decodeColorRobust(grid,{budgetMs:600}).text}catch{}}
+    if(!text){try{text=decodeColorRobust(grid,{budgetMs:1300}).text}catch{}}
   }catch{}
   self.postMessage({id,text});
 };

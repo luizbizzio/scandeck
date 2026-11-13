@@ -2,7 +2,7 @@ import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRa
 import { gameDocument } from './runtime.js?v=36';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=34';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=36';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -20,8 +20,11 @@ function formatCodeSize(bytes){
   return bytes<1024?bytes.toLocaleString('en-US')+' B':(bytes/1024).toFixed(1)+' KB';
 }
 async function loadCodeSizes(){
+  // Production HTML already contains exact values supplied by the build.
+  const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
+  if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=35',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=36',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -52,6 +55,7 @@ function switchTab(tab) {
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', event=>{event.preventDefault();switchTab(b.dataset.tab)}));
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
 if(location.hash) switchTab(location.hash.slice(1));
+void loadCodeSizes();
 
 async function acceptPayload(raw, mode='manual', format='') {
   try {
@@ -211,7 +215,7 @@ function readIrisPixels(image){
   }
   return new Promise(resolve=>{
     const id=++irisSeq;
-    const timer=setTimeout(failIrisWorker,2500);
+    const timer=setTimeout(failIrisWorker,3800);
     irisPending.set(id,{resolve,timer});
     try{getIrisWorker().postMessage({id,width,height,buffer:rgb.buffer},[rgb.buffer])}
     catch{clearTimeout(timer);irisPending.delete(id);resolve('')}
@@ -238,7 +242,7 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',maxicode:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Automatic scanning of standard codes. Select a color or experimental format for dedicated scanning.',
+  auto:'Standard codes and ChromaQR. Select IRIS, DotCode or Codablock F manually.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
@@ -273,11 +277,16 @@ function syncCameraLayout(){
 }
 addEventListener('resize',syncCameraLayout);
 addEventListener('orientationchange',syncCameraLayout);
-function centeredIrisFrame(video){
+function centeredIrisFrame(video,full=false){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
+  const scale=full?Math.min(1,1200/Math.max(w,h),Math.sqrt(1_350_000/(w*h))):Math.min(1,1200/side);
   const canvas=document.createElement('canvas');
-  const size=Math.min(side,950);canvas.width=size;canvas.height=size;
-  canvas.getContext('2d',{willReadFrequently:true}).drawImage(video,(w-side)/2,(h-side)/2,side,side,0,0,size,size);
+  canvas.width=Math.max(1,Math.round((full?w:side)*scale));
+  canvas.height=Math.max(1,Math.round((full?h:side)*scale));
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.imageSmoothingEnabled=false;
+  if(full)ctx.drawImage(video,0,0,w,h,0,0,canvas.width,canvas.height);
+  else ctx.drawImage(video,(w-side)/2,(h-side)/2,side,side,0,0,canvas.width,canvas.height);
   return canvas;
 }
 // A worker does expensive barcode decoding, keeping the camera preview responsive.
@@ -393,7 +402,7 @@ function getExoticWorker(){
   }
   return exoticWorker;
 }
-function readExoticPixels(image,format,exact=false){
+function readExoticPixels(image,format,exact=false,phase=0){
   const {width,height,data}=image;
   if(!['codablockf','dotcode'].includes(format)||!width||!height||
     width*height>2_000_000||data?.length!==width*height*4)return Promise.resolve('');
@@ -402,7 +411,7 @@ function readExoticPixels(image,format,exact=false){
     const id=++exoticSeq;
     const timer=setTimeout(resetExoticWorker,4500);
     exoticWaiting.set(id,{timer,resolve});
-    try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer,exact},[rgba.buffer])}
+    try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer,exact,phase},[rgba.buffer])}
     catch{clearTimeout(timer);exoticWaiting.delete(id);resolve('')}
   });
 }
@@ -443,13 +452,31 @@ async function readFocused(lib,source,mode,frame){
   const opts={
     ...wasmOptions,formats:[format],
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
-    isPure:false,
+    isPure:mode==='maxicode'&&useCrop,
+    minLineCount:mode==='code128'?1:2,
     tryDownscale:mode==='maxicode'&&useCrop,
-    tryDenoise:false,
+    tryDenoise:mode==='rmqr',
     tryRotate:true
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
+}
+// Native detection can read some difficult linear codes without an extra WASM pass.
+let nativeFocusPromise=null;
+async function detectNativeFocused(mode,video){
+  const names={code128:'code_128',pdf417:'pdf417',maxicode:'maxi_code',rmqr:'rmqr'};
+  const format=names[mode];
+  if(!format||!('BarcodeDetector' in globalThis))return null;
+  if(!nativeFocusPromise)nativeFocusPromise=(async()=>{
+    try{
+      const supported=await BarcodeDetector.getSupportedFormats();
+      return new Map(supported.map(name=>[name,new BarcodeDetector({formats:[name]})]));
+    }catch{return new Map()}
+  })();
+  const detector=(await nativeFocusPromise).get(format);
+  if(!detector)return null;
+  try{return (await detector.detect(video)).find(result=>isGamePayload(result.rawValue))||null}
+  catch{return null}
 }
 async function cameraLoop(token){
   let frame=0;
@@ -462,9 +489,13 @@ async function cameraLoop(token){
       if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
         try{
           const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
+          if(frame%2===0){
+            const native=await detectNativeFocused(mode,video);
+            if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
+          }
           if(mode==='iris'){
             // IRIS is color-sensitive and benefits from the centered square source.
-            const crop=centeredIrisFrame(video);
+            const crop=centeredIrisFrame(video,frame%3===2);
             try{
               const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
               if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
@@ -491,13 +522,18 @@ async function cameraLoop(token){
               }
               const raw=result?.text||result?.rawValue;
               if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
+              if(mode==='auto'&&frame%5===4){
+                // RGB decoding is expensive, so only attempt it after selected standard scans.
+                const chroma=await readCameraChroma(ctx.getImageData(0,0,canvas.width,canvas.height));
+                if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
+              }
             }else if(mode==='chromaqr'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
               const chroma=await readCameraChroma(pixels);
               if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-              const experimental=await readExoticPixels(pixels,mode);
+              const experimental=await readExoticPixels(pixels,mode,false,frame%4);
               if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }

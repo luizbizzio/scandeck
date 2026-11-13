@@ -123,8 +123,8 @@ test('every displayed and downloadable game code uses PNG',()=>{
   assert.ok(gallery.includes('assets/taprush-code128.png'));
   assert.ok(gallery.includes('assets/snake-codablockf.png'));
   assert.ok(gallery.includes('assets/neon-dodge-dotcode.png'));
-  assert.match(gallery,/assets\/iris-wire\.svg/);
-  assert.match(gallery,/assets\/chromaqr-chroma\.svg/);
+  assert.match(gallery,/assets\/iris-wire\.png/);
+  assert.match(gallery,/assets\/chromaqr-chroma\.png/);
   assert.match(html,/Download PNG/);
   assert.match(script,/svgToPng\(/);
   assert.match(script,/image\/png/);
@@ -281,8 +281,8 @@ test('camera preview starts before WASM initialization; expensive experimental f
   assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
   assert.match(script,/if\(mode==='iris'\)/);
   assert.match(script,/if\(mode==='chromaqr'\)/);
-  assert.doesNotMatch(script,/mode==='auto'&&frame%4/);
-  assert.match(html,/Auto \(standard codes\)/);
+  assert.match(script,/mode==='auto'&&frame%5===4/);
+  assert.match(html,/Auto \(standard codes \+ ChromaQR\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
   const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
@@ -292,8 +292,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=35/);
-  assert.match(html,/src\/style\.css\?v=35/);
+  assert.match(html,/src\/app\.js\?v=36/);
+  assert.match(html,/src\/style\.css\?v=36/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{

@@ -29,7 +29,7 @@ test('About includes a genuine example image and full-size PNG link for every hi
   assert.equal(histories.length,12);
   for(const [format,id,game] of examples){
     const card=histories.find(([,markup])=>markup.includes('<h3>'+format+'</h3>'))?.[1];
-    const ext=['IRIS','ChromaQR'].includes(format)?'svg':'png';
+    const ext='png';
     assert.ok(card,format+' history is missing');
     assert.ok(card.includes('href="assets/'+id+'.'+ext+'"'),format+' must link to the exact PNG');
     assert.ok(card.includes('src="assets/'+id+'.'+ext+'"'),format+' must preview the exact PNG');

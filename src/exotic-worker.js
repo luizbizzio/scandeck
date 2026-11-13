@@ -2,7 +2,7 @@
 // Strict Codablock-F and DotCode decoding, isolated from the camera UI thread.
 import {BitMatrix,decode,decodeCodablockF,decodeDotCode} from '../vendor/sythos-barcode.esm.js';
 self.onmessage=({data:task})=>{
-  const {id,format,width,height,buffer,exact=false}=task||{};
+  const {id,format,width,height,buffer,exact=false,phase=0}=task||{};
   let text='';
   try{
     if(!['codablockf','dotcode'].includes(format)||
@@ -26,9 +26,29 @@ self.onmessage=({data:task})=>{
       if(result?.text)text=result.text;
     }else{
       const image={width,height,data};
-      const results=decode(image,{formats:[format],profile:'camera'});
-      const hit=results.find(r=>typeof r.text==='string'&&/^(?:SD1:|SDS:)/.test(r.text));
-      if(hit)text=hit.text;
+      const tryDecode=input=>decode(input,{formats:[format],profile:'camera'})
+        .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDS:)/.test(r.text))?.text||'';
+      text=tryDecode(image);
+      if(!text&&phase===1){
+        // High-contrast pass for slightly washed-out display captures.
+        let min=255,max=0;
+        for(let i=0;i<data.length;i+=64){const v=(data[i]*77+data[i+1]*150+data[i+2]*29)>>8;min=Math.min(min,v);max=Math.max(max,v)}
+        if(max-min>35){
+          const threshold=(min+max)/2,contrast=new Uint8ClampedArray(data.length);
+          for(let i=0;i<data.length;i+=4){const v=((data[i]*77+data[i+1]*150+data[i+2]*29)>>8)>threshold?255:0;
+            contrast[i]=contrast[i+1]=contrast[i+2]=v;contrast[i+3]=255}
+          text=tryDecode({width,height,data:contrast});
+        }
+      }
+      if(!text&&(phase===2||phase===3)){
+        // Experimental readers need axis-aligned matrices; rotate portrait captures.
+        const rotated=new Uint8ClampedArray(data.length),cw=phase===2;
+        for(let y=0;y<height;y++)for(let x=0;x<width;x++){
+          const from=(y*width+x)*4,to=(cw?(x*height+height-1-y):((width-1-x)*height+y))*4;
+          for(let k=0;k<4;k++)rotated[to+k]=data[from+k];
+        }
+        text=tryDecode({width:height,height:width,data:rotated});
+      }
     }
     if(!/^(?:SD1:|SDS:)/.test(text))text='';
   }catch{/* A failed strict barcode check must not accept unrelated data. */}
