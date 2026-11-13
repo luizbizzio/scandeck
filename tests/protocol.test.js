@@ -237,3 +237,15 @@ test('compressed full HTML and standalone JavaScript preserve source bytes and r
   await assert.rejects(()=>decodeGame('SDH:NOT-VALID'),/Invalid compressed game encoding/);
   await assert.rejects(()=>decodeGame('SDZ:AAAA'),/Invalid|decompress|format|stream|deflate|TypeError|unexpected end/i);
 });
+
+test('SDY alphanumeric compressed JavaScript remains a full standalone game',async()=>{
+ const source=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
+ const {deflateRawSync}=await import('node:zlib');
+ const {base43Encode}=await import('../src/protocol.js');
+ const payload='SDY:'+base43Encode(deflateRawSync(Buffer.from(source)));
+ const game=await decodeGame(payload);
+ assert.equal(game.kind,'standalone');
+ assert.equal(game.source,source);
+ assert.equal(game.payload,payload);
+ assert.match(payload,/^[A-Z0-9$*+\-./:]+$/);
+});

@@ -27,7 +27,7 @@ self.onmessage=({data:task})=>{
     }else{
       const image={width,height,data};
       const tryDecode=input=>decode(input,{formats:[format],profile:'camera',tryHarder:true})
-        .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDS:)/.test(r.text))?.text||'';
+        .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
       text=tryDecode(image);
       if(!text&&phase===1){
         // High-contrast pass for slightly washed-out display captures.
@@ -58,7 +58,7 @@ self.onmessage=({data:task})=>{
         text=tryDecode({width:height,height:width,data:rotated});
       }
     }
-    if(!/^(?:SD1:|SDS:)/.test(text))text='';
+    if(!/^(?:SD1:|SDH:|SDZ:|SDS:)/.test(text))text='';
   }catch{/* A failed strict barcode check must not accept unrelated data. */}
   self.postMessage({id,format,text});
 };

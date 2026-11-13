@@ -376,7 +376,7 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:V1|LO:|SD1:|SDH:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:V1|LO:|SD1:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
 let exoticWorker=null,exoticSeq=0;
@@ -418,9 +418,9 @@ function readExoticPixels(image,format,exact=false,phase=0){
 
 // An alternate centered crop helps dense PDF417/rMQR and frontal MaxiCode.
 // The full frame is always tried too, so cropped quiet zones cannot block scanning.
-function makeFocusedPixels(image,mode,monochrome=false){
+function makeFocusedPixels(image,mode,monochrome=false,phase=0){
   const w=image.width,h=image.height;
-  const roi=focusedCrop(w,h,mode);
+  const roi=focusedCrop(w,h,mode,phase);
   const canvas=document.createElement('canvas');
   canvas.width=roi.outputWidth;canvas.height=roi.outputHeight;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -446,13 +446,14 @@ function makeFocusedPixels(image,mode,monochrome=false){
 async function readFocused(lib,source,mode,frame){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=mode==='maxicode'?frame%3!==0:(mode==='rmqr'||mode==='pdf417')&&frame%3===1;
-  const pix=useCrop?makeFocusedPixels(source,mode,mode==='maxicode'&&frame%4===2):
+  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3!==0:mode==='pdf417'&&frame%3===1;
+  const monochrome=mode==='maxicode'&&useCrop&&frame%4!==1;
+  const pix=useCrop?makeFocusedPixels(source,mode,monochrome,frame):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
     ...wasmOptions,formats:[format],
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
-    isPure:false, // A camera crop is not a perfectly aligned generated symbol.
+    isPure:monochrome, // MaxiCode decoder needs pure, monochrome, upright pixels.
     minLineCount:mode==='code128'?1:2,
     tryDownscale:mode==='rmqr'&&frame%4===3,
     tryDenoise:mode==='rmqr'&&frame%4===2,

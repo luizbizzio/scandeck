@@ -31,3 +31,15 @@ test('experimental formats pause longer between frames',()=>{
   assert.ok(scanPause('iris')>scanPause('pdf417'));
   assert.ok(scanPause('dotcode')>scanPause('qr'));
 });
+
+test('rMQR alternates horizontal and vertical crop bands for rotated phone views',()=>{
+  const horizontal=focusedCrop(1920,1080,'rmqr',1);
+  const vertical=focusedCrop(1920,1080,'rmqr',2);
+  assert.ok(horizontal.width>vertical.width);
+  assert.ok(horizontal.height<vertical.height);
+  assert.ok(horizontal.outputWidth*horizontal.outputHeight<=1_650_000);
+  assert.ok(vertical.outputWidth*vertical.outputHeight<=1_650_000);
+  const maxiA=focusedCrop(1920,1080,'maxicode',1);
+  const maxiB=focusedCrop(1920,1080,'maxicode',3);
+  assert.ok(maxiB.width<maxiA.width,'Dedicated MaxiCode pass should zoom into centered codes');
+});

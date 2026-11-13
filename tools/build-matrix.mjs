@@ -23,14 +23,34 @@ for (const game of matrixGames) {
     'SD1:'+base43Encode(deflateRawSync(Buffer.from(source)));
   const max=game.max??1400;
   if (payload.length>max) throw new Error(game.format+' game is too large ('+payload.length+' > '+max+').');
-  const result=await writeBarcode(payload,{format:game.format,scale:game.format==='PDF417'?10:game.format==='RMQRCode'?12:game.format==='MaxiCode'?12:8});
+  const opts={format:game.format,scale:game.format==='PDF417'?10:game.format==='RMQRCode'?12:game.format==='MaxiCode'?12:8};
+  let result=await writeBarcode(payload,opts);
+  let selectedPayload=payload;
+  if(game.format==='RMQRCode'){
+    // An alphanumeric compressed encoding can fit a smaller rMQR version than
+    // the byte-mode JavaScript. Select it only if the written symbol is smaller
+    // and the actual PNG independently decodes to the full compressed payload.
+    const packed='SDY:'+base43Encode(deflateRawSync(Buffer.from(source)));
+    try{
+      const other=await writeBarcode(packed,opts);
+      if(other.image&&other.svg){
+        const match=(await readBarcodes(other.image,{formats:[game.format],tryHarder:true,maxNumberOfSymbols:1})).some(x=>x.text===packed);
+        const rawImage=Buffer.from(await result.image.arrayBuffer());
+        const otherImage=Buffer.from(await other.image.arrayBuffer());
+        const area=rawImage.readUInt32BE(16)*rawImage.readUInt32BE(20);
+        const otherArea=otherImage.readUInt32BE(16)*otherImage.readUInt32BE(20);
+        console.log('rMQR candidates: original '+payload.length+' chars / '+area+' px², compressed '+packed.length+' chars / '+otherArea+' px²');
+        if(match&&otherArea<area){selectedPayload=packed;result=other}
+      }
+    }catch(error){console.log('rMQR compressed candidate unavailable: '+error.message)}
+  }
   if (!result.svg||!result.image) throw new Error(game.format+' did not produce SVG and PNG: '+JSON.stringify({error:result.error,keys:Object.keys(result)}));
   // The barcode must be decoded from its actual pixels, not from copied payload metadata.
   const found=await readBarcodes(result.image,{formats:[game.format],tryHarder:true,maxNumberOfSymbols:1});
-  if(!found.some(x=>x.text===payload))throw new Error(game.format+' failed its pixel round-trip');
+  if(!found.some(x=>x.text===selectedPayload))throw new Error(game.format+' failed its pixel round-trip');
   writeFileSync(asset(game.output+'.png'),Buffer.from(await result.image.arrayBuffer()));
-  writeFileSync(asset(game.output+'.txt'),payload);
-  console.log(game.format+' | '+source.length+' source characters | '+payload.length+' code characters | barcode verified');
+  writeFileSync(asset(game.output+'.txt'),selectedPayload);
+  console.log(game.format+' | '+source.length+' source characters | '+selectedPayload.length+' code characters | barcode verified');
 }
 
 // Preserve the full self-contained Snake in a 2D QR so it can be scanned.

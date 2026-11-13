@@ -11,13 +11,21 @@ export function captureDimensions(width,height,mode='auto'){
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }
-export function focusedCrop(width,height,mode){
+export function focusedCrop(width,height,mode,phase=0){
   if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)
     throw new Error('Invalid camera frame');
   let roiWidth,roiHeight,maxWidth,scale;
   if(mode==='maxicode'){
-    roiWidth=roiHeight=Math.min(width,height)*.82;
-    maxWidth=1150;scale=1.25;
+    const fraction=phase%4===2?.65:phase%4===3?.52:.86;
+    roiWidth=roiHeight=Math.min(width,height)*fraction;
+    maxWidth=1150;scale=1.55;
+  }else if(mode==='rmqr'){
+    // Crop a horizontal strip or a vertical strip on alternating camera frames.
+    // rMQR's narrow module height otherwise vanishes in full-frame downscaling.
+    const horizontal=phase%3===1;
+    roiWidth=width*(horizontal?.96:.46);
+    roiHeight=height*(horizontal?.42:.96);
+    maxWidth=1850;scale=1.6;
   }else if(mode==='pdf417'){
     roiWidth=width*.96;roiHeight=height*.76;
     maxWidth=1700;scale=1.1;

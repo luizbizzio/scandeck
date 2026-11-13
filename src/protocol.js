@@ -129,6 +129,14 @@ export async function decodeGame(raw) {
     return {title:heading?heading[1].trim():'Custom game',type:'SDH / DOTCODE',kind:'html',
       source:html,payload:value,size:new TextEncoder().encode(html).length};
   }
+  if(value.startsWith('SDY:')){
+    // Alphanumeric QR/rMQR transport for compressed full JavaScript.
+    const script=await inflateRaw(base43Decode(value.slice(4)));
+    if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
+      throw Error('Invalid compressed JavaScript game.');
+    return {title:'Standalone Barcode Game',type:'SDY / RMQR',kind:'standalone',
+      source:script,payload:value,size:script.length};
+  }
   if(value.startsWith('SDZ:')){
     const script=await inflateRaw(base64Decode(value.slice(4)));
     if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
