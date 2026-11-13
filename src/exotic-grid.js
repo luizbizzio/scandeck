@@ -131,8 +131,54 @@ export function samplePerspectiveGrid(image,dimensions,margin,BitMatrix,decode){
     const i=((y|0)*w+(x|0))*4;
     return (data[i]*77+data[i+1]*150+data[i+2]*29)>>8;
   };
+  // Refine coarse component corners against the full-resolution white-card edge.
+  // Without this, a 2-3 pixel grid step can shift the sampling by a whole barcode
+  // cell when the camera sees hundreds of dense Codablock F bars.
+  function refineCorners(corners){
+    const lines=[];
+    for(let side=0;side<4;side++){
+      const p=corners[side],q=corners[(side+1)%4];
+      const vx=q[0]-p[0],vy=q[1]-p[1],len=Math.hypot(vx,vy);
+      if(len<40)return corners;
+      const nx=-vy/len,ny=vx/len,points=[];
+      for(let sample=1;sample<=27;sample++){
+        const t=sample/28,bx=p[0]+vx*t,by=p[1]+vy*t;
+        let wasBright=false;
+        for(let off=-12;off<=12;off+=.5){
+          const x=Math.round(bx+nx*off),y=Math.round(by+ny*off);
+          const brightNow=x>=0&&x<w&&y>=0&&y<h&&gray(x,y)>190;
+          if(brightNow&&!wasBright&&off>-11.5){
+            // A transition from dark background to quiet white margin.
+            points.push([bx+nx*(off-.25),by+ny*(off-.25)]);
+            break;
+          }
+          wasBright=brightNow;
+        }
+      }
+      if(points.length<12)return corners;
+      const count=points.length;
+      let mx=0,my=0;for(const p of points){mx+=p[0];my+=p[1]}
+      mx/=count;my/=count;
+      let xx=0,xy=0,yy=0;
+      for(const p of points){const dx=p[0]-mx,dy=p[1]-my;xx+=dx*dx;xy+=dx*dy;yy+=dy*dy}
+      const angle=.5*Math.atan2(2*xy,xx-yy);
+      const normalX=-Math.sin(angle),normalY=Math.cos(angle);
+      lines.push([normalX,normalY,normalX*mx+normalY*my]);
+    }
+    const intersect=(a,b)=>{
+      const det=a[0]*b[1]-a[1]*b[0];
+      if(Math.abs(det)<.1)return null;
+      return [(a[2]*b[1]-a[1]*b[2])/det,(a[0]*b[2]-a[2]*b[0])/det];
+    };
+    const refined=[
+      intersect(lines[3],lines[0]),intersect(lines[0],lines[1]),
+      intersect(lines[1],lines[2]),intersect(lines[2],lines[3])
+    ];
+    if(refined.some((p,i)=>!p||Math.hypot(p[0]-corners[i][0],p[1]-corners[i][1])>25))return corners;
+    return refined;
+  }
   for(const item of candidates.slice(0,2)){
-    const [tl,tr,br,bl]=item.quad;
+    const [tl,tr,br,bl]=refineCorners(item.quad);
     // Homography mapping the source card square into its camera quadrilateral.
     const dx1=tr[0]-br[0],dx2=bl[0]-br[0],dx3=tl[0]-tr[0]+br[0]-bl[0];
     const dy1=tr[1]-br[1],dy2=bl[1]-br[1],dy3=tl[1]-tr[1]+br[1]-bl[1];
