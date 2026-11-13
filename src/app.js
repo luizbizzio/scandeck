@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=38';
-import { gameDocument } from './runtime.js?v=38';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=39';
+import { gameDocument } from './runtime.js?v=39';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=38';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=39';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=38',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=39',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -535,7 +535,7 @@ async function cameraLoop(token){
               if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-              const experimental=await readExoticPixels(pixels,mode,false,frame%4);
+              const experimental=await readExoticPixels(pixels,mode,false,frame%5);
               if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }

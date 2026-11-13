@@ -26,7 +26,7 @@ self.onmessage=({data:task})=>{
       if(result?.text)text=result.text;
     }else{
       const image={width,height,data};
-      const tryDecode=input=>decode(input,{formats:[format],profile:'camera'})
+      const tryDecode=input=>decode(input,{formats:[format],profile:'camera',tryHarder:true})
         .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDS:)/.test(r.text))?.text||'';
       text=tryDecode(image);
       if(!text&&phase===1){
@@ -39,6 +39,14 @@ self.onmessage=({data:task})=>{
             contrast[i]=contrast[i+1]=contrast[i+2]=v;contrast[i+3]=255}
           text=tryDecode({width,height,data:contrast});
         }
+      }
+      if(!text&&phase===4){
+        // Retry on the centered subject when a wide camera background confuses the detector.
+        const cw=Math.max(30,Math.floor(width*.86)),ch=Math.max(30,Math.floor(height*.86));
+        const left=Math.floor((width-cw)/2),top=Math.floor((height-ch)/2);
+        const cropped=new Uint8ClampedArray(cw*ch*4);
+        for(let y=0;y<ch;y++)cropped.set(data.subarray(((y+top)*width+left)*4,((y+top)*width+left+cw)*4),y*cw*4);
+        text=tryDecode({width:cw,height:ch,data:cropped});
       }
       if(!text&&(phase===2||phase===3)){
         // Experimental readers need axis-aligned matrices; rotate portrait captures.

@@ -42,7 +42,7 @@ for(const game of games){
   if(!svg.includes('<svg'))throw Error(game.output+' SVG generation failed');
   writeFileSync(asset(game.output+'.svg'),svg);
   // Render more pixels per IRIS cell without changing its payload or marker geometry.
-  const multiplier=Math.max(1,Math.min(3,Math.floor(3000/grid.width)));
+  const multiplier=Math.max(1,Math.min(6,Math.floor(3000/grid.width)));
   const detailed=multiplier>1?renderColorRaster({...symbol,params:{...symbol.params,u:symbol.params.u*multiplier}}):grid;
   if(decodeColor(detailed).text!==payload)throw Error('High-resolution IRIS integrity check failed');
   writeFileSync(asset(game.output+'.png'),encodePng(detailed));
