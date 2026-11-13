@@ -23,9 +23,9 @@ for(const id of Object.keys(sizes)){
   throw Error('Unsupported catalog game '+name);
  catalog[name]=game;
 }
-// JSON is data, not executable script. Escape HTML tag openers to avoid ending the script element.
-const embedded=JSON.stringify(catalog).replaceAll('<','\\u003c').replaceAll('&','\\u0026');
-const tag='<script type="application/json" id="play-catalog">'+embedded+'</script>';
+// A base64-encoded JSON data block cannot contain HTML tags or terminate the script element.
+const embedded=Buffer.from(JSON.stringify(catalog),'utf8').toString('base64');
+const tag='<script type="application/x-scandeck-catalog" id="play-catalog">'+embedded+'</script>';
 const marker='<script type="module" src="src/app.js';
 if(!html.includes(marker))throw Error('Could not find the game loader in HTML.');
 const finished=html.replace(marker,tag+'\n  '+marker);

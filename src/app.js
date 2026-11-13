@@ -624,7 +624,10 @@ const catalogPromises=new Map();
 let bundledCatalog=null;
 try{
   const inline=document.getElementById('play-catalog');
-  if(inline)bundledCatalog=JSON.parse(inline.textContent);
+  if(inline){
+    const bytes=Uint8Array.from(atob(inline.textContent.trim()),char=>char.charCodeAt(0));
+    bundledCatalog=JSON.parse(new TextDecoder().decode(bytes));
+  }
 }catch{bundledCatalog=null}
 async function readCatalogGame(name){
   if(!/^[a-z0-9-]+$/.test(name))throw Error('Invalid game asset name.');

@@ -13,10 +13,11 @@ test('published HTML embeds all 12 real decoded games without fetching on Play',
   writeFileSync(path,readFileSync(new URL('../index.html',import.meta.url),'utf8'));
   execFileSync(process.execPath,['tools/inject-code-sizes.mjs',path],{cwd:new URL('../',import.meta.url)});
   const html=readFileSync(path,'utf8');
-  const embedded=html.match(/<script type="application\/json" id="play-catalog">([\s\S]*?)<\/script>/)?.[1];
+  const embedded=html.match(/<script type="application\/x-scandeck-catalog" id="play-catalog">([\s\S]*?)<\/script>/)?.[1];
   assert.ok(embedded,'Build must inject JSON payload');
   assert.ok(!embedded.includes('</script>'));
-  const catalog=JSON.parse(embedded);
+  assert.match(embedded,/^[A-Za-z0-9+/=]+$/,'The embedded payload must be safe in HTML');
+  const catalog=JSON.parse(Buffer.from(embedded,'base64').toString('utf8'));
   assert.equal(Object.keys(catalog).length,12);
   for(const [name,game] of Object.entries(catalog)){
    const actual=await decodeGame(readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8'));
