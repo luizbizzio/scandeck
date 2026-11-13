@@ -35,12 +35,12 @@ for (const game of matrixGames) {
 
 // Preserve the full self-contained Snake in a 2D QR so it can be scanned.
 const snake=packScript(readFileSync(new URL('examples/snake-standalone.js',root),'utf8').trim());
-// Seven printable characters encode a complete solvable Lights Out level.
-// The rules and rendering are a reusable interpreter, not part of the barcode.
-const lights='LO:5A36';
+// Tap Rush is an independent JavaScript game, not compact interpreter bytecode.
+// Its 79-character source is encoded literally, including scoring and a 3-second timer.
+const tapRush=packScript(readFileSync(new URL('examples/tap-rush-code128.js',root),'utf8').trim());
 for(const game of [
   {name:'snake-qr',payload:snake,format:'QRCode',scale:8},
-  {name:'lights-code128',payload:lights,format:'Code128',scale:5}
+  {name:'taprush-code128',payload:tapRush,format:'Code128',scale:4}
 ]){
   const result=await writeBarcode(game.payload,{format:game.format,scale:game.scale});
   if(!result.image)throw Error(game.name+' PNG generation failed');

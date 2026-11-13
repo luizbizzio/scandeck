@@ -29,7 +29,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>IRIS color</span><span>ChromaQR</span></div>
+            <div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>Codablock F</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -55,7 +55,7 @@
                       <option value="pdf417">PDF417</option>
                       <option value="code128">Code 128</option>
                       <option value="iris">IRIS</option>
-                      <option value="chromaqr">ChromaQR</option>
+                      <option value="chromaqr">ChromaQR</option><option value="dotcode">DotCode</option><option value="dotcode">DotCode</option><option value="codablockf">Codablock F</option><option value="codablockf">Codablock F</option>
                     </select>
                     <p id="camera-tip">Keep the entire symbol inside the frame.</p>
                   </div>
@@ -92,16 +92,26 @@
             <a class="game-code-preview qr-code-preview" href="assets/ironpass-micro-v3-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Ironpass Micro QR code"><span class="game-code-paper"><img src="assets/ironpass-micro-v3-qr.png" alt="QR code containing Ironpass Micro" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
             <div class="game-body"><h3>Ironpass Micro</h3><p>Defend your towers against waves of enemies.</p><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download QR</a></div></div>
           </article>
-          <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/snake-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Snake QR code"><span class="game-code-paper"><img src="assets/snake-qr.png" alt="QR Code containing the complete standalone Snake game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Snake</h3><p>The full independent Snake program, including keyboard and swipe controls, is embedded in the QR Code.</p><div class="game-actions"><button class="btn btn-primary" id="try-snake">Play</button><a class="btn" href="assets/snake-qr.png" download>Download PNG</a></div></div>
-          </article>
         </section>
         <section class="game-group" aria-labelledby="bar-games-heading">
           <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
           <article class="surface game-card">
-            <a class="game-code-preview barcode-code-preview" href="assets/lights-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Lights Out Code 128 barcode"><span class="game-code-paper"><img src="assets/lights-code128.png" alt="Code 128 containing the complete Lights Out mini game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Lights Out</h3><p>Turn off every light in a 4×4 grid. Each tap flips a tile and its neighbors. The barcode stores the complete puzzle in seven characters.</p><small class="barcode-note">This ultra-short barcode stores a puzzle level, not standalone JavaScript. The ScanDeck interpreter supplies the rules.</small><div class="game-actions"><button class="btn btn-primary" id="try-lights">Play</button><a class="btn" href="assets/lights-code128.png" download>Download PNG</a></div></div>
+            <a class="game-code-preview barcode-code-preview" href="assets/taprush-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full Tap Rush Code 128 barcode"><span class="game-code-paper"><img src="assets/taprush-code128.png" alt="Code 128 containing the full Tap Rush JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
+            <div class="game-body"><h3>Tap Rush</h3><p>Make ten taps in three seconds. The timer starts on your first tap.</p><small class="barcode-note">The full JavaScript game is inside this Code 128. It is still a wide symbol, so physical camera scanning can be difficult.</small><div class="game-actions"><button class="btn btn-primary" id="try-taprush">Play</button><a class="btn" href="assets/taprush-code128.png" download>Download PNG</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="codablock-games-heading">
+          <h2 class="group-title" id="codablock-games-heading">Codablock F <small>(Experimental)</small></h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/snake-codablockf.png" target="_blank" rel="noopener noreferrer" aria-label="View full Snake Codablock F symbol"><span class="game-code-paper"><img src="assets/snake-codablockf.png" alt="Codablock F containing the complete Snake JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
+            <div class="game-body"><h3>Snake</h3><p>Eat food and grow your snake with swipes or arrow keys. The complete original JavaScript is in the stacked barcode.</p><small class="barcode-note">Requires a clean, straight image; physical-camera reliability is experimental.</small><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="dotcode-games-heading">
+          <h2 class="group-title" id="dotcode-games-heading">DotCode <small>(Experimental)</small></h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/neon-dodge-dotcode.png" target="_blank" rel="noopener noreferrer" aria-label="View full Neon Dodge DotCode symbol"><span class="game-code-paper"><img src="assets/neon-dodge-dotcode.png" alt="DotCode containing the complete Neon Dodge HTML game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
+            <div class="game-body"><h3>Neon Dodge</h3><p>Tap to switch lanes, dodge falling blocks and survive as the game gets faster.</p><small class="barcode-note">Entire standalone HTML game embedded. Camera decoding requires good focus and alignment.</small><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dm-games-heading">
@@ -179,6 +189,8 @@
             <button class="format-option" data-format="rmqr" aria-pressed="false"><strong>rMQR</strong><span>For short JavaScript games</span></button>
             <button class="format-option" data-format="iris" aria-pressed="false"><strong>IRIS color</strong><span>For full HTML games</span></button>
             <button class="format-option" data-format="chromaqr" aria-pressed="false"><strong>ChromaQR</strong><span>For JavaScript games across RGB layers</span></button>
+            <button class="format-option" data-format="codablockf" aria-pressed="false"><strong>Codablock F</strong><span>Complete standalone JavaScript in stacked bars</span></button>
+            <button class="format-option" data-format="dotcode" aria-pressed="false"><strong>DotCode</strong><span>Compact complete HTML games in dots</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
           <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
@@ -209,6 +221,8 @@
           <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
           <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
           <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>IRIS</h3><p>Experimental circular code. Small codes are easier to scan with a camera.</p></div><div><h3>ChromaQR</h3><p>Three QR code data layers combined in red, green and blue. Requires the ScanDeck RGB reader.</p></div>
+          <div><h3>Codablock F</h3><p>Stacked Code 128 rows. Experimental camera decoding.</p></div>
+          <div><h3>DotCode</h3><p>Matrix code made from individual dots. Experimental camera decoding.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

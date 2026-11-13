@@ -23,7 +23,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '24'
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Build all game codes and scanner
@@ -36,18 +36,20 @@ jobs:
           node --check tools/build-matrix.mjs
           node --check chroma.js
           node --check iris-worker.js
+          node --check exotic-worker.js
+          node --check tools/build-exotic.mjs
           node --check sw.js
       - name: Run tests
         run: npm test
       - name: Prepare static site
         run: |
           mkdir -p dist/assets dist/vendor/zxing-wasm
-          cp index.html style.css app.js chroma.js iris-worker.js protocol.js runtime.js maze.js code128.js sw.js .nojekyll dist/
+          cp index.html style.css app.js chroma.js iris-worker.js exotic-worker.js protocol.js runtime.js maze.js code128.js sw.js .nojekyll dist/
           mkdir -p dist/vendor/iris
           cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
           cp assets/favicon.svg assets/*.png assets/*.txt dist/assets/
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
-          cp vendor/qrcode-generator.js dist/vendor/
+          cp vendor/qrcode-generator.js vendor/sythos-barcode.esm.js vendor/sythos.LICENSE dist/vendor/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact

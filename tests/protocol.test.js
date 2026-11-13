@@ -72,35 +72,20 @@ test('full independent Snake program is kept in a QR image rather than a giant C
   const png=readFileSync(new URL('../assets/snake-qr.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
-test('Code 128 stores a complete Lights Out level in seven characters',async()=>{
-  const payload=readFileSync(new URL('../assets/lights-code128.txt',import.meta.url),'utf8');
-  assert.equal(payload,'LO:5A36');
-  assert.equal(payload.length,7);
+test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
+  const payload=readFileSync(new URL('../assets/taprush-code128.txt',import.meta.url),'utf8');
+  const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
+  assert.equal(payload,'SDS:'+source);
+  assert.ok(payload.length<=95);
   const game=await decodeGame(payload);
-  assert.equal(game.kind,'lights');
-  assert.equal(game.title,'Lights Out');
-  assert.equal(game.source,'5A36');
-  assert.match(gameDocument(game),/LIGHTS OUT/);
-  const png=readFileSync(new URL('../assets/lights-code128.png',import.meta.url));
+  assert.equal(game.kind,'standalone');
+  assert.equal(game.source,source);
+  assert.match(game.source,/onclick/);
+  assert.match(game.source,/setTimeout/);
+  assert.match(game.source,/innerText/);
+  assert.match(gameDocument(game),/setTimeout/);
+  const png=readFileSync(new URL('../assets/taprush-code128.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
-  await assert.rejects(()=>decodeGame('LO:0000'),/Invalid Lights Out/);
-});
-test('Lights Out 4x4 encoded level is solvable by its stored switch mask',()=>{
-  const seed=Number.parseInt('5A36',16);
-  const flip=(board,n)=>{
-    board^=1<<n;
-    const x=n%4,y=n>>2;
-    if(x)board^=1<<(n-1);
-    if(x<3)board^=1<<(n+1);
-    if(y)board^=1<<(n-4);
-    if(y<3)board^=1<<(n+4);
-    return board;
-  };
-  let board=0;
-  for(let i=0;i<16;i++)if(seed&(1<<i))board=flip(board,i);
-  assert.notEqual(board,0,'The level must not start solved.');
-  for(let i=0;i<16;i++)if(seed&(1<<i))board=flip(board,i);
-  assert.equal(board,0,'The encoded switches must solve the level.');
 });
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8');

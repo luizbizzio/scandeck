@@ -29,15 +29,16 @@ async function acceptPayload(raw, mode='manual', format='') {
     const game = await decodeGame(raw);
     if(format==='MaxiCode'&&game.kind==='standalone')game.title='Perfect Timing';
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
-    if((format==='QRCode'||format==='qr_code')&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
-    if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('onclick=()=>document.body.innerText=(r='))game.title='Lucky Six';
+    if(['QRCode','qr_code','CodablockF'].includes(format)&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
+    if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('n=0;onclick=()=>{n||setTimeout'))game.title='Tap Rush';
+    if(format==='DotCode'&&game.kind==='html'&&game.source.includes('DODGE ·'))game.title='Neon Dodge';
     if((format==='IRIS'||format==='ChromaQR')&&game.kind==='standalone'&&game.source.startsWith("document.write('<p id=t>"))game.title='Wire Crisis';
     if(format==='ChromaQR'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    const labels={IRIS:'IRIS',ChromaQR:'ChromaQR',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
+    const labels={IRIS:'IRIS',ChromaQR:'ChromaQR',CodablockF:'Codablock F',DotCode:'DotCode',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
     for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
@@ -68,7 +69,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
+  const hints={'Tap Rush':'10 TAPS IN 3 SECONDS · START ON FIRST TAP','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -182,10 +183,12 @@ const focusTips={
   pdf417:'Hold PDF417 horizontally with all rows visible.',
   code128:'Keep the entire barcode visible from end to end.',
   iris:'Center the colored circular code in the frame.',
-  chromaqr:'Center the full colored QR symbol.'
+  chromaqr:'Center the full colored QR symbol.',
+  codablockf:'Keep all stacked bars straight and fully inside the frame.',
+  dotcode:'Hold the entire field of dots straight and sharply focused.'
 };
 function setScanFocus(mode){
-  if(!['auto','rmqr','maxicode','pdf417','code128','iris','chromaqr'].includes(mode))mode='auto';
+  if(!['auto','rmqr','maxicode','pdf417','code128','iris','chromaqr','codablockf','dotcode'].includes(mode))mode='auto';
   $('scan-mode').value=mode;
   $('camera-mode').value=mode;
   $('camera-panel').dataset.focus=mode;
@@ -235,6 +238,44 @@ async function readChromaImage(image){
 function isGamePayload(text){
   return /^(?:LO:|SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
+// Experimental decoders run off-thread; no image data is sent to a server.
+let exoticWorker=null,exoticSeq=0;
+const exoticWaiting=new Map();
+function resetExoticWorker(){
+  if(exoticWorker){exoticWorker.terminate();exoticWorker=null}
+  for(const pending of exoticWaiting.values()){
+    clearTimeout(pending.timer);pending.resolve('');
+  }
+  exoticWaiting.clear();
+}
+function getExoticWorker(){
+  if(!exoticWorker){
+    exoticWorker=new Worker(new URL('./exotic-worker.js',import.meta.url),{type:'module'});
+    exoticWorker.onmessage=({data})=>{
+      const pending=exoticWaiting.get(data?.id);
+      if(!pending)return;
+      clearTimeout(pending.timer);
+      exoticWaiting.delete(data.id);
+      pending.resolve(typeof data.text==='string'?data.text:'');
+    };
+    exoticWorker.onerror=resetExoticWorker;
+  }
+  return exoticWorker;
+}
+function readExoticPixels(image,format){
+  const {width,height,data}=image;
+  if(!['codablockf','dotcode'].includes(format)||!width||!height||
+    width*height>2_000_000||data?.length!==width*height*4)return Promise.resolve('');
+  const rgba=new Uint8ClampedArray(data); // don't detach ZXing's camera image
+  return new Promise(resolve=>{
+    const id=++exoticSeq;
+    const timer=setTimeout(resetExoticWorker,4500);
+    exoticWaiting.set(id,{timer,resolve});
+    try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer},[rgba.buffer])}
+    catch{clearTimeout(timer);exoticWaiting.delete(id);resolve('')}
+  });
+}
+
 // Focused camera recovery for dense rectangular rMQR and rigid MaxiCode.
 // ZXing MaxiCode needs an upright, monochrome and essentially frontal symbol.
 function makeFocusedPixels(image,mode,monochrome=false){
@@ -324,6 +365,11 @@ async function cameraLoop(token,engine){
           const chroma=await readChromaImage(pixels);
           if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
         }
+        if(mode==='codablockf'||mode==='dotcode'||mode==='auto'&&frame%8===5){
+          const format=mode==='codablockf'?'codablockf':mode==='dotcode'?'dotcode':frame%16===5?'codablockf':'dotcode';
+          const experimental=await readExoticPixels(pixels,format);
+          if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',format==='codablockf'?'CodablockF':'DotCode'))return;
+        }
         if(mode==='iris'||mode==='auto'&&frame%4===2){
           const crop=centeredIrisFrame(video);
           const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
@@ -374,6 +420,10 @@ async function detectImage(file) {
     for(const focusedFormat of ['rmqr','maxicode']){
       const focused=await readFocused(lib,canvas,focusedFormat,0);
       if(focused)return {text:focused.text,format:focused.format};
+    }
+    for(const exotic of ['codablockf','dotcode']){
+      const found=await readExoticPixels(pixels,exotic);
+      if(found)return {text:found,format:exotic==='codablockf'?'CodablockF':'DotCode'};
     }
     const chroma=await readChromaImage(pixels);
     if(chroma)return {text:chroma,format:'ChromaQR'};
@@ -428,8 +478,27 @@ $('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf41
 $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perfect Timing','MaxiCode'));
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
-$('try-snake').addEventListener('click',()=>playMatrixExample('snake-qr','Snake','QRCode'));
-$('try-lights').addEventListener('click',()=>playMatrixExample('lights-code128','Lights Out','Code128'));
+$('try-taprush').addEventListener('click',()=>playMatrixExample('taprush-code128','Tap Rush','Code128'));
+async function playExoticExample(name,title,format){
+  try{
+    const response=await fetch('assets/'+name+'.png',{cache:'no-cache'});
+    if(!response.ok)throw Error('Game code PNG could not be loaded.');
+    const bitmap=await createImageBitmap(await response.blob());
+    const canvas=document.createElement('canvas');
+    canvas.width=bitmap.width;canvas.height=bitmap.height;
+    canvas.getContext('2d',{willReadFrequently:true}).drawImage(bitmap,0,0);
+    bitmap.close();
+    const bytes=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
+    canvas.width=canvas.height=1;
+    const payload=await readExoticPixels(bytes,format);
+    if(!payload)throw Error('The experimental decoder could not read this PNG.');
+    const game=await decodeGame(payload);
+    game.title=title;
+    playGame(game);
+  }catch(error){switchTab('scan');status(title+' could not open: '+error.message,true)}
+}
+$('try-codablock-snake').addEventListener('click',()=>playExoticExample('snake-codablockf','Snake','codablockf'));
+$('try-dotcode-dodge').addEventListener('click',()=>playExoticExample('neon-dodge-dotcode','Neon Dodge','dotcode'));
 
 // Every IRIS Play button reads the generated image using the actual color decoder.
 async function playIrisExample(name,title){
@@ -460,11 +529,13 @@ function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
-  const script=['bar','maxi','rmqr','chromaqr'].includes(format);
+  const script=['bar','maxi','rmqr','chromaqr','codablockf'].includes(format);
   $('create-label').textContent=tiny?'Program (maze bytecode)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
-    format==='bar'?'For the shortest barcode use LO:5A36, a complete 4×4 Lights Out level (7 characters). JavaScript requires much more space.':
+    format==='bar'?'A complete Tap Rush JavaScript program needs 83 characters with the prefix. Longer Code 128 symbols may fail on phone cameras.':
+    format==='codablockf'?'Codablock F stores the full standalone JavaScript in stacked rows. Camera scanning is experimental.':
+    format==='dotcode'?'DotCode stores a complete compressed HTML game. ScanDeck uses an experimental strict DotCode reader.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
@@ -482,8 +553,8 @@ $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
     $('create-source').value='M36509';
   }else if(generatorFormat==='bar'){
-    $('create-source').value='LO:5A36';
-  }else if(!['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)){
+    $('create-source').value='n=0;onclick=()=>{n||setTimeout(()=>alert(n>9),3e3);document.body.innerText=++n}';
+  }else if(!['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
@@ -543,8 +614,8 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroQuiz(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
-    if(generatorFormat==='bar'&&payload.length>75)throw Error('Code 128 is too wide for camera scanning. Keep the total code under 75 characters or use QR Code.');
+    const payload=generatorFormat==='microqr'?packMicroQuiz(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
@@ -558,6 +629,12 @@ $('generate').addEventListener('click',async()=>{
     } else if(generatorFormat==='chromaqr'){
       const factory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       svg=displaySvg(chromaSvg(encodeChroma(factory,payload)));
+    } else if(generatorFormat==='codablockf'||generatorFormat==='dotcode'){
+      const {encodeCodablockF,encodeDotCode,toPNG}=await import('./vendor/sythos-barcode.esm.js');
+      const matrix=generatorFormat==='codablockf'
+        ?encodeCodablockF(payload,{rowHeight:5,separatorHeight:1})
+        :encodeDotCode(payload,{aspectRatio:1});
+      png=new Blob([await toPNG(matrix,{scale:5,margin:12})],{type:'image/png'});
     } else {
       const lib=await getMatrixEngine();
       const format=({ 'data-matrix':'DataMatrix',aztec:'Aztec',pdf:'PDF417',maxi:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode' })[generatorFormat];
