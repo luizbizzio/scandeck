@@ -290,5 +290,22 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
   assert.match(html,/app\.js\?v=26/);
-  assert.match(html,/style\.css\?v=26/);
+  assert.match(html,/style\.css\?v=27/);
+});
+
+test('expanding Paste game data cannot stretch the camera over the controls',()=>{
+  const workspace=css.match(/\.scan-workspace\{([^}]*)\}/)?.[1]||'';
+  const viewport=css.match(/\.scan-viewport\{([^}]*)\}/)?.[1]||'';
+  const controls=css.match(/\.scan-controls\{([^}]*)\}/)?.[1]||'';
+  assert.match(workspace,/align-items:start/,'grid items must not vertically stretch');
+  assert.doesNotMatch(workspace,/align-items:stretch/);
+  assert.match(viewport,/align-self:start/);
+  assert.match(viewport,/width:100%/);
+  assert.match(viewport,/max-width:100%/);
+  assert.match(viewport,/height:auto/);
+  assert.match(controls,/align-self:start/);
+  assert.match(css,/\.manual-entry\[open\] \.manual-inner\{width:100%\}/);
+  const scanner=html.slice(html.indexOf('class="scan-workspace"'),html.indexOf('</section>\n        <p class="scan-explore"'));
+  assert.ok(scanner.indexOf('id="scan-viewport"')<scanner.indexOf('class="scan-controls"'));
+  assert.ok(scanner.indexOf('class="scan-controls"')<scanner.indexOf('class="manual-entry"'));
 });

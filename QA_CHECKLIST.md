@@ -139,3 +139,9 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Open all 12 library games twice in succession; second Play reuses the decoded payload, with no WASM image decoding.
 - [ ] Test PNG upload and physical camera scan for several formats to confirm the optimized library does not bypass genuine decoding.
 - [ ] Reload a tab previously opened on an old version; HTML, modules and the new service worker should update together.
+
+## Paste game data layout regression
+
+- [ ] At desktop widths around 1034 and 800 px, open and close **Paste game data instead**: preview width stays fixed and never overlaps Scanner focus, camera actions or textarea.
+- [ ] At mobile widths around 390 and 320 px, the preview appears above the expanded form, with no horizontal overflow and no clipped input field.
+- [ ] With the camera in full-screen mode on mobile, the Stop/Close button and format picker remain accessible.
