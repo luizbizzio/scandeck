@@ -34,7 +34,7 @@ const games=[
       for(const columns of [18,20,22,24,26,28]){
         for(const rows of [24,26,28,30,32,34,36,40,44]){
           try{
-            const matrix=encodeCodablockF(payload,{rows,columns,rowHeight:6,separatorHeight:1});
+            const matrix=encodeCodablockF(payload,{rows,columns,rowHeight:5,separatorHeight:1});
             if(matrix.width>400||matrix.height>310)continue;
             if(decodeCodablockF(matrix)?.text!==payload)continue;
             const ratio=matrix.width/matrix.height;
