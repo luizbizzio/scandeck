@@ -1,5 +1,5 @@
 <meta name=viewport content="width=device-width"><body bgcolor=#122 style="margin:0;display:grid;place-items:center;height:100vh"><canvas id=c width=240 height=360 style="max-width:90vw;touch-action:none"></canvas><script>
-g=c.getContext('2d');p=s=b=0;o=-35;v=0;
-c.onclick=()=>b?(b=p=s=0,o=-35):p^=1;
-setInterval(()=>{g.fillStyle='#122';g.fillRect(0,0,240,360);if(!b){o+=6+s/7;if(o>360)o=-35,v=Math.random()*2|0,s++;if(o>288&&o<332&&v==p)b=1}g.fillStyle='#e67';g.fillRect(35+v*120,o,45,32);g.fillStyle='#afa';g.fillRect(40+p*120,300,35,35);g.fillStyle='#fff';g.font='19px system-ui';g.fillText(b?'CRASH · TAP TO RETRY':'DODGE · '+s,10,23)},33)
+g=c.getContext('2d');p=s=dead=0;o=-35;v=h=0;a=3.6;
+c.onclick=()=>dead?(dead=p=s=0,o=-35,a=3.6):p^=1;
+function f(t=0){d=h?Math.min(3,(t-h)/17):1;h=t;g.fillStyle='#122';g.fillRect(0,0,240,360);if(!dead){a+=.009*d;o+=a*d;if(o>360)o=-35,v=Math.random()*2|0,s++;if(o>288&&o<332&&v==p)dead=1}g.fillStyle='#e67';g.fillRect(35+v*120,o,45,32);g.fillStyle='#afa';g.fillRect(40+p*120,300,35,35);g.fillStyle='#fff';g.font='19px system-ui';g.fillText(dead?'CRASH · TAP TO RETRY':'DODGE · '+s,10,23);requestAnimationFrame(f)}f()
 </script>

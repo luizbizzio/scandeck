@@ -76,7 +76,7 @@ test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
   const payload=readFileSync(new URL('../assets/taprush-code128.txt',import.meta.url),'utf8');
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
   assert.equal(payload,'SDS:'+source);
-  assert.equal(payload.length,65,'The complete five-second game must remain compact');
+  assert.equal(payload.length,63,'The complete five-second game must remain compact');
   const game=await decodeGame(payload);
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,source);

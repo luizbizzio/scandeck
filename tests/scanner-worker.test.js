@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=51"/);
- assert.match(html,/src="src\/app\.js\?v=51"/);
+ assert.match(html,/href="src\/style\.css\?v=52"/);
+ assert.match(html,/src="src\/app\.js\?v=52"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -46,7 +46,7 @@ test('continuous scanner recycles worker memory without affecting camera streams
 
 test('MaxiCode and rMQR have camera-card normalization before a pure/regular second decode',()=>{
  const specialty=readFileSync(new URL('src/specialty-candidates.js',root),'utf8');
- assert.match(app,/specialty:!useCrop&&/);
+ assert.match(app,/specialty:mode==='rmqr'\|\|mode==='maxicode'/);
  assert.match(worker,/getSpecialtyPreprocessor/);
  assert.match(worker,/specialtyCandidates\(pixels,specialty\)/);
  assert.match(specialty,/export function findLightCard/);
