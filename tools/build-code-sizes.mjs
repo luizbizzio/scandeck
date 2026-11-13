@@ -21,7 +21,7 @@ const entries=[
 const out={};
 for(const [id,completeness] of entries){
   const png=fileURLToPath(new URL(id+'.png',root));
-  const txt=fileURLToPath(new URL(id+'.txt',root));
+  const txt=fileURLToPath(new URL((id==='ironpass-micro-v3-qr'?'ironpass-micro-v3':id)+'.txt',root));
   const bytes=readFileSync(txt);
   if(!bytes.length)throw Error('Empty encoded game: '+id);
   const size=statSync(png).size;
