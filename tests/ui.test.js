@@ -233,6 +233,7 @@ test('Tap Rush is a five-second high-score challenge and its player shows a live
   assert.ok(html.includes('Tap as many times as you can in five seconds'));
   assert.ok(!html.includes('Make ten taps in three seconds'));
   assert.ok(script.includes('AS MANY TAPS AS YOU CAN IN 5 SECONDS'));
+  assert.ok(script.includes("game.source.startsWith('n=0;onclick=()=>n++||setTimeout')"),'Camera scans should get the correct Tap Rush title and scoreboard');
   const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes('sd-rush-count'));
   assert.ok(runtime.includes('sd-rush-clock'));
