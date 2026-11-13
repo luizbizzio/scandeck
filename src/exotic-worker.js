@@ -36,8 +36,9 @@ self.onmessage=({data:task})=>{
       // it occasionally. It cannot be the primary real-time camera path.
       const tryDecode=input=>decode(input,{formats:[format]})
         .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDC:|SDB:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
-      if(!text&&phase===0)text=tryDecode(image);
-      if(!text&&phase===1){
+      const genericOk=format==='dotcode'||width*height<=280000;
+      if(!text&&genericOk&&phase===0)text=tryDecode(image);
+      if(!text&&genericOk&&phase===1){
         // High-contrast pass for slightly washed-out display captures.
         let min=255,max=0;
         for(let i=0;i<data.length;i+=64){const v=(data[i]*77+data[i+1]*150+data[i+2]*29)>>8;min=Math.min(min,v);max=Math.max(max,v)}
@@ -48,7 +49,7 @@ self.onmessage=({data:task})=>{
           text=tryDecode({width,height,data:contrast});
         }
       }
-      if(!text&&phase===4){
+      if(!text&&genericOk&&phase===4){
         // Retry on the centered subject when a wide camera background confuses the detector.
         const cw=Math.max(30,Math.floor(width*.86)),ch=Math.max(30,Math.floor(height*.86));
         const left=Math.floor((width-cw)/2),top=Math.floor((height-ch)/2);
@@ -56,7 +57,7 @@ self.onmessage=({data:task})=>{
         for(let y=0;y<ch;y++)cropped.set(data.subarray(((y+top)*width+left)*4,((y+top)*width+left+cw)*4),y*cw*4);
         text=tryDecode({width:cw,height:ch,data:cropped});
       }
-      if(!text&&(phase===2||phase===3)){
+      if(!text&&genericOk&&(phase===2||phase===3)){
         // Experimental readers need axis-aligned matrices; rotate portrait captures.
         const rotated=new Uint8ClampedArray(data.length),cw=phase===2;
         for(let y=0;y<height;y++)for(let x=0;x<width;x++){

@@ -2,7 +2,6 @@ import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
 import {deflateRawSync} from 'node:zlib';
 import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
 import {base85Encode,decodeGame} from '../src/protocol.js';
-import bwipjs from 'bwip-js';
 
 // Both extra formats use the MIT-licensed Sythos SDK v1.6.8.
 // Store complete games, never an URL, game identifier, or interpreter bytecode.
@@ -52,8 +51,6 @@ for(const game of games){
   const g=await decodeGame(payload);
   if(g.source.trim()!==source)throw Error(game.name+' game content is not completely embedded');
   const matrix=game.encode(payload);
-  // Public DotCode uses the independent BWIPP standard encoder for interoperability.
-  // Sythos remains our strict local matrix integrity reference.
   if(game.format==='codablockf'&&(matrix.width>420||matrix.height<100))
     throw Error('Codablock F layout is too wide for practical camera framing');
   // Use the exact writer expected by our strict image decoder. BWIPP's

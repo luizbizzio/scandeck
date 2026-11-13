@@ -33,7 +33,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-IRIS and ChromaQR previews and downloads use PNG. Auto mode includes ChromaQR. Codablock F, DotCode, IRIS and ChromaQR are experimental camera formats. DotCode PNGs use the independent BWIPP barcode writer; compatibility with the experimental ScanDeck camera reader still requires device tests. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
+IRIS and ChromaQR previews and downloads use PNG. Auto mode includes ChromaQR. Codablock F, DotCode, IRIS and ChromaQR are experimental camera formats. DotCode PNGs use the writer matching the local strict decoder. A validated photo-framing pipeline now improves focused scanning, but real devices still require testing. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
 
 ## Run locally
 
