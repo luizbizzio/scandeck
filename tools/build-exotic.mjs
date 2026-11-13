@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
 import {deflateRawSync} from 'node:zlib';
 import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
-import {base43Encode,packScript,decodeGame} from '../src/protocol.js';
+import {base85Encode,decodeGame} from '../src/protocol.js';
 import bwipjs from 'bwip-js';
 
 // Both extra formats use the MIT-licensed Sythos SDK v1.6.8.
@@ -15,7 +15,7 @@ const games=[
   {
     name:'snake-codablockf',
     input:'examples/snake-standalone.js',
-    payload:source=>'SDZ:'+deflateRawSync(Buffer.from(source)).toString('base64'),
+    payload:source=>'SDB:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9,windowBits:9,memLevel:9})),
     format:'codablockf',
     encode:payload=>{
       // Try several legal layouts. Prefer fewer tall, redundant-looking rows
@@ -40,7 +40,7 @@ const games=[
   },{
     name:'neon-dodge-dotcode',
     input:'examples/neon-dodge-dotcode.html',
-    payload:source=>'SDH:'+deflateRawSync(Buffer.from(source)).toString('base64'),
+    payload:source=>'SDC:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9,windowBits:10,memLevel:9})),
     format:'dotcode',
     encode:payload=>encodeDotCode(payload,{aspectRatio:1}),
     margin:10,scale:5

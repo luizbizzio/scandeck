@@ -1,4 +1,4 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=43';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=43';
 import { gameDocument } from './runtime.js?v=43';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
@@ -376,7 +376,7 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:V1|LO:|SD1:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:V1|LO:|SD1:|SDC:|SDB:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
 let exoticWorker=null,exoticSeq=0;
@@ -798,7 +798,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='codablockf'?await packCompactScript(input):generatorFormat==='dotcode'?await packCompactHtml(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='codablockf'?await packDenseScript(input):generatorFormat==='dotcode'?await packDenseHtml(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
     if(generatorFormat==='qr'){

@@ -1,10 +1,7 @@
 <meta name=viewport content="width=device-width"><body style="margin:0;height:100dvh;display:grid;place-items:center;background:#09120e"><canvas id=c width=280 height=430 style="max-width:90vw;touch-action:manipulation"></canvas><script>
-g=c.getContext('2d');p=s=dead=h=0;o=-50;v=0;a=3.6;
+g=c.getContext('2d');p=s=h=dead=0;o=-50;v=0;a=3.6;
 c.onclick=()=>dead?(dead=s=p=0,o=-50,a=3.6):p^=1;
-function f(t=0){d=h&&t?Math.min(3,(t-h)/16.667):1;h=t;
-g.fillStyle='#122';g.fillRect(0,0,280,430);g.fillStyle='#243';g.fillRect(137,0,6,430);
-if(!dead){a=Math.min(14,a+.009*d);k=o;o+=a*d;if(o>430){o=-40;v=Math.random()*2|0;s++}if(k<397&&o>343&&v==p)dead=1}
-g.fillStyle='#e67';g.fillRect(34+v*142,o,70,32);g.fillStyle='#afa';g.fillRect(51+p*142,365,36,36);
-g.fillStyle='#efe';g.font='bold 21px system-ui';g.fillText(dead?'CRASH · TAP TO RETRY':'DODGE · '+s,15,32);
-requestAnimationFrame(f)}f()
+function f(t=0){d=h?Math.min(3,(t-h)/17):1;h=t;g.fillStyle='#122';g.fillRect(0,0,280,430);g.fillStyle='#243';g.fillRect(139,0,2,430);
+if(!dead){a=Math.min(14,a+.009*d);k=o;o+=a*d;if(o>430)o=-40,v=Math.random()*2|0,s++;if(k<397&&o>343&&v==p)dead=1}
+g.fillStyle='#e67';g.fillRect(34+v*142,o,70,32);g.fillStyle='#afa';g.fillRect(51+p*142,365,36,36);g.fillStyle='#efe';g.font='bold 21px system-ui';g.fillText(dead?'CRASH · TAP TO RETRY':'DODGE · '+s,15,32);requestAnimationFrame(f)}f()
 </script>

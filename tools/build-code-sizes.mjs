@@ -29,8 +29,8 @@ for(const id of entries){
     throw Error('Invalid PNG for '+id);
   const payload=bytes.toString('utf8');
   const completeness=payload.startsWith('V1')?'bytecode'
-    :payload.startsWith('SDS:')||payload.startsWith('SDJ:')||payload.startsWith('SDZ:')?'partial'
-    :payload.startsWith('IP3:')||payload.startsWith('SD1:')||payload.startsWith('SDH:')?'full'
+    :payload.startsWith('SDS:')||payload.startsWith('SDJ:')||payload.startsWith('SDZ:')||payload.startsWith('SDB:')?'partial'
+    :payload.startsWith('IP3:')||payload.startsWith('SD1:')||payload.startsWith('SDH:')||payload.startsWith('SDC:')?'full'
     :null;
   if(!completeness)throw Error('Unknown game encoding: '+id);
   if(completeness==='bytecode'&&id!=='reflex-microqr')throw Error('Unexpected bytecode game: '+id);

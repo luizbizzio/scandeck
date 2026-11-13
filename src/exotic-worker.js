@@ -35,7 +35,7 @@ self.onmessage=({data:task})=>{
       // The general detector is expensive even for a clean PNG, so only run
       // it occasionally. It cannot be the primary real-time camera path.
       const tryDecode=input=>decode(input,{formats:[format]})
-        .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
+        .find(r=>typeof r.text==='string'&&/^(?:SD1:|SDC:|SDB:|SDH:|SDZ:|SDS:)/.test(r.text))?.text||'';
       if(!text&&phase===0)text=tryDecode(image);
       if(!text&&phase===1){
         // High-contrast pass for slightly washed-out display captures.
@@ -66,7 +66,7 @@ self.onmessage=({data:task})=>{
         text=tryDecode({width:height,height:width,data:rotated});
       }
     }
-    if(!/^(?:SD1:|SDH:|SDZ:|SDS:)/.test(text))text='';
+    if(!/^(?:SD1:|SDC:|SDB:|SDH:|SDZ:|SDS:)/.test(text))text='';
   }catch{/* A failed strict barcode check must not accept unrelated data. */}
   self.postMessage({id,format,text});
 };
