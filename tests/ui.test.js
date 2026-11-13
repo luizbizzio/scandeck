@@ -459,3 +459,11 @@ test('all game previews open a large in-page dialog, with fit and actual-size mo
   assert.equal((gallery.match(/class="game-code-preview/g)||[]).length,12);
   assert.equal((html.match(/class="about-code-example"/g)||[]).length,12);
 });
+
+test('MaxiCode/rMQR uploads get a pure-image pass and the camera dynamically limits CPU use',()=>{
+ const upload=script.slice(script.indexOf('async function detectImage('),script.indexOf('async function uploadImage('));
+ assert.match(upload,/formats:\['MaxiCode','RMQRCode'\],isPure:true/);
+ assert.match(upload,/item=>isGamePayload\(item\.text\)/);
+ assert.match(script,/slowDecodeBackoff=elapsed>750/);
+ assert.match(script,/frameRate:\{ideal:24,max:30\}/);
+});

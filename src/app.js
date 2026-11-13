@@ -355,7 +355,7 @@ async function startCamera() {
   try{
     // Start camera preview before loading the WASM scanner so the screen responds immediately.
     const stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:15,max:24}},
+      video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:24,max:30}},
       audio:false
     });
     if(token!==cameraToken){stream.getTracks().forEach(t=>t.stop());return}
@@ -500,7 +500,7 @@ async function detectNativeFocused(mode,video){
   catch{return null}
 }
 async function cameraLoop(token){
-  let frame=0;
+  let frame=0,slowDecodeBackoff=0;
   // Reuse the capture surface. Native BarcodeDetector can work directly on video.
   const canvas=document.createElement('canvas');
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -510,6 +510,7 @@ async function cameraLoop(token){
       if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
         try{
           const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
+          const decodeStarted=performance.now();
           if(frame%2===0){
             const native=await detectNativeFocused(mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
@@ -557,12 +558,16 @@ async function cameraLoop(token){
               if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }
+          const elapsed=performance.now()-decodeStarted;
+          slowDecodeBackoff=elapsed>750
+            ?Math.min(800,slowDecodeBackoff+140)
+            :Math.max(0,slowDecodeBackoff-70);
           frame++;
         }catch(error){
           if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
         }
       }
-      if(live&&token===cameraToken)await delay(scanPause(scanFocus()));
+      if(live&&token===cameraToken)await delay(scanPause(scanFocus())+slowDecodeBackoff);
     }
   }finally{canvas.width=canvas.height=1}
 }
@@ -581,6 +586,16 @@ async function detectImage(file) {
     } finally {bitmap?.close()}
   }
   const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
+  // PNG uploads are already isolated symbols. The MaxiCode reader needs this
+  // explicit pure-image pass; all-format scanning can fail on clean MaxiCode.
+  try{
+    const isolated=await lib.readBarcodes(file,{
+      ...wasmOptions,formats:['MaxiCode','RMQRCode'],isPure:true,
+      tryHarder:false,tryDownscale:false,tryDenoise:false
+    });
+    const hit=isolated.find(item=>isGamePayload(item.text));
+    if(hit)return {text:hit.text,format:hit.format};
+  }catch{/* Continue with the general image reader. */}
   try {
     const hit=firstResult(await lib.readBarcodes(file,wasmOptions));
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};

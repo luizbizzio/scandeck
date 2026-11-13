@@ -95,3 +95,7 @@ The independent BWIPP encoder can generate a standards-based Codablock F with th
 ## MaxiCode and rMQR full-frame camera detection
 
 ZXing-C++ only partially supports reading MaxiCode and does not offer a general-purpose arbitrary-scene MaxiCode detector. The ZXing MaxiCode reader expects an almost pure, unrotated, flat code image. ScanDeck now uses a separate camera preprocessing pass to find a pale code card via connected-component analysis, crop the card without changing its module geometry, and try both original pixels and Otsu-binarized pixels. MaxiCode uses a pure-aligned read for the second pass; rMQR first uses normal locator-based reading and then tests a near-pure candidate. No fixed sample payload or known image hash is used. Preprocessing runs inside the worker and only after the normal focused decoder fails. Mobile camera tests remain required.
+
+## Clean PNG decoding and camera FPS
+
+Uploaded MaxiCode/rMQR originals now get a dedicated pure-image decoding pass first, since the ZXing MaxiCode reader expects a clean aligned symbol. Video preview requests 24 fps (up to 30 when the device permits), while long-running decodes dynamically add up to 800 ms between attempts to avoid heating and frame drops. The preview stream remains independent of decode scheduling.
