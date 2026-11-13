@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=47';
-import { gameDocument } from './runtime.js?v=47';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=48';
+import { gameDocument } from './runtime.js?v=48';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=47';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=48';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=47',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=48',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -740,6 +740,15 @@ async function playExoticExample(name,title,format){
 }
 $('try-codablock-snake').addEventListener('click',()=>playExoticExample('snake-codablockf','Snake','codablockf'));
 $('try-dotcode-dodge').addEventListener('click',()=>playExoticExample('neon-dodge-dotcode','Neon Dodge','dotcode'));
+const SCAN_READY_IMAGES={'snake-codablockf':'Snake · Codablock F','neon-dodge-dotcode':'Neon Dodge · DotCode'};
+document.querySelectorAll('[data-scan-ready]').forEach(button=>button.addEventListener('click',()=>{
+  const asset=button.dataset.scanReady;
+  if(!Object.hasOwn(SCAN_READY_IMAGES,asset))return;
+  $('scan-ready-title').textContent=SCAN_READY_IMAGES[asset]+' · full-size image';
+  $('scan-ready-image').src='assets/'+asset+'.png';
+  $('scan-ready-dialog').showModal();
+}));
+$('close-scan-ready').addEventListener('click',()=>$('scan-ready-dialog').close());
 async function playIrisExample(name,title){
   return openCatalogGame(name,title);
 }

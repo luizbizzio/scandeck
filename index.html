@@ -30,8 +30,8 @@
   }
   </script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="src/style.css?v=47">
-  <script type="module" src="src/app.js?v=47"></script>
+  <link rel="stylesheet" href="src/style.css?v=48">
+  <script type="module" src="src/app.js?v=48"></script>
 </head>
 <body>
 <div class="shell">
@@ -132,7 +132,7 @@
               <span class="code-embedding code-embedding-partial" title="Complete JavaScript game, with the HTML interface supplied by ScanDeck"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
               <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
               <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
-            </div><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="snake-codablockf" data-source-title="Snake" aria-label="View source for Snake">View source</button></div></div>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><button class="btn btn-scan-ready" type="button" data-scan-ready="snake-codablockf">Scan full size</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="snake-codablockf" data-source-title="Snake" aria-label="View source for Snake">View source</button></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dotcode-games-heading">
@@ -143,7 +143,7 @@
               <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
               <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
               <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
-            </div><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="neon-dodge-dotcode" data-source-title="Neon Dodge" aria-label="View source for Neon Dodge">View source</button></div></div>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><button class="btn btn-scan-ready" type="button" data-scan-ready="neon-dodge-dotcode">Scan full size</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="neon-dodge-dotcode" data-source-title="Neon Dodge" aria-label="View source for Neon Dodge">View source</button></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dm-games-heading">
@@ -416,6 +416,11 @@
   <div class="source-classification" id="source-classification" aria-live="polite"><span id="source-status" class="code-embedding code-embedding-full"><span class="code-tick" aria-hidden="true">✓</span><span id="source-status-label">Full</span></span><span id="source-format">HTML game</span></div>
   <p id="source-description">View the code that is stored inside the symbol.</p>
   <pre id="source-view" tabindex="0"></pre>
+</dialog>
+<dialog id="scan-ready-dialog" aria-labelledby="scan-ready-title">
+  <div class="dialog-head"><h2 id="scan-ready-title">Scan full size</h2><button id="close-scan-ready" class="btn btn-small" type="button">Close</button></div>
+  <p>Display this on a second screen. Keep the complete code in view. Small card previews are not camera-readable.</p>
+  <div class="scan-ready-art"><img id="scan-ready-image" alt="Full-resolution barcode to scan"></div>
 </dialog>
 </body>
 </html>
