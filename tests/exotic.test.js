@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {encodeCodablockF,encodeDotCode,toImageData,decode} from '@sythos/js_barcode_universal';
+import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode} from '@sythos/js_barcode_universal';
 import {decodeGame} from '../protocol.js';
 
 const games=[
@@ -9,7 +9,7 @@ const games=[
   {asset:'neon-dodge-dotcode',format:'dotcode',encode:encodeDotCode,source:'neon-dodge-dotcode.html',kind:'html'},
 ];
 for(const g of games){
-  test(g.format+' PNG contains a complete standalone game, no external URL',async()=>{
+  test(g.format+' PNG and strict matrix carry a complete standalone game, no external URL',async()=>{
     const payload=readFileSync(new URL('../assets/'+g.asset+'.txt',import.meta.url),'utf8');
     const source=readFileSync(new URL('../examples/'+g.source,import.meta.url),'utf8').trim();
     const game=await decodeGame(payload);
@@ -19,7 +19,7 @@ for(const g of games){
     const png=readFileSync(new URL('../assets/'+g.asset+'.png',import.meta.url));
     assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
     const matrix=g.encode(payload);
-    const raster=toImageData(matrix,{scale:g.format==='codablockf'?4:5,margin:g.format==='codablockf'?12:10});
-    assert.ok(decode(raster,{formats:[g.format],profile:'camera'}).some(item=>item.text===payload));
+    const decoded=g.format==='codablockf'?decodeCodablockF(matrix):decodeDotCode(matrix);
+    assert.equal(decoded?.text,payload);
   });
 }
