@@ -73,7 +73,7 @@ Open http://localhost:8000. The camera needs HTTPS or localhost. The build comma
 
 ## Security and limits
 
-The scanner uses local decoding. A scanned game is not fetched from a remote game server. The Games tab opens stored copies for fast previews, so its **Play** buttons are not a camera scanning test.
+The scanner uses local decoding. A scanned game is not fetched from a remote game server. The Games tab opens predecoded copies embedded during the release build for immediate previews, so its **Play** buttons are not a camera scanning test.
 
 Only run game code you trust. The game iframe is sandboxed, but untrusted code may still freeze a browser tab.
 

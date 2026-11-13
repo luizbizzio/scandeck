@@ -20,7 +20,7 @@ ScanDeck is a static single-page application hosted with GitHub Pages. The files
 2. Standard formats are read with local ZXing WebAssembly, or native BarcodeDetector when it supports the full standard set.
 3. IRIS runs in a worker. ChromaQR is split into RGB planes. Codablock F and DotCode run in an isolated worker.
 4. The decoded text must match a supported ScanDeck game protocol. Unrelated barcodes do not open games.
-5. The selected game runs inside the site's sandboxed game frame.
+5. The selected game runs inside the site's sandboxed game frame. The release build also embeds the original decoded sample games in a JSON data script, avoiding a separate fetch/decompression step when the user presses Play.
 
 The camera runs ZXing WebAssembly in `src/barcode-worker.js`, off the UI thread. Only one frame is decoded at a time and the decoder worker is stopped when the camera closes. The focused scanner mode uses a larger capture size for dense codes. PDF417, rMQR and MaxiCode also alternate full-frame and centered crop attempts. Native auto scanning avoids copying frames to a canvas. The canvas is reused during the scan session to reduce allocations and the frame interval is throttled. Experimental modes run only when selected.
 

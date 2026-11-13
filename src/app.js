@@ -621,8 +621,15 @@ $('scan-viewport').addEventListener('drop',e=>{e.preventDefault();void uploadIma
 // Physical scans and image uploads still decode the barcode. CI verifies image-to-payload
 // integrity for every published game code, including the experimental color formats.
 const catalogPromises=new Map();
+let bundledCatalog=null;
+try{
+  const inline=document.getElementById('play-catalog');
+  if(inline)bundledCatalog=JSON.parse(inline.textContent);
+}catch{bundledCatalog=null}
 async function readCatalogGame(name){
   if(!/^[a-z0-9-]+$/.test(name))throw Error('Invalid game asset name.');
+  // Production embeds decoded first-party games. No fetch or decompression on Play.
+  if(bundledCatalog&&Object.hasOwn(bundledCatalog,name))return bundledCatalog[name];
   if(!catalogPromises.has(name)){
     const promise=fetch('assets/'+name+'.txt',{cache:'force-cache'})
       .then(async response=>{

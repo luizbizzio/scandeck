@@ -88,6 +88,7 @@ h1{font:800 clamp(32px,9vw,46px)/1.1 system-ui;letter-spacing:-.06em;margin:0 0 
 const instructions=${program};
 const totalRounds=instructions.find(([op])=>op==='L')?.[1]??1;
 const $=id=>document.getElementById(id);
+let lastButtonOrder='';
 const tiles=$('tiles'),round=$('round'),score=$('score'),target=$('target'),
  clock=$('clock'),bar=$('bar'),message=$('message');
 const io={
@@ -100,7 +101,17 @@ const io={
   bar.style.width='100%';
   message.textContent='TAP THE MATCHING NUMBER';
   tiles.replaceChildren();
-  for(const n of (state.choices===4?[4,1,3,2]:Array.from({length:state.choices},(_,i)=>i+1))){
+  const options=Array.from({length:state.choices},(_,i)=>i+1);
+  // Fisher-Yates: every round rearranges the buttons, independently of the target.
+  for(let i=options.length-1;i>0;i--){
+   const j=Math.floor(Math.random()*(i+1));
+   [options[i],options[j]]=[options[j],options[i]];
+  }
+  if(options.join(',')===lastButtonOrder&&options.length>1){
+   [options[0],options[1]]=[options[1],options[0]];
+  }
+  lastButtonOrder=options.join(',');
+  for(const n of options){
    const button=document.createElement('button');
    button.type='button';button.dataset.value=String(n);button.textContent=n;
    button.setAttribute('aria-label','Select number '+n);

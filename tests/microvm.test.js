@@ -16,7 +16,9 @@ test('Pocket Reflex holds an endless 13-byte Micro QR program',async()=>{
  const html=gameDocument(game);
  assert.match(html,/POCKET REFLEX/);assert.match(html,/FIND THIS NUMBER/);
  assert.match(html,/default-src 'none'/);assert.match(html,/executeMicroProgram/);
- assert.match(html,/\[4,1,3,2\]/);
+ assert.match(html,/Math\.random\(\)\*\(i\+1\)/);
+ assert.match(html,/lastButtonOrder=options\.join/);
+ assert.doesNotMatch(html,/\[4,1,3,2\]/);
  assert.doesNotMatch(html,/ROUND 1 \/ 5/);
 });
 test('Each successful answer reduces the time limit, and the first miss ends the game',async()=>{

@@ -287,6 +287,8 @@ test('camera preview starts before WASM initialization; expensive experimental f
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
   const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
   assert.match(item,/cache:'force-cache'/);
+  assert.match(script,/bundledCatalog=JSON\.parse\(inline\.textContent\)/);
+  assert.match(script,/if\(bundledCatalog&&Object\.hasOwn/);
   assert.match(item,/catalogPromises\.set\(name,promise\)/);
   assert.match(item,/microvm/);
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
