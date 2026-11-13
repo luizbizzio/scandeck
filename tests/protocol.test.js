@@ -76,17 +76,37 @@ test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
   const payload=readFileSync(new URL('../assets/taprush-code128.txt',import.meta.url),'utf8');
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
   assert.equal(payload,'SDS:'+source);
-  assert.ok(payload.length<=95);
+  assert.equal(payload.length,65,'The complete five-second game must remain compact');
   const game=await decodeGame(payload);
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,source);
   assert.match(game.source,/onclick/);
   assert.match(game.source,/setTimeout/);
-  assert.match(game.source,/innerText/);
+  assert.match(game.source,/alert\(n\)/);
+  assert.match(game.source,/onclick=0/);
   assert.match(gameDocument(game),/setTimeout/);
   const png=readFileSync(new URL('../assets/taprush-code128.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
+test('Tap Rush scores every click for exactly five seconds without an external game engine',()=>{
+  const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
+  const timers=[],scores=[];
+  const context={
+    setTimeout(fn,ms){timers.push({fn,ms});return timers.length;},
+    alert(score){scores.push(score)}
+  };
+  vm.runInNewContext(source,context,{timeout:500});
+  assert.equal(context.n,0);
+  for(let click=1;click<=37;click++)context.onclick();
+  assert.equal(context.n,37,'All clicks count, not just the first ten');
+  assert.equal(timers.length,1,'First click starts exactly one timer');
+  assert.equal(timers[0].ms,5000,'Tap Rush lasts five seconds');
+  assert.deepEqual(scores,[],'The result is not shown early');
+  timers[0].fn();
+  assert.deepEqual(scores,[37],'The final result is the tap count');
+  assert.equal(context.onclick,0,'Further clicks are disabled after five seconds');
+});
+
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8');
   const body={textContent:'',style:''};

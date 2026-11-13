@@ -69,7 +69,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Tap Rush':'10 TAPS IN 3 SECONDS · START ON FIRST TAP','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
+  const hints={'Tap Rush':'AS MANY TAPS AS YOU CAN IN 5 SECONDS · FIRST TAP STARTS TIMER','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -535,7 +535,7 @@ function selectGenerator(format) {
   $('create-label').textContent=tiny?'Program (maze bytecode)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
-    format==='bar'?'A complete Tap Rush JavaScript program needs 83 characters with the prefix. Longer Code 128 symbols may fail on phone cameras.':
+    format==='bar'?'The Tap Rush example uses 65 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
     format==='codablockf'?'Codablock F stores the full standalone JavaScript in stacked rows. Camera scanning is experimental.':
     format==='dotcode'?'DotCode stores a complete compressed HTML game. ScanDeck uses an experimental strict DotCode reader.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
@@ -555,7 +555,7 @@ $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
     $('create-source').value='M36509';
   }else if(generatorFormat==='bar'){
-    $('create-source').value='n=0;onclick=()=>{n||setTimeout(()=>alert(n>9),3e3);document.body.innerText=++n}';
+    $('create-source').value='n=0;onclick=()=>n++||setTimeout(()=>{alert(n);onclick=0},5e3)';
   }else if(!['bar','maxi','rmqr','chromaqr','codablockf'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {

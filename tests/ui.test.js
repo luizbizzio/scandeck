@@ -228,3 +228,13 @@ test('Codablock F and DotCode have scan focus, download PNG and real reader',()=
   assert.match(script,/exotic-worker\.js/);
   assert.doesNotMatch(html,/assets\/snake-qr\.png/);
 });
+
+test('Tap Rush is a five-second high-score challenge and its player shows a live counter',()=>{
+  assert.ok(html.includes('Tap as many times as you can in five seconds'));
+  assert.ok(!html.includes('Make ten taps in three seconds'));
+  assert.ok(script.includes('AS MANY TAPS AS YOU CAN IN 5 SECONDS'));
+  const runtime=readFileSync(new URL('../runtime.js',import.meta.url),'utf8');
+  assert.ok(runtime.includes('sd-rush-count'));
+  assert.ok(runtime.includes('sd-rush-clock'));
+  assert.ok(runtime.includes('TAPS IN 5 SECONDS'));
+});

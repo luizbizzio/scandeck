@@ -95,7 +95,7 @@ Record: device model, OS version, browser version, code format, display or print
 
 - [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, MaxiCode, rMQR, IRIS and ChromaQR.
 - [ ] Create outputs PNG files, without exposing SVG downloads.
-- [ ] QR Snake carries the complete original standalone script. Short Code 128 Tap Rush carries a seven-character level; the shared interpreter supplies the game rules.
+- [ ] Tap Rush: the Code 128 holds the full 61-character JavaScript, not level bytecode.
 - [ ] Test focused PDF417, MaxiCode and rMQR scanning from a second screen with a real mobile phone.
 - [ ] Test the compact 16-ring IRIS Wire Crisis and the RGB ChromaQR Chroma Rush under bright and dim lighting.
 - [ ] Compare default All formats with individual focused scanning; verify the camera runs without freezing.
@@ -108,12 +108,12 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Switching rMQR or MaxiCode inside the camera immediately changes the focused decoding path.
 - [ ] rMQR: test centered cropped and full-frame scans at multiple sizes and orientations.
 - [ ] MaxiCode: test pure monochrome upright capture and straight-on image upload; do not promise arbitrary angle support.
-- [ ] Tap Rush: Code 128 contains `LO:5A36` (7 characters), and the game wins after the encoded switches are toggled.
+- [ ] Tap Rush: count unrestricted taps for five seconds; the first tap starts the timer and the final result shows the number of taps.
 - [ ] Confirm Esc and Close stop the camera tracks and restore page scrolling.
 
 ## Experimental game formats
 
-- [ ] Code 128 Tap Rush contains the actual 79-character JavaScript, scoring and timer, not a level code or a URL.
+- [ ] Tap Rush: all scoring, the five-second timer and input shutdown are encoded in the 65-character Code 128 payload.
 - [ ] Codablock F Snake decodes full source from a PNG using the independently bundled Sythos reader.
 - [ ] DotCode Neon Dodge decodes full HTML from PNG pixels and works on touchscreens.
 - [ ] Both new format options are available in Scan and Create, with only PNG image exports.

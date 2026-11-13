@@ -12,12 +12,12 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | --- | --- | --- |
 | Ironpass Micro | QR Code | Defend your towers from enemy waves |
 | Snake | Codablock F (experimental) | Use WASD or arrow keys on a computer, or swipe on a phone |
-| Tap Rush | Code 128 | Tap ten times within three seconds; the complete JavaScript is embedded |
+| Tap Rush | Code 128 | Tap as many times as possible in five seconds; the complete JavaScript is embedded |
 | Neon Dodge | DotCode (experimental) | Switch lanes to dodge obstacles as speed increases |
 | Catch 10 | Data Matrix | Catch ten moving targets while a timer counts up from zero |
 | Pattern Memory | Aztec Code | Tap a color to begin, listen, and repeat each sequence |
 
-Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent source remains available in a legacy QR Code file. The new Tap Rush Code 128 contains its full independent JavaScript source including taps, timer and win check. It is still physically long, so a phone may struggle to scan it. The full Snake source is showcased in Codablock F.
+Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent source remains available in a legacy QR Code file. The new Tap Rush Code 128 contains its full independent JavaScript source including tap counting, the five-second timer and the final score. It is still physically long, so a phone may struggle to scan it. The full Snake source is showcased in Codablock F.
 
 The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. Catch 10 has an elapsed-time timer that starts at zero and has no time limit. Pattern Memory creates four notes with the browser's built-in Web Audio API. Tap one of the four original color tiles to start the game and enable sound. No sound files or external game scripts are loaded. They do not need a game engine supplied by the website.
 
@@ -73,7 +73,7 @@ The old `SDJ:` and 126-byte Snake formats are kept for backward compatibility. N
 
 ## How Create works
 
-For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, paste a short standalone JavaScript game; the Tap Rush example is a complete 79-character script with a three-second timer. Older Lights Out levels still decode as backward-compatible bytecode.
+For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, paste a short standalone JavaScript game; the Tap Rush example is a complete 61-character script with a five-second timer. Older Lights Out levels still decode as backward-compatible bytecode.
 
 After generating a code, you can test it, download the PNG, or copy the full encoded text. For a small, easy-to-scan result, use very short games. Code 128 gets physically wider with every extra character.
 
@@ -168,7 +168,7 @@ For **rMQR**, select rMQR in the camera view and hold the long rectangular code 
 
 For **MaxiCode**, select MaxiCode, keep the symbol flat and upright, and move close enough for the code to almost fill the center square. The current ZXing decoder requires a pure black-and-white, essentially unrotated and unskewed MaxiCode image. ScanDeck attempts a centered, thresholded crop, but this limitation means **reliable mobile-camera scanning is not guaranteed**. A straight-on, sharply focused PNG upload is often more practical.
 
-The **Tap Rush** Code 128 symbol contains a complete 79-character JavaScript program. It needs no external game library or hidden level interpreter. Because the symbol is long, a clean PNG decoding test does not guarantee real camera success.
+The **Tap Rush** Code 128 symbol contains a complete 61-character JavaScript program (65 characters with its ScanDeck prefix). It needs no external game library or hidden level interpreter. Because the symbol is long, a clean PNG decoding test does not guarantee real camera success.
 
 
 ## Codablock F and DotCode
