@@ -12,9 +12,9 @@ test('published HTML contains real game code and PNG sizes without JavaScript',(
   writeFileSync(file,html);
   execFileSync(process.execPath,['tools/inject-code-sizes.mjs',file],{cwd:new URL('../',import.meta.url)});
   const output=readFileSync(file,'utf8');
-  const cards=[...output.matchAll(/<div class="code-metadata" data-code-asset="([^"]+)"[^>]*>[\s\S]*?<\/div>/g)];
+  const cards=[...output.matchAll(/<div class="code-metadata" data-code-asset="([^"]+)"[^>]*>([\s\S]*?)<\/div>/g)];
   assert.equal(cards.length,12);
-  for(const [,name,markup] of cards){
+  for(const [,name,markup] of cards.map(([,name,inner])=>[null,name,inner])){
    assert.match(markup,/data-payload-size>\d[\d,.]* (?:B|KB)<\/strong>/,name);
    assert.match(markup,/data-png-size>\d[\d,.]* (?:B|KB)<\/strong>/,name);
   }

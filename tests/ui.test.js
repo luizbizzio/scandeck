@@ -112,7 +112,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/width:\{ideal:1920\}/);
   assert.match(script,/tryDownscale:false/);
   assert.match(script,/tryDenoise:true/);
-  assert.match(script,/centeredIrisFrame\(video\)/);
+  assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
   assert.match(script,/FOCUS_FORMATS/);
   for(const name of ['pdf417','maxicode','rmqr','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
@@ -205,7 +205,7 @@ test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
-  assert.match(script,/isPure:false/);
+  assert.match(script,/isPure:mode==='maxicode'&&useCrop/);
   assert.match(script,/maxicode:'MaxiCode must be flat/);
   assert.match(script,/rmqr:'Turn your phone sideways/);
 });
@@ -389,7 +389,7 @@ test('landscape mobile scanning keeps full-screen camera and supports rotated ba
   assert.match(script,/addEventListener\('resize',syncCameraLayout\)/);
   assert.match(script,/document\.documentElement\.classList\.toggle\('camera-open',isMobileCamera\(\)\)/);
   assert.match(script,/\.\.\.wasmOptions,formats,tryDenoise:false,tryRotate:true/);
-  assert.match(script,/isPure:false/);
+  assert.match(script,/isPure:mode==='maxicode'&&useCrop/);
   assert.match(script,/tryRotate:true/);
   assert.match(script,/code128:'Try landscape/);
 });
