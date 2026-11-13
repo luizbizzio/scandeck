@@ -41,7 +41,7 @@ for(const name of ['iris-wire']){
     const png=readRgbPng(name);
     assert.ok(png.width>=1200,'IRIS PNG should be high-resolution');
     assert.equal(decodeColor(png).text,expected);
-    assert.ok(expected.startsWith('SD1:')||expected.startsWith('SDS:'));
+    assert.ok(['SD1:','SDS:','SDB:'].some(prefix=>expected.startsWith(prefix)));
   });
 }
 

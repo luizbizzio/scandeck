@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=48';
-import { gameDocument } from './runtime.js?v=48';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=49';
+import { gameDocument } from './runtime.js?v=49';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=48';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=49';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -11,7 +11,7 @@ const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
-let barcodeWorker=null,barcodeSequence=0;
+let barcodeWorker=null,barcodeSequence=0,barcodeReads=0;
 const barcodePending=new Map();
 let generatorFormat = 'qr', outputData = null, lastGame = null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=48',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=49',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -242,7 +242,7 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',maxicode:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Standard codes and ChromaQR. Select IRIS, DotCode or Codablock F manually.',
+  auto:'Standard QR, barcodes and matrix codes. Select specialty formats manually.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
@@ -292,6 +292,7 @@ function centeredIrisFrame(video,full=false){
 // A worker does expensive barcode decoding, keeping the camera preview responsive.
 function stopBarcodeWorker(){
   if(barcodeWorker){barcodeWorker.terminate();barcodeWorker=null}
+  barcodeReads=0;
   for(const job of barcodePending.values()){
     clearTimeout(job.timer);job.resolve(job.mode==='chroma'?'':[]);
   }
@@ -304,6 +305,11 @@ function getBarcodeWorker(){
       const job=barcodePending.get(data?.id);
       if(!job)return;
       clearTimeout(job.timer);barcodePending.delete(data.id);
+      // WASM memory can grow with varied frame sizes over long camera sessions.
+      // Recycle only after this job finishes, never while a decode is pending.
+      if(++barcodeReads>=40&&barcodePending.size===0){
+        barcodeWorker.terminate();barcodeWorker=null;barcodeReads=0;
+      }
       job.resolve(job.mode==='chroma'?(typeof data.result==='string'?data.result:''):(Array.isArray(data.result)?data.result:[]));
     };
     barcodeWorker.onerror=stopBarcodeWorker;
@@ -316,7 +322,7 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
     const {width,height,data}=pixels;
     if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
     const id=++barcodeSequence;
-    const timer=setTimeout(stopBarcodeWorker,6500);
+    const timer=setTimeout(stopBarcodeWorker,options.formats?.length===1?4500:2300);
     barcodePending.set(id,{resolve,timer,mode});
     try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
     catch{stopBarcodeWorker()}
@@ -453,20 +459,20 @@ function makeFocusedPixels(image,mode,monochrome=false,phase=0){
 async function readFocused(lib,source,mode,frame){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3!==0:mode==='pdf417'&&frame%3===1;
-  const monochrome=mode==='maxicode'&&useCrop&&frame%4!==1;
+  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%4===1||frame%4===3:mode==='pdf417'&&frame%3===1;
+  const monochrome=mode==='maxicode'&&useCrop&&frame%4===2;
   const pix=useCrop?makeFocusedPixels(source,mode,monochrome,frame):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
     ...wasmOptions,formats:[format],
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
-    isPure:monochrome, // MaxiCode decoder needs pure, monochrome, upright pixels.
+    isPure:monochrome, // Only one centered MaxiCode pass assumes a clean aligned image.
     minLineCount:mode==='code128'?1:2,
     tryDownscale:mode==='rmqr'&&frame%4===3,
-    tryDenoise:mode==='rmqr'&&frame%4===2,
+    tryDenoise:false, // expensive morphology hurts continuous camera scans
     tryRotate:true,
-    retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%2===0,
-    retryRotated:mode==='code128'?frame%2===0:(mode==='rmqr'||mode==='maxicode')&&frame%3===2
+    retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
+    retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%4===3
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
@@ -527,16 +533,11 @@ async function cameraLoop(token){
                   ?['QRCode','DataMatrix','Aztec','Code128']
                   :frame%3===1?['PDF417','RMQRCode','MicroQRCode']:['MaxiCode'];
                 result=(await lib.readBarcodes(pixels,{
-                  ...wasmOptions,formats,tryDenoise:false,tryRotate:true
+                  ...wasmOptions,formats,tryHarder:false,tryDenoise:false,tryRotate:true
                 })).find(x=>isGamePayload(x.text));
               }
               const raw=result?.text||result?.rawValue;
               if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
-              if(mode==='auto'&&frame%5===4){
-                // RGB decoding is expensive, so only attempt it after selected standard scans.
-                const chroma=await readCameraChroma(ctx.getImageData(0,0,canvas.width,canvas.height));
-                if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
-              }
             }else if(mode==='chromaqr'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
               const chroma=await readCameraChroma(pixels);
@@ -593,8 +594,11 @@ async function detectImage(file) {
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
     // Camera screenshots and photos may need a centered, monochrome pass.
     for(const focusedFormat of ['rmqr','maxicode','pdf417']){
-      const focused=await readFocused(lib,canvas,focusedFormat,0);
-      if(focused)return {text:focused.text,format:focused.format};
+      // Upload decoding uses both uncropped pixels and centered subject passes.
+      for(const phase of [0,1,2]){
+        const focused=await readFocused(lib,canvas,focusedFormat,phase);
+        if(focused)return {text:focused.text,format:focused.format};
+      }
     }
     // High-resolution photos often exceed the worker's 2 MP safety bound.
     // Retain a full-view and a zoomed center view, both under the bound,
@@ -740,15 +744,7 @@ async function playExoticExample(name,title,format){
 }
 $('try-codablock-snake').addEventListener('click',()=>playExoticExample('snake-codablockf','Snake','codablockf'));
 $('try-dotcode-dodge').addEventListener('click',()=>playExoticExample('neon-dodge-dotcode','Neon Dodge','dotcode'));
-const SCAN_READY_IMAGES={'snake-codablockf':'Snake · Codablock F','neon-dodge-dotcode':'Neon Dodge · DotCode'};
-document.querySelectorAll('[data-scan-ready]').forEach(button=>button.addEventListener('click',()=>{
-  const asset=button.dataset.scanReady;
-  if(!Object.hasOwn(SCAN_READY_IMAGES,asset))return;
-  $('scan-ready-title').textContent=SCAN_READY_IMAGES[asset]+' · full-size image';
-  $('scan-ready-image').src='assets/'+asset+'.png';
-  $('scan-ready-dialog').showModal();
-}));
-$('close-scan-ready').addEventListener('click',()=>$('scan-ready-dialog').close());
+
 async function playIrisExample(name,title){
   return openCatalogGame(name,title);
 }

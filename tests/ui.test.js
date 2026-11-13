@@ -281,8 +281,8 @@ test('camera preview starts before WASM initialization; expensive experimental f
   assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
   assert.match(script,/if\(mode==='iris'\)/);
   assert.match(script,/if\(mode==='chromaqr'\)/);
-  assert.match(script,/mode==='auto'&&frame%5===4/);
-  assert.match(html,/Auto \(standard codes \+ ChromaQR\)/);
+  assert.doesNotMatch(script,/mode==='auto'&&frame%5===4/);
+  assert.match(html,/Auto \(standard codes\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
   const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=48/);
-  assert.match(html,/src\/style\.css\?v=48/);
+  assert.match(html,/src\/app\.js\?v=49/);
+  assert.match(html,/src\/style\.css\?v=49/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -430,11 +430,17 @@ test('dense experimental camera uses direct full and cropped sensor pixels, not 
  assert.match(script,/Use the full-size PNG, not the small gallery preview/);
 });
 
-test('dense exotic games expose native-resolution scan surfaces',()=>{
-  for(const id of ['snake-codablockf','neon-dodge-dotcode'])
-    assert.ok(html.includes('data-scan-ready="'+id+'"'));
-  assert.match(html,/id="scan-ready-image"/);
-  assert.match(script,/Object\.hasOwn\(SCAN_READY_IMAGES,asset\)/);
-  assert.match(script,/\$\('scan-ready-dialog'\)\.showModal\(\)/);
-  assert.match(css,/#scan-ready-image\{[^}]*max-width:none/);
+test('exotic gallery pictures open the original PNG directly',()=>{
+  for(const name of ['snake-codablockf','neon-dodge-dotcode']){
+    assert.ok(html.includes('href="assets/'+name+'.png" target="_blank"'));
+    assert.ok(!html.includes('data-scan-ready="'+name+'"'));
+  }
+  assert.doesNotMatch(html,/id="scan-ready-dialog"/);
 });
+test('auto excludes ChromaQR decoding and keeps focused ChromaQR selection',()=>{
+  assert.match(html,/Auto \(standard codes\)/);
+  assert.doesNotMatch(html,/Auto \(standard codes \+ ChromaQR\)/);
+  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
+  assert.doesNotMatch(script,/mode==='auto'&&frame%5===4/);
+});
+

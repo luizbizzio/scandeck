@@ -347,9 +347,3 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   html.camera-open .camera-bottom select{min-height:40px}
 }
 
-/* Full-size scan surface preserves the image's native module resolution. */
-#scan-ready-dialog{width:min(1500px,calc(100vw - 24px));max-width:none;max-height:96dvh;overflow:hidden;padding:18px}
-#scan-ready-dialog .dialog-head{gap:16px}
-.scan-ready-art{margin-top:15px;max-height:calc(96dvh - 135px);overflow:auto;background:#0d1510;border:1px solid var(--line);border-radius:8px;padding:12px}
-#scan-ready-image{display:block;width:auto;height:auto;max-width:none;max-height:none;margin:auto;image-rendering:pixelated;background:white}
-.game-actions .btn-scan-ready{background:#24352a;border-color:#557c61;color:#d5ffc7}

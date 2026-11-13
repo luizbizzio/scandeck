@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateRawSync, deflateSync } from 'node:zlib';
 import { encodeColor, renderColorSVG, renderColorRaster, decodeColor } from '../vendor/iris/color.js';
-import { base43Encode, packScript } from '../src/protocol.js';
+import { base43Encode, base85Encode, packScript, decodeGame } from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const asset=name=>new URL('assets/'+name,root);
@@ -34,7 +34,10 @@ function encodePng(grid){
 }
 for(const game of games){
   const source=readFileSync(new URL(game.input,root),'utf8').trim();
-  const payload=game.kind==='html'?'SD1:'+base43Encode(deflateRawSync(Buffer.from(source))):packScript(source);
+  const plain=game.kind==='html'?'SD1:'+base43Encode(deflateRawSync(Buffer.from(source))):packScript(source);
+  const packed='SDB:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9}));
+  const payload=game.kind==='script'&&packed.length<plain.length?packed:plain;
+  if((await decodeGame(payload)).source!==source)throw Error('IRIS game payload must be complete');
   const symbol=encodeColor(payload,{markers:true});
   const grid=renderColorRaster(symbol);
   if(decodeColor(grid).text!==payload)throw Error(game.output+' failed its RGB-pixel round trip');

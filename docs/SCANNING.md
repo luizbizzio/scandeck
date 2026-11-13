@@ -83,3 +83,7 @@ The writer now tests several odd/even width-height candidates near a square shap
 ## Dedicated dense-barcode capture
 
 The experimental DotCode and Codablock F camera modes now retain nearly 2 MP of actual camera pixels and alternate full-frame capture with two centered crops. The crops operate directly on the camera raster without interpolation: software enlarging a one-pixel bar cannot recreate missing detail. Use the **full-size PNG on a second screen**, not the small Games card preview. Keep the symbol completely visible, with white margins and at least 3–4 actual display pixels per smallest module where possible. These capture changes are tested by automated geometry checks but remain unverified on physical phone cameras.
+
+## Sustained camera performance and Auto mode
+
+Auto scans only standard formats. ChromaQR uses its explicit focus option. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.

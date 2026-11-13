@@ -59,3 +59,12 @@ test('experimental camera scans preserve full sensor detail and use unscaled cen
   assert.ok(exoticCaptureRegion(1920,1080,2).width<exoticCaptureRegion(1920,1080,1).width);
   assert.throws(()=>exoticCaptureRegion(0,1080,2));
 });
+
+test('Auto capture stays bounded for sustained camera performance',()=>{
+  const size=captureDimensions(4032,3024,'auto');
+  assert.ok(size.width*size.height<=750_000);
+  const dedicated=captureDimensions(4032,3024,'rmqr');
+  assert.ok(dedicated.width*dedicated.height>size.width*size.height);
+  const r0=focusedCrop(1920,1080,'rmqr',0),r1=focusedCrop(1920,1080,'rmqr',1);
+  assert.ok(r0.width>=r1.width&&r0.height>=r1.height);
+});
