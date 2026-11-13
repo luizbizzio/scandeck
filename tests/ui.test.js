@@ -204,7 +204,7 @@ test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
-  assert.match(script,/isPure:useCrop&&mode==='maxicode'/);
+  assert.match(script,/isPure:false/);
   assert.match(script,/maxicode:'MaxiCode must be flat/);
   assert.match(script,/rmqr:'Hold the rectangular rMQR/);
 });
@@ -289,8 +289,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/app\.js\?v=31/);
-  assert.match(html,/style\.css\?v=31/);
+  assert.match(html,/app\.js\?v=32/);
+  assert.match(html,/style\.css\?v=32/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -375,4 +375,18 @@ test('About correctly explains Full, Partial and Bytecode without changing the g
   assert.match(html,/Five contain complete JavaScript/);
   assert.match(html,/Pocket Reflex is Bytecode/);
   assert.match(html,/legend-bytecode/);
+});
+
+test('landscape mobile scanning keeps full-screen camera and supports rotated barcodes',()=>{
+  assert.match(css,/@media\(max-width:700px\), \(pointer:coarse\)\{/);
+  assert.match(css,/@media\(orientation:landscape\) and \(pointer:coarse\)/);
+  assert.match(script,/function isMobileCamera\(\)/);
+  assert.match(script,/matchMedia\('\(max-width:700px\), \(pointer:coarse\)'\)/);
+  assert.match(script,/addEventListener\('orientationchange',syncCameraLayout\)/);
+  assert.match(script,/addEventListener\('resize',syncCameraLayout\)/);
+  assert.match(script,/document\.documentElement\.classList\.toggle\('camera-open',isMobileCamera\(\)\)/);
+  assert.match(script,/\.\.\.wasmOptions,formats,tryDenoise:false,tryRotate:true/);
+  assert.match(script,/isPure:false/);
+  assert.match(script,/tryRotate:true/);
+  assert.match(script,/code128:'Try landscape/);
 });

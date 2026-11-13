@@ -183,3 +183,12 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] At 320 px, 375 px and 430 px, Play fills the top row; Download and View source share the second row without overflow.
 - [ ] Footer centers the link "Created by Luiz Bizzio" on desktop and reflows it to the first line on mobile.
 - [ ] Version text remains ScanDeck 1.0.0.
+
+## Mobile camera orientation regression
+
+- [ ] Rotate a phone to landscape while the camera is open: preview remains full-screen, the Close button remains reachable, and focus selection is still visible.
+- [ ] Rotate back to portrait while scanning: page stays full-screen until Close is pressed.
+- [ ] Scan Code 128 with the phone at 0°, 90°, 180° and 270°. Confirm tryRotate is enabled; do not claim success if camera pixels are insufficient to resolve bars.
+- [ ] Test MaxiCode in crop and full-frame modes. Neither live camera pass should enable isPure.
+- [ ] Open the native PNG in a second screen and upload the PNG separately, recording which format passes each test.
+- [ ] Check explicit focus for ChromaQR, IRIS, Codablock F and DotCode because Auto deliberately skips their experimental readers.

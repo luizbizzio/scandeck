@@ -155,7 +155,7 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 .camera-bottom label{color:#cbdacb;font:650 12px system-ui;white-space:nowrap}
 .camera-bottom select{min-width:0;max-width:220px;flex:1;color:#e8f3e9;background:#16231a;border:1px solid #61765f;border-radius:8px;padding:9px 8px;font:650 13px system-ui}
 .camera-bottom p{display:none}
-@media(max-width:700px){
+@media(max-width:700px), (pointer:coarse){
   html.camera-open,html.camera-open body{overflow:hidden!important;overscroll-behavior:none}
   html.camera-open .camera-panel{
     position:fixed!important;inset:0!important;z-index:1000!important;
@@ -330,4 +330,19 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   .game-actions>.btn-primary{grid-column:1/-1;grid-row:1;min-height:48px}
   .game-actions>a.btn{grid-column:1;grid-row:2}
   .game-actions>.btn-source{grid-column:2;grid-row:2}
+}
+
+/* Landscape phone: keep the real camera viewport full-screen even at >700 CSS px. */
+@media(orientation:landscape) and (pointer:coarse){
+  html.camera-open .scan-graphic{width:min(54vw,66vh,330px)}
+  html.camera-open .camera-bottom{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    left:calc(env(safe-area-inset-left,0px) + 12px);
+    right:calc(env(safe-area-inset-right,0px) + 12px);
+    max-width:370px;
+    margin-inline:auto;
+    padding:8px 12px
+  }
+  html.camera-open .camera-bottom p{display:none}
+  html.camera-open .camera-bottom select{min-height:40px}
 }

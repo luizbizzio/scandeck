@@ -181,6 +181,12 @@ The **Play** buttons in the Games library now open a cached copy of the exact en
 
 Pocket Reflex uses the `microvm` game type. It is accepted by the library player as well as the camera and upload paths. The HTML entry point and its JavaScript modules have versioned URLs to avoid a browser loading incompatible files from different releases.
 
+## Camera orientation and limits
+
+Turn a phone to landscape for wide barcodes, including Code 128, PDF417, Codablock F and rectangular rMQR. The mobile camera remains full-screen in portrait and landscape, with the complete uncropped video frame visible. The ZXing reader now attempts 90°, 180° and 270° rotations for Code 128 and other standard codes, and focused MaxiCode camera frames are no longer incorrectly labeled as perfectly aligned images.
+
+**Auto (standard codes)** does not run IRIS, ChromaQR, Codablock F or DotCode: these require selecting their named format in Scan format. A generated PNG that decodes in a software test does not prove reliable reading from another display. In particular, the 65-character Code 128 Tap Rush is very wide, the Snake Codablock F and Neon Dodge DotCode use strict photo-sensitive decoders, and the two color formats suffer from screen/camera color changes. Photographic MaxiCode, rMQR and dense PDF417 remain unverified on real phones. Prefer the original PNG upload for diagnosis before concluding the encoded data is damaged.
+
 ## Mobile full-screen camera and focused reading
 
 On mobile, **Open camera** uses a full-viewport camera view that shows the entire video frame without cropping it. A **Close** button stays inside the top safe area, while the format selector remains accessible at the bottom. Switching formats inside the camera changes the scanner focus immediately. The CSS overlay does not rely on a platform Fullscreen API permission.

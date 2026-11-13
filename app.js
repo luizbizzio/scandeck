@@ -18,7 +18,7 @@ function formatCodeSize(bytes){
 }
 async function loadCodeSizes(){
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=31',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=32',{cache:'force-cache'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -240,13 +240,13 @@ const focusTips={
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
   microqr:'Move closer to the small Micro QR without cutting off the edges.',
-  rmqr:'Hold the rectangular rMQR level and sharp. Try landscape.',
+  rmqr:'Turn your phone sideways if needed. Keep the entire rectangular rMQR sharply focused.'
   maxicode:'MaxiCode must be flat, upright and almost fill the square.',
-  pdf417:'Hold PDF417 horizontally with all rows visible.',
-  code128:'Keep the entire barcode visible from end to end.',
+  pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.'
+  code128:'Try landscape. Keep the full barcode and both white side margins visible.'
   iris:'Center the colored circular code in the frame.',
   chromaqr:'Center the full colored QR symbol.',
-  codablockf:'Keep all stacked bars straight and fully inside the frame.',
+  codablockf:'Try landscape. All Codablock F rows must fit sharply without perspective.'
   dotcode:'Hold the entire field of dots straight and sharply focused.'
 };
 function setScanFocus(mode){

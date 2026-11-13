@@ -53,12 +53,12 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
 });
 
 test('one lightweight metadata request updates all sizes without decoding any images',()=>{
-  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=31'/);
+  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=32'/);
   assert.match(source,/function formatCodeSize\(/);
   assert.match(source,/querySelectorAll\('\.code-metadata\[data-code-asset\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-payload-size\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-png-size\]'\)/);
   assert.match(source,/if\(tab==='library'\)void loadCodeSizes\(\)/);
-  assert.match(html,/src="app\.js\?v=31"/);
-  assert.match(html,/href="style\.css\?v=31"/);
+  assert.match(html,/src="app\.js\?v=32"/);
+  assert.match(html,/href="style\.css\?v=32"/);
 });
