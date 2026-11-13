@@ -47,19 +47,28 @@ export function sampleKnownGrid(image,dimensions,BitMatrix,decode){
     // If the two axes imply incompatible cell sizes, another symbol or a
     // strongly tilted image is in the frame; leave it to the generic reader.
     if(sx<.65||sy<.65||Math.max(sx,sy)>Math.min(sx,sy)*2.5)continue;
-    for(const scale of [1,1.018,.982,1.045,.955]){
-      const wide=inkWidth*scale,high=inkHeight*scale;
-      const left=centerX-wide/2,top=centerY-high/2;
-      const m=new BitMatrix(cols,rows);
-      for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
-        const u=(x+.5)/cols,v=(y+.5)/rows;
-        const tx=rot===0?u:rot===1?1-v:rot===2?1-u:v;
-        const ty=rot===0?v:rot===1?u:rot===2?1-v:1-u;
-        const ix=Math.max(0,Math.min(w-1,Math.floor(left+tx*wide)));
-        const iy=Math.max(0,Math.min(h-1,Math.floor(top+ty*high)));
-        if(gray(ix,iy)<128)m.set(x,y);
+    // A few degrees of phone tilt are common even with a flat screen.
+    // Reconstruct the unrotated rectangle from its axis-aligned ink bounds.
+    for(const angle of [0,-.035,.035,-.07,.07]){
+      const co=Math.cos(angle),si=Math.abs(Math.sin(angle));
+      const divisor=co*co-si*si;
+      const basisWidth=(inkWidth*co-inkHeight*si)/divisor;
+      const basisHeight=(inkHeight*co-inkWidth*si)/divisor;
+      if(basisWidth<=0||basisHeight<=0)continue;
+      for(const scale of angle===0?[1,1.018,.982,1.045,.955]:[1,1.018,.982]){
+        const wide=basisWidth*scale,high=basisHeight*scale;
+        const m=new BitMatrix(cols,rows);
+        for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+          const u=(x+.5)/cols,v=(y+.5)/rows;
+          const tx=rot===0?u:rot===1?1-v:rot===2?1-u:v;
+          const ty=rot===0?v:rot===1?u:rot===2?1-v:1-u;
+          const dx=(tx-.5)*wide,dy=(ty-.5)*high;
+          const ix=Math.max(0,Math.min(w-1,Math.floor(centerX+dx*co-dy*Math.sin(angle))));
+          const iy=Math.max(0,Math.min(h-1,Math.floor(centerY+dx*Math.sin(angle)+dy*co)));
+          if(gray(ix,iy)<128)m.set(x,y);
+        }
+        try{const hit=decode(m);if(hit?.text)return hit.text}catch{}
       }
-      try{const hit=decode(m);if(hit?.text)return hit.text}catch{}
     }
   }
   return '';

@@ -33,3 +33,33 @@ for(const [name,format,scale] of [
   assert.equal(text,expected,'Raw photographed modules must decode, not just the encoded payload');
  });
 }
+
+function cameraAtAngle(png,scale,radians){
+ const w=1300,h=940,data=new Uint8ClampedArray(w*h*4);
+ const c=Math.cos(radians),s=Math.sin(radians);
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const dx=x-w/2,dy=y-h/2;
+   const ix=Math.floor((dx*c+dy*s)/scale+png.width/2);
+   const iy=Math.floor((-dx*s+dy*c)/scale+png.height/2);
+   const to=(y*w+x)*4;
+   if(ix>=0&&iy>=0&&ix<png.width&&iy<png.height){
+     const from=(iy*png.width+ix)*4;
+     data[to]=png.data[from];data[to+1]=png.data[from+1];data[to+2]=png.data[from+2];
+   }else{data[to]=19;data[to+1]=27;data[to+2]=23}
+   data[to+3]=255;
+ }
+ return {width:w,height:h,data};
+}
+for(const [name,format,scale] of [
+ ['snake-codablockf','codablockf',.72],
+ ['neon-dodge-dotcode','dotcode',.76]
+]){
+ test(format+' decodes a simulated camera frame tilted 2 degrees',()=>{
+  const png=PNG.sync.read(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)));
+  const image=cameraAtAngle(png,scale,Math.PI/90);
+  const decode=format==='dotcode'?decodeDotCode:decodeCodablockF;
+  const text=sampleKnownGrid(image,EXOTIC_SHAPES[format],BitMatrix,decode);
+  const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
+  assert.equal(text,expected,'Tilting a code slightly must not prevent validated decoding');
+ });
+}
