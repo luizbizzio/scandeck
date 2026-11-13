@@ -5,18 +5,16 @@ const root=new URL('../',import.meta.url);
 const html=readFileSync(new URL('index.html',root),'utf8');
 const robots=readFileSync(new URL('robots.txt',root),'utf8');
 const sitemap=readFileSync(new URL('sitemap.xml',root),'utf8');
-const cname=readFileSync(new URL('CNAME',root),'utf8');
 const workflow=readFileSync(new URL('.github/workflows/pages.yml',root),'utf8');
 const sw=readFileSync(new URL('sw.js',root),'utf8');
 const domain='https://scandeck.luizbizzio.com/';
 test('public domain and crawl metadata agree',()=>{
-  assert.equal(cname.trim(),'scandeck.luizbizzio.com');
   assert.match(html,/rel="canonical" href="https:\/\/scandeck\.luizbizzio\.com\/"/);
   assert.match(html,/property="og:url" content="https:\/\/scandeck\.luizbizzio\.com\/"/);
   assert.match(robots,/Sitemap: https:\/\/scandeck\.luizbizzio\.com\/sitemap.xml/);
   assert.match(sitemap,/<loc>https:\/\/scandeck\.luizbizzio\.com\/<\/loc>/);
   assert.equal((sitemap.match(/<loc>/g)||[]).length,1);
-  assert.match(workflow,/CNAME robots.txt sitemap.xml dist\//);
+  assert.match(workflow,/cp index.html sw.js \.nojekyll robots.txt sitemap.xml dist\//);
 });
 test('metadata and structured data describe actual site',()=>{
   assert.match(html,/<meta name="description" content="Play small browser games/);

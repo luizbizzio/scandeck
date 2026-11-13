@@ -48,7 +48,7 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir -p dist/assets dist/vendor/zxing-wasm dist/src
-          cp index.html sw.js .nojekyll CNAME robots.txt sitemap.xml dist/
+          cp index.html sw.js .nojekyll robots.txt sitemap.xml dist/
           cp src/*.js src/style.css dist/src/
           node tools/inject-code-sizes.mjs dist/index.html
           mkdir -p dist/vendor/iris
