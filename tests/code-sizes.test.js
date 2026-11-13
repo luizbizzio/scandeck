@@ -30,7 +30,7 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
   let complete=0,partial=0;
   for(const [id,meta] of Object.entries(manifest)){
     const png=statSync(new URL('assets/'+id+'.png',root)).size;
-    const payload=readFileSync(new URL('assets/'+id+'.txt',root));
+    const payload=readFileSync(new URL('assets/'+(id==='ironpass-micro-v3-qr'?'ironpass-micro-v3':id)+'.txt',root));
     assert.equal(meta.pngBytes,png,id+' PNG size must be exact');
     assert.equal(meta.payloadBytes,payload.byteLength,id+' payload must be exact');
     if(meta.completeness==='full')complete++;
