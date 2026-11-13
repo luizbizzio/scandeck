@@ -1,6 +1,6 @@
 import test from 'node:test';
 import vm from 'node:vm';
-import {snakePayload,snakeSvg} from '../tools/generate-snake.mjs';
+import {snakePayload} from '../tools/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packMicroQuiz,QR_LIMIT} from '../protocol.js';
@@ -62,15 +62,25 @@ test('Code128 output includes start, checksum, and stop patterns',()=>{
   assert.ok(svg.includes('viewBox='));
   assert.match(svg,/<rect/);
 });
-test('the SVG encodes the entire independent Snake program',async()=>{
-  const file=readFileSync(new URL('../assets/snake-code128.svg',import.meta.url),'utf8');
-  assert.equal(file,snakeSvg());
-  const game=await decodeGame(snakePayload());
+test('full independent Snake program is kept in a QR image rather than a giant Code 128',async()=>{
+  const payload=readFileSync(new URL('../assets/snake-qr.txt',import.meta.url),'utf8');
+  assert.equal(payload,snakePayload());
+  const game=await decodeGame(payload);
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8').trim());
-  assert.doesNotMatch(file,/<metadata/);
-  assert.equal(decodeCode128Svg(file),snakePayload());
   assert.ok(gameDocument(game).includes(game.source));
+  const png=readFileSync(new URL('../assets/snake-qr.png',import.meta.url));
+  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+});
+test('Code 128 holds a real compact JavaScript game instead of large Snake',async()=>{
+  const payload=readFileSync(new URL('../assets/dice-code128.txt',import.meta.url),'utf8');
+  assert.ok(payload.length<=75,'Code 128 should remain relatively short');
+  const game=await decodeGame(payload);
+  assert.equal(game.kind,'standalone');
+  assert.match(game.source,/Math.random/);
+  assert.match(game.source,/WIN/);
+  const png=readFileSync(new URL('../assets/dice-code128.png',import.meta.url));
+  assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{
   const source=readFileSync(new URL('../examples/snake-standalone.js',import.meta.url),'utf8');
@@ -154,12 +164,13 @@ test('Micro QR carries a complete arithmetic instruction in at most 15 bytes',as
   assert.throws(()=>packMicroQuiz('Q100+400=500'),/Micro QR/);
 });
 
-test('both RGB color formats store complete embedded game payloads',async()=>{
+test('both RGB color formats store complete embedded game payloads as PNG',async()=>{
   for(const name of ['iris-wire','chromaqr-chroma']){
     const raw=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const result=await decodeGame(raw);
     assert.ok(result.source.length>40);
-    assert.equal(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)).subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+    const png=readFileSync(new URL('../assets/'+name+'.png',import.meta.url));
+    assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
     assert.ok(!/^https?:\/\//.test(raw));
     assert.ok(raw.startsWith('SD1:')||raw.startsWith('SDS:'));
   }

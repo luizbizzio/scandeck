@@ -23,7 +23,7 @@ test('games are clearly split by code type', () => {
   assert.match(html, /id="aztec-games-heading"/);
   for(const id of ['pdf-games-heading','maxi-games-heading','micro-games-heading','rmqr-games-heading'])assert.ok(html.includes('id="'+id+'"'));
   assert.match(html, /Download QR/);
-  assert.match(html, /Download barcode/);
+  assert.match(html, /Download PNG/);
 });
 
 test('games show their actual QR and Code 128 images with full-size links', () => {
