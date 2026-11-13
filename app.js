@@ -1,5 +1,5 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=26';
-import { gameDocument } from './runtime.js?v=26';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=28';
+import { gameDocument } from './runtime.js?v=28';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 const $ = id => document.getElementById(id);
@@ -12,12 +12,38 @@ let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
 let generatorFormat = 'qr', outputData = null, lastGame = null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+let codeSizesRequest=null;
+function formatCodeSize(bytes){
+  return bytes<1024?bytes.toLocaleString('en-US')+' B':(bytes/1024).toFixed(1)+' KB';
+}
+async function loadCodeSizes(){
+  if(!codeSizesRequest){
+    codeSizesRequest=fetch('assets/code-sizes.json?v=28',{cache:'force-cache'})
+      .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
+      .catch(error=>{codeSizesRequest=null;throw error});
+  }
+  try{
+    const info=await codeSizesRequest;
+    for(const row of document.querySelectorAll('.code-metadata[data-code-asset]')){
+      const item=info[row.dataset.codeAsset];
+      if(!item||!Number.isInteger(item.payloadBytes)||!Number.isInteger(item.pngBytes)||item.payloadBytes<1||item.pngBytes<1)continue;
+      row.querySelector('[data-payload-size]').textContent=formatCodeSize(item.payloadBytes);
+      row.querySelector('[data-png-size]').textContent=formatCodeSize(item.pngBytes);
+    }
+  }catch(error){
+    for(const row of document.querySelectorAll('.code-metadata[data-code-asset]')){
+      row.querySelector('[data-payload-size]').textContent='N/A';
+      row.querySelector('[data-png-size]').textContent='N/A';
+    }
+  }
+}
 function status(message, error = false) { $('status-text').textContent = message; $('status').classList.toggle('error', error); }
 function switchTab(tab) {
   if (!['scan','library','create','about'].includes(tab)) tab='scan';
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active', x.id===tab));
   document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
   if (tab!=='scan') { stopCamera(); status(''); }
+  if(tab==='library')void loadCodeSizes();
   history.replaceState(null,'','#'+tab);
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', ()=>switchTab(b.dataset.tab)));

@@ -7,8 +7,8 @@
   <meta name="description" content="Tiny games stored inside QR codes and barcodes. Scan a code and play.">
   <title>ScanDeck | Games inside codes</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="style.css?v=27">
-  <script type="module" src="app.js?v=26"></script>
+  <link rel="stylesheet" href="style.css?v=28">
+  <script type="module" src="app.js?v=28"></script>
 </head>
 <body>
 <div class="shell">
@@ -76,90 +76,138 @@
     </section>
 
     <section class="page" id="library" aria-labelledby="library-title">
-      <div class="section-heading"><h1 id="library-title">Games to try.</h1><p>Each game is stored inside the code you can download.</p></div>
+      <div class="section-heading"><h1 id="library-title">Games to try.</h1><p>Each game is stored inside the code you can download.</p><div class="code-legend" aria-label="Embedding status legend"><span><span class="legend-tick legend-full" aria-hidden="true">✓</span> Full game in code</span><span><span class="legend-tick legend-partial" aria-hidden="true">✓</span> Partial, needs interpreter</span></div></div>
       <div class="game-groups">
         <section class="game-group" aria-labelledby="qr-games-heading">
           <h2 class="group-title" id="qr-games-heading">QR Code</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/ironpass-micro-v3-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Ironpass Micro QR code"><span class="game-code-paper"><img src="assets/ironpass-micro-v3-qr.png" alt="QR code containing Ironpass Micro" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Ironpass Micro</h3><p>Defend your towers against waves of enemies.</p><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download QR</a></div></div>
+            <div class="game-body"><h3>Ironpass Micro</h3><p>Defend your towers against waves of enemies.</p><div class="code-metadata" data-code-asset="ironpass-micro-v3-qr" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download QR</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="bar-games-heading">
           <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
           <article class="surface game-card">
             <a class="game-code-preview barcode-code-preview" href="assets/taprush-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full Tap Rush Code 128 barcode"><span class="game-code-paper"><img src="assets/taprush-code128.png" alt="Code 128 containing the full Tap Rush JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
-            <div class="game-body"><h3>Tap Rush</h3><p>Tap as many times as you can in five seconds. The first tap starts the clock. Your score is the total number of taps.</p><small class="barcode-note">The full JavaScript game is inside this Code 128. It is still a wide symbol, so physical camera scanning can be difficult.</small><div class="game-actions"><button class="btn btn-primary" id="try-taprush">Play</button><a class="btn" href="assets/taprush-code128.png" download>Download PNG</a></div></div>
+            <div class="game-body"><h3>Tap Rush</h3><p>Tap as many times as you can in five seconds. The first tap starts the clock. Your score is the total number of taps.</p><small class="barcode-note">The full JavaScript game is inside this Code 128. It is still a wide symbol, so physical camera scanning can be difficult.</small><div class="code-metadata" data-code-asset="taprush-code128" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-taprush">Play</button><a class="btn" href="assets/taprush-code128.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="codablock-games-heading">
           <h2 class="group-title" id="codablock-games-heading">Codablock F <small>(Experimental)</small></h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/snake-codablockf.png" target="_blank" rel="noopener noreferrer" aria-label="View full Snake Codablock F symbol"><span class="game-code-paper"><img src="assets/snake-codablockf.png" alt="Codablock F containing the complete Snake JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
-            <div class="game-body"><h3>Snake</h3><p>Eat food and grow your snake with swipes or arrow keys. The complete original JavaScript is in the stacked barcode.</p><small class="barcode-note">Requires a clean, straight image; physical-camera reliability is experimental.</small><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a></div></div>
+            <div class="game-body"><h3>Snake</h3><p>Eat food and grow your snake with swipes or arrow keys. The complete original JavaScript is in the stacked barcode.</p><small class="barcode-note">Requires a clean, straight image; physical-camera reliability is experimental.</small><div class="code-metadata" data-code-asset="snake-codablockf" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dotcode-games-heading">
           <h2 class="group-title" id="dotcode-games-heading">DotCode <small>(Experimental)</small></h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/neon-dodge-dotcode.png" target="_blank" rel="noopener noreferrer" aria-label="View full Neon Dodge DotCode symbol"><span class="game-code-paper"><img src="assets/neon-dodge-dotcode.png" alt="DotCode containing the complete Neon Dodge HTML game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
-            <div class="game-body"><h3>Neon Dodge</h3><p>Tap to switch lanes, dodge falling blocks and survive as the game gets faster.</p><small class="barcode-note">Entire standalone HTML game embedded. Camera decoding requires good focus and alignment.</small><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a></div></div>
+            <div class="game-body"><h3>Neon Dodge</h3><p>Tap to switch lanes, dodge falling blocks and survive as the game gets faster.</p><small class="barcode-note">Entire standalone HTML game embedded. Camera decoding requires good focus and alignment.</small><div class="code-metadata" data-code-asset="neon-dodge-dotcode" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dm-games-heading">
           <h2 class="group-title" id="dm-games-heading">Data Matrix</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/catch-datamatrix.png" target="_blank" rel="noopener noreferrer" aria-label="View Catch 10 Data Matrix code"><span class="game-code-paper"><img src="assets/catch-datamatrix.png" alt="Data Matrix containing Catch 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Catch 10</h3><p>Catch ten moving targets. The timer counts up from zero, with no time limit.</p><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.png" download>Download Data Matrix</a></div></div>
+            <div class="game-body"><h3>Catch 10</h3><p>Catch ten moving targets. The timer counts up from zero, with no time limit.</p><div class="code-metadata" data-code-asset="catch-datamatrix" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.png" download>Download Data Matrix</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="aztec-games-heading">
           <h2 class="group-title" id="aztec-games-heading">Aztec Code</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/memory-aztec.png" target="_blank" rel="noopener noreferrer" aria-label="View Pattern Memory Aztec code"><span class="game-code-paper"><img src="assets/memory-aztec.png" alt="Aztec Code containing Pattern Memory" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Pattern Memory</h3><p>Tap a color to start. Listen to the tones and repeat each pattern.</p><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.png" download>Download Aztec</a></div></div>
+            <div class="game-body"><h3>Pattern Memory</h3><p>Tap a color to start. Listen to the tones and repeat each pattern.</p><div class="code-metadata" data-code-asset="memory-aztec" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.png" download>Download Aztec</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="pdf-games-heading">
           <h2 class="group-title" id="pdf-games-heading">PDF417</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/breakout-pdf417.png" target="_blank" rel="noopener noreferrer" aria-label="View PDF417 Brick Rush code"><span class="game-code-paper"><img src="assets/breakout-pdf417.png" alt="PDF417 containing Brick Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Brick Rush</h3><p>Use a slower ball, clear twelve bricks and survive with three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.png" download>Download PDF417</a></div></div>
+            <div class="game-body"><h3>Brick Rush</h3><p>Use a slower ball, clear twelve bricks and survive with three lives.</p><div class="code-metadata" data-code-asset="breakout-pdf417" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.png" download>Download PDF417</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="maxi-games-heading">
           <h2 class="group-title" id="maxi-games-heading">MaxiCode</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/tap-maxicode.png" target="_blank" rel="noopener noreferrer" aria-label="View MaxiCode Perfect Timing code"><span class="game-code-paper"><img src="assets/tap-maxicode.png" alt="MaxiCode containing Perfect Timing" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Perfect Timing</h3><p>A random target between 999 and 1,997 ms. Press Start, then Stop as close to the target as possible.</p><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/tap-maxicode.png" download>Download MaxiCode</a></div></div>
+            <div class="game-body"><h3>Perfect Timing</h3><p>A random target between 999 and 1,997 ms. Press Start, then Stop as close to the target as possible.</p><div class="code-metadata" data-code-asset="tap-maxicode" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/tap-maxicode.png" download>Download MaxiCode</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="micro-games-heading">
           <h2 class="group-title" id="micro-games-heading">Micro QR</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/reflex-microqr.png" target="_blank" rel="noopener noreferrer" aria-label="View Micro QR Pocket Reflex code"><span class="game-code-paper"><img src="assets/reflex-microqr.png" alt="Micro QR containing the entire Pocket Reflex virtual machine program" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Pocket Reflex</h3><p>Tap the correct number before the clock reaches zero. Five rounds, four choices and three seconds each. The entire 13-character VM program is in the Micro QR.</p><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/reflex-microqr.png" download>Download Micro QR</a></div></div>
+            <div class="game-body"><h3>Pocket Reflex</h3><p>Tap the correct number before the clock reaches zero. Five rounds, four choices and three seconds each. The entire 13-character VM program is in the Micro QR.</p><div class="code-metadata" data-code-asset="reflex-microqr" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-partial" title="The complete bytecode is embedded, but the VM interpreter is external"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/reflex-microqr.png" download>Download Micro QR</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="rmqr-games-heading">
           <h2 class="group-title" id="rmqr-games-heading">rMQR</h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/math-rmqr.png" target="_blank" rel="noopener noreferrer" aria-label="View rMQR Codebreaker code"><span class="game-code-paper"><img src="assets/math-rmqr.png" alt="rMQR containing Codebreaker" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Codebreaker</h3><p>Guess a new number from 0 to 98. UP and DOWN clues are separate from your seven remaining attempts.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.png" download>Download rMQR</a></div></div>
+            <div class="game-body"><h3>Codebreaker</h3><p>Guess a new number from 0 to 98. UP and DOWN clues are separate from your seven remaining attempts.</p><div class="code-metadata" data-code-asset="math-rmqr" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.png" download>Download rMQR</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="iris-games-heading">
           <h2 class="group-title" id="iris-games-heading">IRIS <small>(Experimental)</small></h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/iris-wire.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size IRIS Wire Crisis code"><span class="game-code-paper"><img src="assets/iris-wire.png" alt="IRIS color code containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
-            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="game-actions"><button class="btn btn-primary" id="try-iris-wire">Play</button><a class="btn" href="assets/iris-wire.png" download>Download PNG</a></div></div>
+            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="code-metadata" data-code-asset="iris-wire" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-iris-wire">Play</button><a class="btn" href="assets/iris-wire.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="chroma-games-heading">
           <h2 class="group-title" id="chroma-games-heading">ChromaQR <small>(Experimental)</small></h2>
           <article class="surface game-card">
             <a class="game-code-preview qr-code-preview" href="assets/chromaqr-chroma.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size ChromaQR Chroma Rush code"><span class="game-code-paper"><img src="assets/chromaqr-chroma.png" alt="ChromaQR RGB code containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
-            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the word. Ten rounds, a separate timer and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-chromaqr-chroma">Play</button><a class="btn" href="assets/chromaqr-chroma.png" download>Download PNG</a></div></div>
+            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the word. Ten rounds, a separate timer and three lives.</p><div class="code-metadata" data-code-asset="chromaqr-chroma" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="The full HTML or JavaScript game program is stored inside the code"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-chromaqr-chroma">Play</button><a class="btn" href="assets/chromaqr-chroma.png" download>Download PNG</a></div></div>
           </article>
         </section>
       </div>

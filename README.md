@@ -8,6 +8,9 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 
 ## Games
 
+Each game card shows two exact sizes: **Code**, the bytes embedded in the symbol, and **PNG**, the size of the downloadable image. The sizes are calculated at build time from the actual encoded payload and generated PNG. A **green check** means the full HTML/JavaScript program is embedded. A **blue check** means the program is only partially independent: Pocket Reflex stores its 13-byte VM bytecode, but requires ScanDeck's generic interpreter. The file-size indicators do not measure camera readability.
+
+
 | Game | Code format | How to play |
 | --- | --- | --- |
 | Ironpass Micro | QR Code | Defend your towers from enemy waves |

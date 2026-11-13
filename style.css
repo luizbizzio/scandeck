@@ -215,3 +215,20 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   .scan-formats-details .scan-formats{right:0}
   .scanner .scan-mode-row select{min-width:0}
 }
+
+/* Code metadata: embedded program status plus exact data and downloadable image sizes. */
+.code-metadata{display:flex;align-items:center;flex-wrap:wrap;gap:7px 12px;margin-top:15px;padding:11px 0;border-top:1px solid #2b3a30;color:#a9bbb0;font:600 11px/1.45 var(--mono);font-variant-numeric:tabular-nums}
+.code-embedding{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;margin-right:auto;color:#d6e5d5;font:700 12px/1.4 system-ui}
+.code-tick{width:19px;height:19px;display:inline-grid;place-items:center;border-radius:50%;font:900 12px/1 system-ui;border:1px solid currentColor}
+.code-embedding-full .code-tick{color:#84d99d;background:#174c2b}
+.code-embedding-partial .code-tick{color:#8bc4ff;background:#183f68}
+.code-size{white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.code-size-label{color:#8b9e90}
+.code-size strong{color:#e0eddf;font-weight:650}
+@media(max-width:420px){.code-metadata{gap:8px 12px}.code-embedding{flex:0 0 100%}}
+
+.code-legend{display:flex;flex-wrap:wrap;align-items:center;gap:9px 22px;margin-top:20px;color:#a6b7a9;font:600 12px system-ui}
+.code-legend>span{display:inline-flex;gap:8px;align-items:center}
+.legend-tick{width:18px;height:18px;display:inline-grid;place-items:center;border:1px solid currentColor;border-radius:50%;font:800 11px/1 system-ui}
+.legend-full{color:#84d99d;background:#174c2b}
+.legend-partial{color:#8bc4ff;background:#183f68}

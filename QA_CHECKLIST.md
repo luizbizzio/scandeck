@@ -145,3 +145,13 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] At desktop widths around 1034 and 800 px, open and close **Paste game data instead**: preview width stays fixed and never overlaps Scanner focus, camera actions or textarea.
 - [ ] At mobile widths around 390 and 320 px, the preview appears above the expanded form, with no horizontal overflow and no clipped input field.
 - [ ] With the camera in full-screen mode on mobile, the Stop/Close button and format picker remain accessible.
+
+## Library card filesize and embedded-status metadata
+
+- [ ] All 12 library game cards display **Code** size and **PNG** size below the game description.
+- [ ] **Code** counts exact UTF-8 bytes in the encoded payload; **PNG** counts the actual file bytes, formatted as B or KB.
+- [ ] The 11 standalone HTML/JavaScript cards have green checks and **Full** labels.
+- [ ] Pocket Reflex has a blue check and **Partial** label, because its 13-byte VM program requires the ScanDeck interpreter.
+- [ ] On mobile and desktop, status and sizes wrap within the card, with no horizontal overflow.
+- [ ] Test loading the Games tab directly via `#library` and by clicking the Games tab; one metadata request fills all cards.
+- [ ] Check offline reload after service-worker activation and verify generated PNGs match the metadata manifest.

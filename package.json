@@ -8,7 +8,7 @@
     "test": "node --test tests/*.test.js",
     "start": "python -m http.server 8000",
     "build:snake": "node tools/build-matrix.mjs",
-    "build": "node tools/build-matrix.mjs && node tools/build-color.mjs && node tools/build-chroma.mjs && node tools/build-exotic.mjs"
+    "build": "node tools/build-matrix.mjs && node tools/build-color.mjs && node tools/build-chroma.mjs && node tools/build-exotic.mjs && node tools/build-code-sizes.mjs"
   },
   "license": "MIT",
   "dependencies": {
