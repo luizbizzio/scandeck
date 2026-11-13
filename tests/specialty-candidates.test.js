@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {readBarcodes} from 'zxing-wasm';
+import {decode} from '@sythos/js_barcode_universal';
 import {findLightCard,specialtyCandidates,thresholdRgba} from '../src/specialty-candidates.js';
 
 function photoOf(png){
@@ -44,6 +45,10 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
     tryDownscale:false,...candidate.options
    });
    console.log(mode,'candidate',candidate.image.width,candidate.image.height,results.map(x=>x.text?.length));
+   if(candidate===candidates[0]){
+     const alternate=decode(candidate.image,{formats:[mode]});
+     console.log(mode,'Sythos alternate',alternate.map(x=>({length:x.text?.length,format:x.format})));
+   }
    if(results.some(r=>r.text===expected))success=true;
   }
   assert.ok(success,'Preprocessed raw image must preserve the full embedded game');
