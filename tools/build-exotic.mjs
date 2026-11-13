@@ -57,7 +57,29 @@ const games=[
     input:'examples/neon-dodge-dotcode.html',
     payload:source=>compact(source,'SDC:'),
     format:'dotcode',
-    encode:payload=>encodeDotCode(payload,{aspectRatio:1}),
+    encode:payload=>{
+      const fallback=encodeDotCode(payload,{aspectRatio:1});
+      const candidates=[fallback];
+      const area=fallback.width*fallback.height;
+      // DotCode requires a correctly decodable alternating-dot layout.
+      // Explore near-square dimensions instead of forcing a tall narrow strip.
+      for(let width=115;width<=161;width+=4){
+        for(const extra of [0,4,8]){
+          let height=Math.ceil(area*1.08/width)+extra;
+          if((width+height)%2===0)height++;
+          if(height>fallback.height||width>fallback.height)continue;
+          try{
+            const grid=encodeDotCode(payload,{width,height});
+            if(decodeDotCode(grid)?.text===payload)candidates.push(grid);
+          }catch{}
+        }
+      }
+      const score=m=>100*Math.max(m.width,m.height)+
+        5*Math.abs(m.width-m.height)+m.width*m.height/50;
+      candidates.sort((a,b)=>score(a)-score(b));
+      console.log('DotCode layout selected '+candidates[0].width+'×'+candidates[0].height+' modules');
+      return candidates[0];
+    },
     margin:10,scale:5
   }
 ];

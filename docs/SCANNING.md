@@ -75,3 +75,7 @@ Exotic camera scans now alternate strict frontal and projective quadrilateral sa
 ## Symbol footprint optimization
 
 The build now tests DEFLATE window sizes from 9 through 15 and selects the shortest complete Z85 representation for each full game. Codablock F tests multiple legal row and column counts, checks each candidate with its actual strict decoder and prefers a narrower, balanced symbol for camera scanning. This avoids reducing complexity by throwing away game behavior.
+
+## DotCode shape optimization
+
+The writer now tests several odd/even width-height candidates near a square shape against its complete Reed-Solomon decoder. It chooses a more balanced matrix only when it verifies all payload bytes. The default aspect-ratio layout remains a fallback. This improves on-screen framing without discarding the game's source.
