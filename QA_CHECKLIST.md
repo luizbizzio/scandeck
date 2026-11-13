@@ -172,3 +172,14 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] The Ironpass QR card loads `ironpass-micro-v3.txt` even though the PNG name ends in `-qr`.
 - [ ] The dialog distinguishes HTML/JavaScript from Pocket Reflex's bytecode, and Copy code copies exactly what is displayed.
 - [ ] Source dialog is responsive on a small phone and handles malformed or unavailable data without locking buttons.
+
+## Embedding classification and creator footer
+
+- [ ] Six HTML game cards display a green Full check.
+- [ ] Five JavaScript-only game cards display a blue Partial check. The JS is complete, but the HTML interface is outside the code.
+- [ ] Pocket Reflex displays a yellow Bytecode marker, not a blue Partial check, because it needs the Micro VM.
+- [ ] The View source dialog displays matching Full, Partial or Bytecode markers and an accurate explanation of what runs externally.
+- [ ] Metadata generated from payload headers (IP3/SD1, SDS/SDJ, V1) matches the labels on all 12 cards.
+- [ ] At 320 px, 375 px and 430 px, Play fills the top row; Download and View source share the second row without overflow.
+- [ ] Footer centers the link "Created by Luiz Bizzio" on desktop and reflows it to the first line on mobile.
+- [ ] Version text remains ScanDeck 1.0.0.

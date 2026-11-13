@@ -18,7 +18,7 @@ function formatCodeSize(bytes){
 }
 async function loadCodeSizes(){
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=28',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=31',{cache:'force-cache'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -81,16 +81,26 @@ async function acceptPayload(raw, mode='manual', format='') {
 $('decode-text').addEventListener('click',()=>{resetDetected();void acceptPayload($('paste-input').value)});
 $('paste-input').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){resetDetected();void acceptPayload($('paste-input').value)}});
 $('play-detected').addEventListener('click',()=>selectedGame&&playGame(selectedGame));
+function getEmbeddingStatus(game){
+  if(game.kind==='html')return {status:'full',label:'Full',format:'HTML game',
+    description:'The full HTML game and its JavaScript are stored inside the code.'};
+  if(['microvm','bytecode','maze','lights'].includes(game.kind))
+    return {status:'bytecode',label:'Bytecode',format:'VM instructions',
+      description:'The symbol contains the game instructions. ScanDeck provides the interpreter and interface needed to run them.'};
+  return {status:'partial',label:'Partial',format:'JavaScript only',
+    description:'The complete JavaScript game is stored in the code, but ScanDeck provides its HTML interface.'};
+}
 function showGameSource(game,title=game.title){
-  const kind=game.kind==='microvm'?'Micro VM bytecode'
-    :game.kind==='html'?'HTML and JavaScript'
-    :game.kind==='standalone'?'JavaScript':'Game instructions';
   const source=String(game.source||'');
   if(!source)throw Error('The game has no readable source data.');
+  const embedding=getEmbeddingStatus(game);
   $('source-heading').textContent=title+' source';
-  $('source-description').textContent=game.kind==='microvm'
-    ?'The complete game instructions are inside the Micro QR. The generic ScanDeck interpreter runs this bytecode.'
-    :kind+' recovered from the game code. This is the actual stored program, not a sample or external file.';
+  const badge=$('source-status');
+  badge.className='code-embedding code-embedding-'+embedding.status;
+  badge.querySelector('.code-tick').textContent=embedding.status==='bytecode'?'⌘':'✓';
+  $('source-status-label').textContent=embedding.label;
+  $('source-format').textContent=embedding.format;
+  $('source-description').textContent=embedding.description+' The text below is the actual decoded program, not a substitute example.';
   $('source-view').textContent=source;
   $('copy-source').textContent='Copy code';
   if(!$('source-dialog').open)$('source-dialog').showModal();

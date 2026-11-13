@@ -5,21 +5,21 @@ import {fileURLToPath} from 'node:url';
 // Byte sizes are not estimates, and the PNG is never confused with payload data.
 const root=new URL('../assets/',import.meta.url);
 const entries=[
-  ['ironpass-micro-v3-qr','full'],
-  ['taprush-code128','full'],
-  ['snake-codablockf','full'],
-  ['neon-dodge-dotcode','full'],
-  ['catch-datamatrix','full'],
-  ['memory-aztec','full'],
-  ['breakout-pdf417','full'],
-  ['tap-maxicode','full'],
-  ['reflex-microqr','partial'],
-  ['math-rmqr','full'],
-  ['iris-wire','full'],
-  ['chromaqr-chroma','full']
+  'ironpass-micro-v3-qr',
+  'taprush-code128',
+  'snake-codablockf',
+  'neon-dodge-dotcode',
+  'catch-datamatrix',
+  'memory-aztec',
+  'breakout-pdf417',
+  'tap-maxicode',
+  'reflex-microqr',
+  'math-rmqr',
+  'iris-wire',
+  'chromaqr-chroma'
 ];
 const out={};
-for(const [id,completeness] of entries){
+for(const id of entries){
   const png=fileURLToPath(new URL(id+'.png',root));
   const txt=fileURLToPath(new URL((id==='ironpass-micro-v3-qr'?'ironpass-micro-v3':id)+'.txt',root));
   const bytes=readFileSync(txt);
@@ -28,11 +28,13 @@ for(const [id,completeness] of entries){
   if(size<8||!readFileSync(png).subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')))
     throw Error('Invalid PNG for '+id);
   const payload=bytes.toString('utf8');
-  if(completeness==='partial'&&(!payload.startsWith('V1')||id!=='reflex-microqr'))
-    throw Error('Unexpected VM/interpreter dependency for '+id);
-  if(completeness==='full'&&!/^(?:SD1:|SDS:|IP3:)/.test(payload))
-    throw Error('Missing complete game payload for '+id);
+  const completeness=payload.startsWith('V1')?'bytecode'
+    :payload.startsWith('SDS:')||payload.startsWith('SDJ:')?'partial'
+    :payload.startsWith('IP3:')||payload.startsWith('SD1:')?'full'
+    :null;
+  if(!completeness)throw Error('Unknown game encoding: '+id);
+  if(completeness==='bytecode'&&id!=='reflex-microqr')throw Error('Unexpected bytecode game: '+id);
   out[id]={payloadBytes:bytes.length,pngBytes:size,completeness};
 }
 writeFileSync(new URL('code-sizes.json',root),JSON.stringify(out)+'\n');
-console.log('Code metadata: '+entries.length+' PNG sizes, '+entries.filter(x=>x[1]==='full').length+' complete games, '+entries.filter(x=>x[1]==='partial').length+' interpreter-dependent game');
+console.log('Code metadata: '+entries.length+' PNG sizes | '+Object.values(out).filter(x=>x.completeness==='full').length+' Full | '+Object.values(out).filter(x=>x.completeness==='partial').length+' Partial | '+Object.values(out).filter(x=>x.completeness==='bytecode').length+' Bytecode');

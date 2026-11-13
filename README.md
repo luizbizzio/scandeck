@@ -8,11 +8,16 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 
 ## Games
 
+The library has **6 Full (HTML)** games, **5 Partial (JavaScript-only)** games, and **1 Bytecode** game. A Partial program can still contain all the JavaScript gameplay logic; its label means the HTML interface is not stored inside the symbol. The Bytecode program needs a different interpreter. The View source dialog shows the same status and explains the difference.
+
+The footer credits **Created by Luiz Bizzio** in the middle, linked to the creator's GitHub profile. On mobile, the Play button spans the full first row with Download and View source next to each other underneath. The site version remains **1.0.0**.
+
+
 Every Games card has a **View source** button beside Download. It opens the actual decoded HTML or JavaScript stored in the code, with a Copy code action. Pocket Reflex shows its 13-character Micro VM bytecode instead. The About page also displays a real PNG example for every code format, with a link to its full-size image.
 
 The Games cards now describe only gameplay. Their status ticks and exact Code / PNG sizes are shown separately. The About tab has a short history of each of the 12 code formats, with a source link for further reading.
 
-Each game card shows two exact sizes: **Code**, the bytes embedded in the symbol, and **PNG**, the size of the downloadable image. The sizes are calculated at build time from the actual encoded payload and generated PNG. A **green check** means the full HTML/JavaScript program is embedded. A **blue check** means the program is only partially independent: Pocket Reflex stores its 13-byte VM bytecode, but requires ScanDeck's generic interpreter. The file-size indicators do not measure camera readability.
+Each game card shows two exact sizes: **Code**, the bytes embedded in the symbol, and **PNG**, the size of the downloadable image. The sizes are calculated at build time from the actual encoded payload and generated PNG. A **green check (Full)** means complete HTML with the game is embedded. A **blue check (Partial)** means all JavaScript logic is embedded, but the game's HTML player interface is supplied by ScanDeck. A **yellow code marker (Bytecode)** means a short virtual-machine program is embedded and needs ScanDeck's shared VM to run. These status labels describe what is inside the symbol, not whether it scans well. The file-size indicators do not measure camera readability.
 
 
 | Game | Code format | How to play |

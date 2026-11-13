@@ -289,8 +289,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/app\.js\?v=30/);
-  assert.match(html,/style\.css\?v=30/);
+  assert.match(html,/app\.js\?v=31/);
+  assert.match(html,/style\.css\?v=31/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -350,4 +350,29 @@ test('About explains origin and use of all 12 formats with history source links'
   }
   assert.match(about,/Only compatible game codes work/);
   assert.match(css,/\.about-types>\.about-code-card\{display:flex/);
+});
+
+test('mobile game buttons put Play above Download and View source',()=>{
+  assert.match(css,/@media\(max-width:700px\)\{\s*\.game-actions\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(css,/\.game-actions>\.btn-primary\{grid-column:1\/-1;grid-row:1/);
+  assert.match(css,/\.game-actions>a\.btn\{grid-column:1;grid-row:2/);
+  assert.match(css,/\.game-actions>\.btn-source\{grid-column:2;grid-row:2/);
+  const cards=[...html.matchAll(/<article class="surface game-card">([\s\S]*?)<\/article>/g)];
+  assert.equal(cards.length,12);
+  for(const [,card] of cards){
+    const row=card.match(/<div class="game-actions">([\s\S]*?)<\/div>/)?.[1]||'';
+    assert.ok(row.indexOf('btn-primary')>=0&&row.indexOf('btn-source')>row.indexOf('btn-primary'));
+  }
+});
+test('footer has the centered creator credit and keeps version 1.0.0',()=>{
+  assert.match(html,/<footer class="site-footer"><span class="footer-version">ScanDeck · 1\.0\.0<\/span>/);
+  assert.match(html,/class="footer-credit">Created by <a href="https:\/\/github\.com\/luizbizzio"/);
+  assert.match(css,/\.site-footer\{display:grid;grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)/);
+  assert.match(css,/\.footer-credit\{justify-self:center/);
+});
+test('About correctly explains Full, Partial and Bytecode without changing the game count',()=>{
+  assert.match(html,/Six games contain a full HTML game/);
+  assert.match(html,/Five contain complete JavaScript/);
+  assert.match(html,/Pocket Reflex is Bytecode/);
+  assert.match(html,/legend-bytecode/);
 });

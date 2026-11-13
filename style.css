@@ -298,3 +298,36 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
   #source-dialog .dialog-head{flex-wrap:wrap}
   #source-dialog #source-view{max-height:calc(88dvh - 205px)}
 }
+
+/* Three truthful levels of source completeness. Green: HTML; blue: JS; yellow: VM. */
+.code-embedding-full{color:#a1e5ad}
+.code-embedding-partial{color:#9ec9ff}
+.code-embedding-bytecode{color:#f1d77d}
+.code-embedding-bytecode .code-tick{color:#f1cc59;background:#4a3b19;border-color:#b99438}
+.legend-bytecode{color:#f1cc59;background:#4a3b19}
+.source-classification{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin-top:15px}
+.source-classification>.code-embedding{margin-right:0}
+#source-format{color:#a6b8aa;font:600 12px system-ui}
+
+/* Footer: true centered author credit independent of left/right widths. */
+.site-footer{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;column-gap:16px}
+.footer-version{justify-self:start}
+.footer-credit{justify-self:center;text-align:center;white-space:nowrap}
+.footer-credit a{color:#d6eed9;text-decoration:none;font-weight:700}
+.footer-credit a:hover{text-decoration:underline}
+.footer-github{justify-self:end;text-align:right}
+@media(max-width:600px){
+  .site-footer{grid-template-columns:minmax(0,1fr) minmax(0,1fr);row-gap:13px}
+  .footer-credit{grid-column:1/-1;grid-row:1}
+  .footer-version{grid-column:1;grid-row:2}
+  .footer-github{grid-column:2;grid-row:2}
+}
+
+/* On phones: one clear Play CTA above equally sized Download and View source. */
+@media(max-width:700px){
+  .game-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .game-actions>.btn{box-sizing:border-box;width:100%;min-width:0;min-height:44px;display:flex;justify-content:center;align-items:center;text-align:center;white-space:normal;line-height:1.3}
+  .game-actions>.btn-primary{grid-column:1/-1;grid-row:1;min-height:48px}
+  .game-actions>a.btn{grid-column:1;grid-row:2}
+  .game-actions>.btn-source{grid-column:2;grid-row:2}
+}
