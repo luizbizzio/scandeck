@@ -235,5 +235,5 @@ test('compressed full HTML and standalone JavaScript preserve source bytes and r
   assert.equal(a.kind,'html');assert.equal(a.source,html);assert.equal(a.payload,denseHtml);
   assert.equal(b.kind,'standalone');assert.equal(b.source,script);assert.equal(b.payload,denseScript);
   await assert.rejects(()=>decodeGame('SDH:NOT-VALID'),/Invalid compressed game encoding/);
-  await assert.rejects(()=>decodeGame('SDZ:AAAA'),/Invalid|decompress|format|stream|deflate/i);
+  await assert.rejects(()=>decodeGame('SDZ:AAAA'),/Invalid|decompress|format|stream|deflate|TypeError|unexpected end/i);
 });

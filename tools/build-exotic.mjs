@@ -16,7 +16,25 @@ const games=[
     input:'examples/snake-standalone.js',
     payload:source=>'SDZ:'+deflateRawSync(Buffer.from(source)).toString('base64'),
     format:'codablockf',
-    encode:payload=>encodeCodablockF(payload,{rows:36,columns:28,rowHeight:6,separatorHeight:1}),
+    encode:payload=>{
+      // Try several legal layouts. Prefer fewer tall, redundant-looking rows
+      // without turning the symbol into an impossibly wide barcode.
+      const candidates=[];
+      for(const rows of [20,24,26,28,30,32,36]){
+        try{
+          const matrix=encodeCodablockF(payload,{rows,columns:28,rowHeight:6,separatorHeight:1});
+          if(decodeCodablockF(matrix)?.text!==payload)continue;
+          const ratio=matrix.width/matrix.height;
+          const score=900*Math.abs(Math.log(ratio/1.8))+
+            matrix.width*matrix.height/4000;
+          candidates.push({rows,matrix,score});
+        }catch{}
+      }
+      candidates.sort((a,b)=>a.score-b.score);
+      if(!candidates.length)throw Error('No complete Codablock F layout fits the full Snake');
+      console.log('Codablock layout selected '+candidates[0].rows+' rows');
+      return candidates[0].matrix;
+    },
     margin:12,scale:4
   },{
     name:'neon-dodge-dotcode',

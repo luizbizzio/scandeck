@@ -13,7 +13,7 @@ function runGame(filename,fps){
  if(filename.includes('breakout'))context.onclick();
  const frames=Math.round(fps);
  for(let frame=1;frame<=frames;frame++)context.next(frame*1000/fps);
- return filename.includes('breakout')?{x:context.x,y:context.y}:{o:context.o,score:context.s,dead:context.dead};
+ return filename.includes('breakout')?{x:context.x,y:context.y}:{o:context.o,score:context.s,dead:context.dead,speed:context.a};
 }
 test('Brick Rush travels similar distances at 30 and 60 FPS',()=>{
  const a=runGame('breakout-pdf417.html',30),b=runGame('breakout-pdf417.html',60);
@@ -23,4 +23,19 @@ test('Brick Rush travels similar distances at 30 and 60 FPS',()=>{
 test('Neon Dodge scrolls at the same speed at 30 and 60 FPS',()=>{
  const a=runGame('neon-dodge-dotcode.html',30),b=runGame('neon-dodge-dotcode.html',60);
  assert.ok(Math.abs(a.o-b.o)<8,JSON.stringify({a,b}));
+});
+
+test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
+ const html=readFileSync(new URL('../examples/neon-dodge-dotcode.html',import.meta.url),'utf8');
+ const src=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+ const g={fillRect(){},fillText(){},set fillStyle(x){},set font(x){}};
+ const c={getContext:()=>g};
+ const state={c,Math,requestAnimationFrame(fn){state.next=fn}};
+ vm.runInNewContext(src,state,{timeout:500});
+ const start=state.a;state.next(16.667);
+ const second=state.a;state.next(33.334);
+ assert.ok(second>start&&state.a>start,'Speed must grow during active play');
+ assert.equal(state.s,0,'Acceleration cannot depend only on points');
+ state.dead=1;c.onclick();
+ assert.equal(state.a,start,'Retry must reset acceleration');
 });
