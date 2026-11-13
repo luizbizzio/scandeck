@@ -41,7 +41,11 @@ for(const game of games){
   const svg=renderColorSVG(symbol,{style:'slices'});
   if(!svg.includes('<svg'))throw Error(game.output+' SVG generation failed');
   writeFileSync(asset(game.output+'.svg'),svg);
-  writeFileSync(asset(game.output+'.png'),encodePng(grid));
+  // Render more pixels per IRIS cell without changing its payload or marker geometry.
+  const multiplier=Math.max(1,Math.min(3,Math.floor(3000/grid.width)));
+  const detailed=multiplier>1?renderColorRaster({...symbol,params:{...symbol.params,u:symbol.params.u*multiplier}}):grid;
+  if(decodeColor(detailed).text!==payload)throw Error('High-resolution IRIS integrity check failed');
+  writeFileSync(asset(game.output+'.png'),encodePng(detailed));
   writeFileSync(asset(game.output+'.txt'),payload);
-  console.log('IRIS | '+game.output+' | '+payload.length+' characters | '+symbol.params.K+' rings | RGB-pixel round trip verified');
+  console.log('IRIS | '+game.output+' | '+payload.length+' characters | '+symbol.params.K+' rings | RGB-pixel round trip verified at '+detailed.width+'x'+detailed.height);
 }

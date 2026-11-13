@@ -184,7 +184,7 @@ test('Brick Rush has faster ball, three lives and pointer/keyboard control',()=>
  const pen={clearRect(){},fillRect(){},beginPath(){},arc(){},fill(){},fillText(){}};
  const c={clientWidth:300,getContext(){return pen}},s={innerText:''},ctx={c,s,Math,requestAnimationFrame(fn){ctx.tick=fn}};
  vm.runInNewContext(src,ctx,{timeout:500});
- assert.equal(ctx.u,2.3);assert.equal(ctx.v,-2.6);assert.equal(ctx.l,3);ctx.onclick();ctx.tick();assert.equal(ctx.z,1);
+ assert.equal(ctx.u,3.6);assert.equal(ctx.v,-4);assert.equal(ctx.l,3);ctx.onclick();ctx.tick();assert.equal(ctx.z,1);
  ctx.onmessage({data:'R'});assert.equal(ctx.p,170);
  assert.match(html,/BRICK RUSH/);
 });

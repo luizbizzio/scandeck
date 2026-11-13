@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=37"/);
- assert.match(html,/src="src\/app\.js\?v=37"/);
+ assert.match(html,/href="src\/style\.css\?v=38"/);
+ assert.match(html,/src="src\/app\.js\?v=38"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -24,5 +24,8 @@ test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(worker,/importScripts\('\.\.\/vendor\/zxing-wasm\/index\.js'\)/);
  assert.match(worker,/await import\('\.\/chroma\.js'\)/);
  assert.match(worker,/self\.postMessage\(\{id,result\}\)/);
+ assert.match(worker,/rotatePixels\(pixels,clockwise\)/);
+ assert.match(worker,/retryBinarizer/);
+ assert.match(app,/retryRotated:mode==='code128'/);
  assert.doesNotMatch(worker,/window\.|document\./);
 });

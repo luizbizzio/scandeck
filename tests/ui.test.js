@@ -205,7 +205,7 @@ test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
-  assert.match(script,/isPure:mode==='maxicode'&&useCrop/);
+  assert.match(script,/isPure:false/);
   assert.match(script,/maxicode:'MaxiCode must be flat/);
   assert.match(script,/rmqr:'Turn your phone sideways/);
 });
@@ -294,8 +294,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=37/);
-  assert.match(html,/src\/style\.css\?v=37/);
+  assert.match(html,/src\/app\.js\?v=38/);
+  assert.match(html,/src\/style\.css\?v=38/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -391,7 +391,7 @@ test('landscape mobile scanning keeps full-screen camera and supports rotated ba
   assert.match(script,/addEventListener\('resize',syncCameraLayout\)/);
   assert.match(script,/document\.documentElement\.classList\.toggle\('camera-open',isMobileCamera\(\)\)/);
   assert.match(script,/\.\.\.wasmOptions,formats,tryDenoise:false,tryRotate:true/);
-  assert.match(script,/isPure:mode==='maxicode'&&useCrop/);
+  assert.match(script,/isPure:false/);
   assert.match(script,/tryRotate:true/);
-  assert.match(script,/code128:'Try landscape/);
+  assert.match(script,/code128:'Scan upright or sideways/);
 });

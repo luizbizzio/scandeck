@@ -1,8 +1,8 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=37';
-import { gameDocument } from './runtime.js?v=37';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=38';
+import { gameDocument } from './runtime.js?v=38';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=37';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=38';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -24,7 +24,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=37',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=38',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -250,7 +250,7 @@ const focusTips={
   rmqr:'Turn your phone sideways if needed. Keep the entire rectangular rMQR sharply focused.',
   maxicode:'MaxiCode must be flat, upright and almost fill the square.',
   pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.',
-  code128:'Try landscape. Keep the full barcode and both white side margins visible.',
+  code128:'Scan upright or sideways. Keep every bar and both white side margins visible.',
   iris:'Center the colored circular code in the frame.',
   chromaqr:'Center the full colored QR symbol.',
   codablockf:'Try landscape. All Codablock F rows must fit sharply without perspective.',
@@ -446,17 +446,19 @@ function makeFocusedPixels(image,mode,monochrome=false){
 async function readFocused(lib,source,mode,frame){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=mode==='maxicode'?frame%2===0:(mode==='rmqr'||mode==='pdf417')&&frame%3===1;
-  const pix=useCrop?makeFocusedPixels(source,mode,mode==='maxicode'):
+  const useCrop=mode==='maxicode'?frame%3!==0:(mode==='rmqr'||mode==='pdf417')&&frame%3===1;
+  const pix=useCrop?makeFocusedPixels(source,mode,mode==='maxicode'&&frame%4===2):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
     ...wasmOptions,formats:[format],
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
-    isPure:mode==='maxicode'&&useCrop,
+    isPure:false, // A camera crop is not a perfectly aligned generated symbol.
     minLineCount:mode==='code128'?1:2,
-    tryDownscale:mode==='maxicode'&&useCrop,
-    tryDenoise:mode==='rmqr',
-    tryRotate:true
+    tryDownscale:mode==='rmqr'&&frame%4===3,
+    tryDenoise:mode==='rmqr'&&frame%4===2,
+    tryRotate:true,
+    retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%2===0,
+    retryRotated:mode==='code128'?frame%2===0:(mode==='rmqr'||mode==='maxicode')&&frame%3===2
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;

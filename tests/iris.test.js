@@ -39,6 +39,7 @@ for(const name of ['iris-wire']){
   test(name+' contains an entire independently decodable game in its PNG pixels',()=>{
     const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const png=readRgbPng(name);
+    assert.ok(png.width>=1200,'IRIS PNG should be high-resolution');
     assert.equal(decodeColor(png).text,expected);
     assert.ok(expected.startsWith('SD1:')||expected.startsWith('SDS:'));
   });

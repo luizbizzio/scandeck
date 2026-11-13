@@ -4,7 +4,7 @@ c.onclick=()=>dead?(dead=0,s=0,o=-50,p=0):p^=1;
 function f(t=0){d=h&&t?Math.min(4,(t-h)/16.667):1;h=t;
 g.fillStyle='#122219';g.fillRect(0,0,280,430);
 g.fillStyle='#294332';g.fillRect(137,0,6,430);
-if(!dead){o+=(4.6+s/14)*d;if(o>430){o=-40;v=Math.random()*2|0;s++}if(o>343&&o<397&&v==p)dead=1}
+if(!dead){o+=(6.8+s/11)*d;if(o>430){o=-40;v=Math.random()*2|0;s++}if(o>343&&o<397&&v==p)dead=1}
 g.fillStyle='#ec6d7b';g.fillRect(34+v*142,o,70,32);
 g.fillStyle='#b7f879';g.fillRect(51+p*142,365,36,36);
 g.fillStyle='#e9ffdb';g.font='bold 21px system-ui';g.fillText(dead?'CRASH · TAP TO RETRY':'DODGE · '+s,15,32);

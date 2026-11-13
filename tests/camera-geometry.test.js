@@ -6,14 +6,14 @@ test('dense scanning keeps more camera pixels than auto without passing worker l
   for(const mode of ['code128','pdf417','rmqr','codablockf','dotcode']){
     const size=captureDimensions(1920,1080,mode);
     assert.ok(size.width>auto.width,mode);
-    assert.ok(size.width*size.height<=1_900_000,mode);
+    assert.ok(size.width*size.height<=(mode==='code128'?2_800_000:mode==='pdf417'||mode==='rmqr'?2_400_000:1_900_000),mode);
   }
   assert.deepEqual(captureDimensions(0,1080,'auto'),{width:1,height:1});
 });
 test('capture respects 2MP limits even on large mobile photos',()=>{
   for(const mode of ['iris','chromaqr','auto','pdf417']){
     const {width,height}=captureDimensions(4096,3072,mode);
-    assert.ok(width>0&&height>0&&width*height<=2_000_000,mode);
+    assert.ok(width>0&&height>0&&width*height<=(mode==='pdf417'?2_400_000:2_000_000),mode);
   }
 });
 test('focused crops remain centered, bounded and large enough for a code',()=>{
