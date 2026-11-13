@@ -1,0 +1,33 @@
+# Camera scanning
+
+Code generation and real-phone decoding are different problems. A perfect downloadable PNG can still be too dense to capture through a camera.
+
+## Recommended test order
+
+1. Download the original PNG from Games. Upload it in Scan. Record whether the exact game is decoded.
+2. Open that full-size PNG on a second device at a reasonable display brightness.
+3. Use **Open camera**, choose the matching **Scan format**, and keep the whole symbol visible with its quiet margins.
+4. Try portrait and landscape. Avoid glare and motion. If the image is blurry, change the distance instead of zooming the webpage.
+5. Repeat each format at least five times on Android Chrome and iPhone Safari.
+
+## Formats
+
+| Format | Current camera considerations |
+| --- | --- |
+| QR Code, Data Matrix, Aztec, Micro QR | Standard decoder support, but game size and camera quality still matter |
+| Code 128 | Very wide when it contains a full JavaScript game. Keep both side margins visible |
+| PDF417 | Fine stacked bars. Dedicated mode retains more capture detail and tries a centered crop |
+| rMQR | Narrow rectangle. Dedicated mode tries a broad centered crop as well as the full frame |
+| MaxiCode | Best upright, frontal and sharp. Reliable camera reading is not guaranteed |
+| Codablock F | Experimental reader; full stacked code and clean straight lines are required |
+| DotCode | Experimental reader; dot spacing and perspective can cause failure |
+| IRIS | Experimental ring/color detection. Use even light and a centered symbol |
+| ChromaQR | RGB planes are affected by screen brightness, camera white balance and blur |
+
+Standard Auto mode does not include IRIS, ChromaQR, Codablock F or DotCode. Select them explicitly. There is no debug scanner mode.
+
+## Test reports
+
+Record device, OS, browser, source screen or print dimensions, orientation, distance, brightness, format, upload result, camera result and time to detection. Do not mark a format as camera verified based only on its Play button or a PNG unit test.
+
+See [QA_CHECKLIST.md](QA_CHECKLIST.md) for full test cases.

@@ -14,8 +14,8 @@ a{color:inherit;text-decoration:none}
 .logo-light{font-weight:470}.logo-dot{color:var(--accent)}
 .logo-mark{display:grid;grid-template-columns:repeat(2,7px);gap:3px;transform:rotate(-8deg)}.logo-mark i{height:7px;width:7px;border:2px solid var(--accent)}.logo-mark i:nth-child(3){grid-column:1}
 nav{display:flex;align-items:center;gap:5px}
-nav button{background:transparent;border:0;border-radius:8px;color:var(--muted);font-size:13px;font-weight:600;padding:9px 17px}
-nav button:hover{color:var(--text)}nav button.active{background:#222923;color:var(--text)}
+nav .tab{display:inline-flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:8px;color:var(--muted);font-size:13px;font-weight:600;padding:9px 17px;text-decoration:none}
+nav .tab:hover{color:var(--text)}nav .tab.active{background:#222923;color:var(--text)}
 main{flex:1}.page{display:none}.page.active{display:block}
 .section-heading{max-width:700px;padding:66px 0 34px}
 .section-heading h1{font-size:clamp(38px,6vw,59px);font-weight:740;line-height:1.09;letter-spacing:-.063em;margin:0 0 14px}

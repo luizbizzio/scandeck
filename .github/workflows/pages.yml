@@ -31,6 +31,7 @@ jobs:
       - name: Validate browser JavaScript
         run: |
           node --check app.js
+          node --check lib/scanner-geometry.js
           node --check protocol.js
           node --check runtime.js
           node --check microvm.js
@@ -45,8 +46,9 @@ jobs:
         run: npm test
       - name: Prepare static site
         run: |
-          mkdir -p dist/assets dist/vendor/zxing-wasm
-          cp index.html style.css app.js chroma.js iris-worker.js exotic-worker.js protocol.js runtime.js microvm.js maze.js code128.js sw.js .nojekyll dist/
+          mkdir -p dist/assets dist/vendor/zxing-wasm dist/lib
+          cp index.html style.css app.js chroma.js iris-worker.js exotic-worker.js protocol.js runtime.js microvm.js maze.js code128.js sw.js .nojekyll CNAME robots.txt sitemap.xml dist/
+          cp lib/scanner-geometry.js dist/lib/
           mkdir -p dist/vendor/iris
           cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
           cp assets/favicon.svg assets/*.png assets/*.txt assets/*.json dist/assets/

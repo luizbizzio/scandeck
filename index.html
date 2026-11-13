@@ -4,21 +4,44 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0b0d0c">
-  <meta name="description" content="Tiny games stored inside QR codes and barcodes. Scan a code and play.">
-  <title>ScanDeck | Games inside codes</title>
+  <meta name="description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <title>ScanDeck | Play Games Inside QR Codes and Barcodes</title>
+  <link rel="canonical" href="https://scandeck.luizbizzio.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ScanDeck">
+  <meta property="og:title" content="ScanDeck | Play Games Inside QR Codes and Barcodes">
+  <meta property="og:description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta property="og:url" content="https://scandeck.luizbizzio.com/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://scandeck.luizbizzio.com/assets/ironpass-micro-v3-qr.png">
+  <meta property="og:image:alt" content="A ScanDeck QR code that contains a playable game">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ScanDeck | Play Games Inside QR Codes and Barcodes">
+  <meta name="twitter:description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta name="twitter:image" content="https://scandeck.luizbizzio.com/assets/ironpass-micro-v3-qr.png">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {"@type":"WebSite","name":"ScanDeck","url":"https://scandeck.luizbizzio.com/","inLanguage":"en"},
+      {"@type":"WebApplication","name":"ScanDeck","url":"https://scandeck.luizbizzio.com/","description":"Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.","applicationCategory":"GameApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"inLanguage":"en","author":{"@type":"Person","name":"Luiz Bizzio","url":"https://github.com/luizbizzio"},"codeRepository":"https://github.com/luizbizzio/scandeck","license":"https://github.com/luizbizzio/scandeck/blob/main/LICENSE"}
+    ]
+  }
+  </script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="style.css?v=32">
-  <script type="module" src="app.js?v=32"></script>
+  <link rel="stylesheet" href="style.css?v=33">
+  <script type="module" src="app.js?v=33"></script>
 </head>
 <body>
 <div class="shell">
   <header class="topbar">
     <a href="#scan" class="logo" aria-label="ScanDeck home"><span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>scan<span class="logo-light">deck</span><span class="logo-dot">.</span></span></a>
     <nav aria-label="Main navigation">
-      <button class="tab active" data-tab="scan">Scan</button>
-      <button class="tab" data-tab="library">Games</button>
-      <button class="tab" data-tab="create">Create</button>
-      <button class="tab" data-tab="about">About</button>
+      <a class="tab active" href="#scan" data-tab="scan" aria-current="page">Scan</a>
+      <a class="tab" href="#library" data-tab="library">Games</a>
+      <a class="tab" href="#create" data-tab="create">Create</a>
+      <a class="tab" href="#about" data-tab="about">About</a>
     </nav>
   </header>
 

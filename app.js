@@ -2,6 +2,7 @@ import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRa
 import { gameDocument } from './runtime.js?v=28';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
+import { captureDimensions, focusedCrop, scanPause } from './lib/scanner-geometry.js?v=33';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -18,7 +19,7 @@ function formatCodeSize(bytes){
 }
 async function loadCodeSizes(){
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=32',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=33',{cache:'force-cache'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -46,7 +47,7 @@ function switchTab(tab) {
   if(tab==='library')void loadCodeSizes();
   history.replaceState(null,'','#'+tab);
 }
-document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', ()=>switchTab(b.dataset.tab)));
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', event=>{event.preventDefault();switchTab(b.dataset.tab)}));
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
 if(location.hash) switchTab(location.hash.slice(1));
 
@@ -369,21 +370,16 @@ function readExoticPixels(image,format,exact=false){
   });
 }
 
-// Focused camera recovery for dense rectangular rMQR and rigid MaxiCode.
-// ZXing MaxiCode needs an upright, monochrome and essentially frontal symbol.
+// An alternate centered crop helps dense PDF417/rMQR and frontal MaxiCode.
+// The full frame is always tried too, so cropped quiet zones cannot block scanning.
 function makeFocusedPixels(image,mode,monochrome=false){
-  const w=image.width,h=image.height,short=Math.min(w,h);
-  const roi=mode==='rmqr'
-    ?{w:Math.min(w,w*.95),h:Math.min(h,h*.68)}
-    :{w:short*.76,h:short*.76};
-  const maxW=mode==='rmqr'?1500:750;
-  const scale=Math.min(mode==='rmqr'?1.35:1.6,maxW/roi.w,1000/roi.h);
+  const w=image.width,h=image.height;
+  const roi=focusedCrop(w,h,mode);
   const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round(roi.w*scale));
-  canvas.height=Math.max(1,Math.round(roi.h*scale));
+  canvas.width=roi.outputWidth;canvas.height=roi.outputHeight;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   ctx.imageSmoothingEnabled=true;
-  ctx.drawImage(image,(w-roi.w)/2,(h-roi.h)/2,roi.w,roi.h,0,0,canvas.width,canvas.height);
+  ctx.drawImage(image,roi.left,roi.top,roi.width,roi.height,0,0,canvas.width,canvas.height);
   const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
   if(monochrome){
     const data=pixels.data;
@@ -392,7 +388,6 @@ function makeFocusedPixels(image,mode,monochrome=false){
       const gray=(data[i]*77+data[i+1]*150+data[i+2]*29)>>8;
       min=Math.min(min,gray);max=Math.max(max,gray);
     }
-    // Use a moderate threshold instead of losing the thin MaxiCode dots.
     const threshold=Math.round(min+(max-min)*.54);
     for(let i=0;i<data.length;i+=4){
       const v=((data[i]*77+data[i+1]*150+data[i+2]*29)>>8)>threshold?255:0;
@@ -405,7 +400,7 @@ function makeFocusedPixels(image,mode,monochrome=false){
 async function readFocused(lib,source,mode,frame){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=frame%2===0&&(mode==='rmqr'||mode==='maxicode');
+  const useCrop=mode==='maxicode'?frame%2===0:(mode==='rmqr'||mode==='pdf417')&&frame%3===1;
   const pix=useCrop?makeFocusedPixels(source,mode,mode==='maxicode'):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
@@ -421,62 +416,65 @@ async function readFocused(lib,source,mode,frame){
 }
 async function cameraLoop(token,engine){
   let frame=0;
-  while(live&&cameraToken===token&&!document.hidden){
-    const video=$('camera');
-    if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
-      try{
-        const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
-        const limit=mode==='code128'?1800:mode==='rmqr'?1600:mode==='maxicode'?1300:1300;
-        const ratio=Math.min(1,limit/Math.max(video.videoWidth,video.videoHeight));
-        const canvas=document.createElement('canvas');
-        canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
-        canvas.height=Math.max(1,Math.round(video.videoHeight*ratio));
-        const ctx=canvas.getContext('2d',{willReadFrequently:true});
-        ctx.drawImage(video,0,0,canvas.width,canvas.height);
-        const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-        let result=null;
-        if(mode==='auto'||focused){
+  // Reuse the capture surface. Native BarcodeDetector can work directly on video.
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  try{
+    while(live&&cameraToken===token&&!document.hidden){
+      const video=$('camera');
+      if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
+        try{
+          const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
           if(engine.kind==='native'&&mode==='auto'){
-            result=(await engine.engine.detect(video)).find(x=>isGamePayload(x.rawValue));
+            const result=(await engine.engine.detect(video)).find(x=>isGamePayload(x.rawValue));
+            if(live&&token===cameraToken&&result&&await acceptPayload(result.rawValue,'camera',result.format))return;
+          }else if(mode==='iris'){
+            // IRIS is color-sensitive and benefits from the centered square source.
+            const crop=centeredIrisFrame(video);
+            try{
+              const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
+              if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
+            }finally{crop.width=crop.height=1}
           }else{
-            const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
-            if(mode==='rmqr'||mode==='maxicode'){
-              result=await readFocused(lib,canvas,mode,frame);
-            }else{
-              const formats=focused?[focused]:frame%3===0
-                ?['QRCode','DataMatrix','Aztec','Code128']
-                :frame%3===1?['PDF417','RMQRCode','MicroQRCode']:['MaxiCode'];
-              result=(await lib.readBarcodes(pixels,{
-                ...wasmOptions,formats,tryDenoise:false,tryRotate:true
-              })).find(x=>isGamePayload(x.text));
+            const size=captureDimensions(video.videoWidth,video.videoHeight,mode);
+            if(canvas.width!==size.width||canvas.height!==size.height){
+              canvas.width=size.width;canvas.height=size.height;
+            }
+            ctx.drawImage(video,0,0,canvas.width,canvas.height);
+            if(mode==='auto'||focused){
+              const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
+              let result;
+              if(['rmqr','maxicode','pdf417','code128'].includes(mode)){
+                result=await readFocused(lib,canvas,mode,frame);
+              }else{
+                const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+                const formats=focused?[focused]:frame%3===0
+                  ?['QRCode','DataMatrix','Aztec','Code128']
+                  :frame%3===1?['PDF417','RMQRCode','MicroQRCode']:['MaxiCode'];
+                result=(await lib.readBarcodes(pixels,{
+                  ...wasmOptions,formats,tryDenoise:false,tryRotate:true
+                })).find(x=>isGamePayload(x.text));
+              }
+              const raw=result?.text||result?.rawValue;
+              if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
+            }else if(mode==='chromaqr'){
+              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              const chroma=await readChromaImage(pixels);
+              if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
+            }else if(mode==='codablockf'||mode==='dotcode'){
+              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              const experimental=await readExoticPixels(pixels,mode);
+              if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }
-          const raw=result?.text||result?.rawValue;
-          if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
+          frame++;
+        }catch(error){
+          if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
         }
-        if(mode==='chromaqr'){
-          const chroma=await readChromaImage(pixels);
-          if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
-        }
-        if(mode==='codablockf'||mode==='dotcode'){
-          const format=mode==='codablockf'?'codablockf':mode==='dotcode'?'dotcode':frame%16===5?'codablockf':'dotcode';
-          const experimental=await readExoticPixels(pixels,format);
-          if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',format==='codablockf'?'CodablockF':'DotCode'))return;
-        }
-        if(mode==='iris'){
-          const crop=centeredIrisFrame(video);
-          const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
-          crop.width=crop.height=1;
-          if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
-        }
-        canvas.width=canvas.height=1;
-        frame++;
-      }catch(error){
-        if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
       }
+      if(live&&token===cameraToken)await delay(scanPause(scanFocus()));
     }
-    if(live&&token===cameraToken)await delay(220);
-  }
+  }finally{canvas.width=canvas.height=1}
 }
 $('start-camera').addEventListener('click',startCamera);
 $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopped.')});
@@ -510,7 +508,7 @@ async function detectImage(file) {
     catch(_){/* An unknown experimental format must not abort IRIS detection. */}
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
     // Camera screenshots and photos may need a centered, monochrome pass.
-    for(const focusedFormat of ['rmqr','maxicode']){
+    for(const focusedFormat of ['rmqr','maxicode','pdf417']){
       const focused=await readFocused(lib,canvas,focusedFormat,0);
       if(focused)return {text:focused.text,format:focused.format};
     }
