@@ -30,7 +30,7 @@ export const COLOR_PROFILE = Object.freeze({
 
 // Ring counts the encoder may pick / decoder will try. Capacity grows fast, so
 // small payloads get small symbols and large ones scale outward.
-export const SCHEDULES_COLOR = Object.freeze([4, 6, 8, 12, 16, 24, 32, 48, 64]);
+export const SCHEDULES_COLOR = Object.freeze([4, 6, 8, 12, 15, 16, 24, 32, 48, 64]);
 
 // 8-color palette, index === 3-bit value. Cube corners: max separation.
 export const PALETTE = Object.freeze([

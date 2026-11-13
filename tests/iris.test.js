@@ -40,6 +40,8 @@ for(const name of ['iris-wire']){
     const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const png=readRgbPng(name);
     assert.ok(png.width>=1200,'IRIS PNG should be high-resolution');
+    const symbol=encodeColor(expected,{markers:true});
+    assert.ok(symbol.params.K<=15,'IRIS must fit 15 rings or fewer after compacting source');
     assert.equal(decodeColor(png).text,expected);
     assert.ok(['SD1:','SDS:','SDB:'].some(prefix=>expected.startsWith(prefix)));
   });

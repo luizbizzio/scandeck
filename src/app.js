@@ -186,10 +186,11 @@ async function getMatrixEngine() {
   return lib;
 }
 // The color IRIS decoder runs in a module worker to avoid blocking camera preview.
-let irisWorker=null,irisSeq=0;
+let irisWorker=null,irisSeq=0,irisReads=0;
 const irisPending=new Map();
 function failIrisWorker(){
   if(irisWorker){irisWorker.terminate();irisWorker=null}
+  irisReads=0;
   for(const p of irisPending.values()){clearTimeout(p.timer);p.resolve('')}
   irisPending.clear();
 }
@@ -200,6 +201,9 @@ function getIrisWorker(){
       const pending=irisPending.get(data?.id);
       if(!pending)return;
       clearTimeout(pending.timer);irisPending.delete(data.id);
+      if(++irisReads>=16&&irisPending.size===0){
+        irisWorker.terminate();irisWorker=null;irisReads=0;
+      }
       pending.resolve(typeof data.text==='string'?data.text:'');
     };
     irisWorker.onerror=failIrisWorker;

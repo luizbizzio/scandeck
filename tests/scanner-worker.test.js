@@ -37,3 +37,9 @@ test('new compact Codablock F and DotCode payloads reach the experimental reader
  assert.match(app,/SDH:/);
  assert.match(app,/SDZ:/);
 });
+
+test('continuous scanner recycles worker memory without affecting camera streams',()=>{
+  assert.match(app,/\+\+barcodeReads>=40/);
+  assert.match(app,/\+\+irisReads>=16/);
+  assert.match(app,/options\.formats\?\.length===1\?4500:2300/);
+});
