@@ -252,9 +252,20 @@ async function detectImage(file) {
     const ctx=canvas.getContext('2d',{willReadFrequently:true});
     ctx.drawImage(bitmap,0,0);
     const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-    const hit=firstResult(await lib.readBarcodes(pixels,wasmOptions));
+    let hit;
+    try{hit=firstResult(await lib.readBarcodes(pixels,wasmOptions))}
+    catch(_){/* An unknown experimental format must not abort IRIS detection. */}
     if(hit)return {text:hit.text,format:hit.format};
-    const iris=await readIrisPixels(pixels);
+    // The IRIS decoder operates on <=2 MP to bound worker memory and mobile CPU.
+    // Large originals stay full-resolution for ZXing; only the IRIS pass is resized.
+    if(canvas.width*canvas.height>1_690_000){
+      const scale=Math.min(1,1300/Math.max(bitmap.width,bitmap.height));
+      canvas.width=Math.max(1,Math.round(bitmap.width*scale));
+      canvas.height=Math.max(1,Math.round(bitmap.height*scale));
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);
+    }
+    const iris=await readIrisPixels(ctx.getImageData(0,0,canvas.width,canvas.height));
     if(iris)return {text:iris,format:'IRIS'};
   } finally {bitmap.close();canvas.width=canvas.height=1}
   throw Error('No supported game code was found in this image.');
