@@ -33,7 +33,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-Codablock F, DotCode, IRIS and ChromaQR are experimental camera formats. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
+IRIS and ChromaQR provide sharp vector previews for scanning from another screen, while their downloads remain PNG. Codablock F, DotCode, IRIS and ChromaQR are experimental camera formats. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
 
 ## Run locally
 

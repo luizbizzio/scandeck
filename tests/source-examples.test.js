@@ -29,12 +29,13 @@ test('About includes a genuine example image and full-size PNG link for every hi
   assert.equal(histories.length,12);
   for(const [format,id,game] of examples){
     const card=histories.find(([,markup])=>markup.includes('<h3>'+format+'</h3>'))?.[1];
+    const ext=['IRIS','ChromaQR'].includes(format)?'svg':'png';
     assert.ok(card,format+' history is missing');
-    assert.ok(card.includes('href="assets/'+id+'.png"'),format+' must link to the exact PNG');
-    assert.ok(card.includes('src="assets/'+id+'.png"'),format+' must preview the exact PNG');
+    assert.ok(card.includes('href="assets/'+id+'.'+ext+'"'),format+' must link to the exact PNG');
+    assert.ok(card.includes('src="assets/'+id+'.'+ext+'"'),format+' must preview the exact PNG');
     assert.ok(card.includes('EXAMPLE'),format+' example caption is missing');
     assert.ok(card.includes('<strong>'+game+'</strong>'),format+' example must name its actual game');
-    assert.match(card,/class="about-code-example"[^>]*href="assets\/[a-z0-9-]+\.png"[^>]*target="_blank" rel="noopener noreferrer"/);
+    assert.match(card,/class="about-code-example"[^>]*href="assets\/[a-z0-9-]+\.(?:png|svg)"[^>]*target="_blank" rel="noopener noreferrer"/);
     assert.match(card,/loading="lazy" decoding="async"/);
   }
   assert.match(css,/\.about-example-preview img\{display:block;width:100%;height:100%;object-fit:contain/);

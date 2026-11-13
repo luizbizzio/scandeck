@@ -123,7 +123,8 @@ test('every displayed and downloadable game code uses PNG',()=>{
   assert.ok(gallery.includes('assets/taprush-code128.png'));
   assert.ok(gallery.includes('assets/snake-codablockf.png'));
   assert.ok(gallery.includes('assets/neon-dodge-dotcode.png'));
-  assert.doesNotMatch(gallery,/assets\/[\w-]+\.svg/);
+  assert.match(gallery,/assets\/iris-wire\.svg/);
+  assert.match(gallery,/assets\/chromaqr-chroma\.svg/);
   assert.match(html,/Download PNG/);
   assert.match(script,/svgToPng\(/);
   assert.match(script,/image\/png/);
@@ -291,8 +292,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=34/);
-  assert.match(html,/src\/style\.css\?v=34/);
+  assert.match(html,/src\/app\.js\?v=35/);
+  assert.match(html,/src\/style\.css\?v=35/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{

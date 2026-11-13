@@ -63,26 +63,47 @@ export function chromaPixels(symbol,scale=10){
   return {width:side,height:side,data};
 }
 // The ordinary ZXing QR decoder reads each extracted grayscale color plane.
+// Camera white balance and display interpolation can move the channel thresholds.
+// Try the original midpoint first, then an image-adaptive Otsu threshold if needed.
 export async function decodeChromaPixels(image,readBarcode){
-  const {width,height,data}=image;
-  if(width<21||height<21||width*height>2_000_000)return null;
-  const stride=data.length===width*height*4?4:data.length===width*height*3?3:0;
+  const {width,height,data}=image,total=width*height;
+  if(width<21||height<21||total>2_000_000)return null;
+  const stride=data.length===total*4?4:data.length===total*3?3:0;
   if(!stride)return null;
   const parts=[];
+  const step=Math.max(1,Math.floor(total/160_000));
   for(let channel=0;channel<3;channel++){
-    let lo=255,hi=0;
-    for(let i=channel;i<data.length;i+=stride){
-      const v=data[i];if(v<lo)lo=v;if(v>hi)hi=v;
+    const histogram=new Uint32Array(256);
+    let lo=255,hi=0,count=0,sum=0;
+    for(let j=0;j<total;j+=step){
+      const v=data[j*stride+channel];
+      if(v<lo)lo=v;
+      if(v>hi)hi=v;
+      histogram[v]++;count++;sum+=v;
     }
-    if(hi-lo<40)return null;
-    const pivot=(lo+hi)/2;
-    const plane=new Uint8ClampedArray(width*height*4);
-    for(let j=0;j<width*height;j++){
-      const value=data[j*stride+channel]>pivot?255:0,o=j*4;
-      plane[o]=value;plane[o+1]=value;plane[o+2]=value;plane[o+3]=255;
+    if(hi-lo<35)return null;
+    let backgroundCount=0,backgroundSum=0,best=-1,otsu=(lo+hi)/2;
+    for(let threshold=lo;threshold<hi;threshold++){
+      backgroundCount+=histogram[threshold];backgroundSum+=threshold*histogram[threshold];
+      const foregroundCount=count-backgroundCount;
+      if(!backgroundCount||!foregroundCount)continue;
+      const diff=backgroundSum/backgroundCount-(sum-backgroundSum)/foregroundCount;
+      const score=backgroundCount*foregroundCount*diff*diff;
+      if(score>best){best=score;otsu=threshold}
     }
-    const found=await readBarcode({width,height,data:plane},{formats:['QRCode'],maxNumberOfSymbols:1,tryHarder:true});
-    const chunk=found?.find(x=>x.text)?.text;
+    const midpoint=(lo+hi)/2;
+    const thresholds=Math.abs(midpoint-otsu)>7?[midpoint,otsu]:[midpoint];
+    const plane=new Uint8ClampedArray(total*4);
+    let chunk='';
+    for(const pivot of thresholds){
+      for(let j=0;j<total;j++){
+        const value=data[j*stride+channel]>pivot?255:0,o=j*4;
+        plane[o]=value;plane[o+1]=value;plane[o+2]=value;plane[o+3]=255;
+      }
+      const found=await readBarcode({width,height,data:plane},{formats:['QRCode'],maxNumberOfSymbols:1,tryHarder:true,tryRotate:true,tryInvert:false,tryDownscale:false});
+      chunk=found?.find(x=>x.text)?.text||'';
+      if(chunk)break;
+    }
     if(!chunk)return null;
     parts.push(chunk);
   }

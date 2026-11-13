@@ -31,3 +31,7 @@ Standard Auto mode does not include IRIS, ChromaQR, Codablock F or DotCode. Sele
 Record device, OS, browser, source screen or print dimensions, orientation, distance, brightness, format, upload result, camera result and time to detection. Do not mark a format as camera verified based only on its Play button or a PNG unit test.
 
 See [QA_CHECKLIST.md](QA_CHECKLIST.md) for full test cases.
+
+## Color code display
+
+IRIS and ChromaQR now provide a scalable SVG preview and a vector view link to preserve edges when viewed on a second screen. Their Download buttons still provide PNG. If a vector preview scans and the PNG does not, compare the displayed sizes before changing the decoder. A vector source improves image sharpness but does not eliminate camera color calibration issues.

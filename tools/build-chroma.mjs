@@ -34,6 +34,7 @@ const symbol=encodeChroma(qrcode,payload);
 const pixels=chromaPixels(symbol,10);
 const recovered=await decodeChromaPixels(pixels,readBarcodes);
 if(recovered!==payload)throw Error('ChromaQR RGB-channel pixel round trip failed');
+writeFileSync(asset('chromaqr-chroma.svg'),chromaSvg(symbol));
 writeFileSync(asset('chromaqr-chroma.png'),png(pixels));
 writeFileSync(asset('chromaqr-chroma.txt'),payload);
 console.log('ChromaQR | Chroma Rush | '+payload.length+' game characters | '+symbol.modules+' QR modules per RGB layer | pixel round trip verified');

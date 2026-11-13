@@ -40,6 +40,7 @@ for(const game of games){
   if(decodeColor(grid).text!==payload)throw Error(game.output+' failed its RGB-pixel round trip');
   const svg=renderColorSVG(symbol,{style:'slices'});
   if(!svg.includes('<svg'))throw Error(game.output+' SVG generation failed');
+  writeFileSync(asset(game.output+'.svg'),svg);
   writeFileSync(asset(game.output+'.png'),encodePng(grid));
   writeFileSync(asset(game.output+'.txt'),payload);
   console.log('IRIS | '+game.output+' | '+payload.length+' characters | '+symbol.params.K+' rings | RGB-pixel round trip verified');
