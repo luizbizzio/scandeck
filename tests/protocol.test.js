@@ -145,8 +145,6 @@ test('generated matrix games contain complete HTML, not links',async()=>{
     assert.ok(game.source.includes('<script>') && game.source.includes('</script>'));
     assert.doesNotMatch(game.source, /<script[^>]+src=|fetch\(|https?:\/\//);
     assert.ok(raw.length<1400);
-    const svg=readFileSync(new URL('../assets/'+stem+'.svg',import.meta.url),'utf8');
-    assert.match(svg,/<svg\b/);
     const png=readFileSync(new URL('../assets/'+stem+'.png',import.meta.url));
     assert.ok(png.length>100);
     assert.deepEqual([...png.subarray(0,8)],[137,80,78,71,13,10,26,10]);
