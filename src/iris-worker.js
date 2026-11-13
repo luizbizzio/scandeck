@@ -21,7 +21,8 @@ self.onmessage=({data:job})=>{
     if(!text){
       const card=cropIrisCard(grid);
       if(card){
-        try{text=decodeColorMarkers(card)?.text||''}catch{}
+        try{text=decodeColor(card)?.text||''}catch{}
+        if(!text){try{text=decodeColorMarkers(card)?.text||''}catch{}}
         if(!text){try{text=decodeColorRobust(card,{budgetMs:850})?.text||''}catch{}}
       }
     }

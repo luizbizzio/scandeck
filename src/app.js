@@ -2,6 +2,7 @@ import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompa
 import { gameDocument } from './runtime.js?v=51';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
+import { specialtyCandidates } from './specialty-candidates.js';
 import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=51';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
@@ -476,7 +477,7 @@ async function readFocused(lib,source,mode,frame){
     tryDenoise:false, // expensive morphology hurts continuous camera scans
     tryRotate:true,
     retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
-    specialty:!useCrop&&(mode==='rmqr'||mode==='maxicode')?mode:null,
+    specialty:mode==='rmqr'||mode==='maxicode'?mode:null,
     retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%4===3
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
@@ -614,6 +615,33 @@ async function detectImage(file) {
     try{hit=firstResult(await lib.readBarcodes(pixels,wasmOptions))}
     catch(_){/* An unknown experimental format must not abort IRIS detection. */}
     if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
+    // Match the camera worker's white-card recovery for uploaded photographs.
+    // Downscale only very large photos; do not smooth already small symbols.
+    const specialtyCanvas=document.createElement('canvas');
+    let specialtyPixels=pixels;
+    if(pixels.width*pixels.height>2_400_000){
+      const factor=Math.sqrt(2_100_000/(pixels.width*pixels.height));
+      specialtyCanvas.width=Math.max(1,Math.floor(pixels.width*factor));
+      specialtyCanvas.height=Math.max(1,Math.floor(pixels.height*factor));
+      const specialtyCtx=specialtyCanvas.getContext('2d',{willReadFrequently:true});
+      specialtyCtx.drawImage(canvas,0,0,specialtyCanvas.width,specialtyCanvas.height);
+      specialtyPixels=specialtyCtx.getImageData(0,0,specialtyCanvas.width,specialtyCanvas.height);
+    }
+    try{
+      for(const specialtyFormat of ['rmqr','maxicode']){
+        for(const candidate of specialtyCandidates(specialtyPixels,specialtyFormat)){
+          try{
+            const hits=await lib.readBarcodes(candidate.image,{
+              ...wasmOptions,formats:[FOCUS_FORMATS[specialtyFormat]],...candidate.options,
+              tryRotate:specialtyFormat==='rmqr',tryHarder:false,
+              tryDownscale:false,tryDenoise:false
+            });
+            const match=hits.find(item=>isGamePayload(item.text));
+            if(match)return {text:match.text,format:match.format};
+          }catch{/* Continue with other candidate images. */}
+        }
+      }
+    }finally{specialtyCanvas.width=specialtyCanvas.height=1}
     // Camera screenshots and photos may need a centered, monochrome pass.
     for(const focusedFormat of ['rmqr','maxicode','pdf417']){
       // Upload decoding uses both uncropped pixels and centered subject passes.
@@ -696,19 +724,12 @@ document.addEventListener('click',event=>{
   event.preventDefault();
   codeImage.src=target.pathname;
   codeImage.alt=anchor.querySelector('img')?.alt||'Full game code';
-  const title=anchor.closest('article')?.querySelector('h3')?.textContent?.trim()||'Game code';
-  $('code-image-heading').textContent=title+' · full code';
-  codeImageDialog.classList.remove('actual-size');
-  $('code-image-zoom').setAttribute('aria-pressed','false');
-  $('code-image-zoom').textContent='Actual size';
+  const groupFormat=anchor.closest('.game-group')?.querySelector('.group-title')?.textContent?.trim()||'';
+  const aboutFormat=anchor.closest('.about-code-card')?.querySelector('.about-code-heading h3')?.textContent?.trim()||'';
+  $('code-image-heading').textContent=(groupFormat||aboutFormat||'Code preview').replace(/ barcode$/i,'');
   if(!codeImageDialog.open)codeImageDialog.showModal();
 });
 $('close-code-image').addEventListener('click',()=>codeImageDialog.close());
-$('code-image-zoom').addEventListener('click',()=>{
-  const full=codeImageDialog.classList.toggle('actual-size');
-  $('code-image-zoom').setAttribute('aria-pressed',String(full));
-  $('code-image-zoom').textContent=full?'Fit to window':'Actual size';
-});
 codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src')});
 codeImageDialog.addEventListener('click',event=>{if(event.target===codeImageDialog)codeImageDialog.close()});
 

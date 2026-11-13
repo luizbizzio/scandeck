@@ -75,14 +75,26 @@ export function thresholdRgba(image){
   }
   return {width,height,data:out};
 }
+// MaxiCode's pure reader expects a white quiet zone around every symbol.
+export function withWhiteBorder(image,ratio=.1){
+  const {width,height,data}=image;
+  const pad=Math.max(8,Math.round(Math.min(width,height)*ratio));
+  const w=width+pad*2,h=height+pad*2;
+  if(w*h>1_600_000)return image;
+  const out=new Uint8ClampedArray(w*h*4);
+  out.fill(255);
+  for(let y=0;y<height;y++)out.set(data.subarray(y*width*4,(y+1)*width*4),((y+pad)*w+pad)*4);
+  return {width:w,height:h,data:out};
+}
 export function specialtyCandidates(image,format){
   if(format!=='maxicode'&&format!=='rmqr')return [];
   const card=findLightCard(image);
   if(!card)return [];
   const crop=cropRgba(image,card);
   if(crop.width<75||crop.height<55||crop.width*crop.height>1_600_000)return [];
+  const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
   return [
-    {image:crop,options:{isPure:format==='maxicode',binarizer:'LocalAverage'}},
-    {image:thresholdRgba(crop),options:{isPure:true,binarizer:'FixedThreshold'}}
+    {image:format==='maxicode'?padded:crop,options:{isPure:format==='maxicode',binarizer:'LocalAverage'}},
+    {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
   ];
 }

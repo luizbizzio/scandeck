@@ -51,6 +51,8 @@ test('MaxiCode and rMQR have camera-card normalization before a pure/regular sec
  assert.match(worker,/specialtyCandidates\(pixels,specialty\)/);
  assert.match(specialty,/export function findLightCard/);
  assert.match(specialty,/export function thresholdRgba/);
+ assert.match(specialty,/export function withWhiteBorder/);
+ assert.match(app,/specialtyCandidates\(specialtyPixels,specialtyFormat\)/);
 });
 
 test('IRIS tries isolated RGB card and markers in a separate worker',()=>{

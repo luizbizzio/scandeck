@@ -446,15 +446,17 @@ test('auto excludes ChromaQR decoding and keeps focused ChromaQR selection',()=>
 });
 
 
-test('all game previews open a large in-page dialog, with fit and actual-size modes',()=>{
+test('all code previews open an in-page dialog headed with the barcode type',()=>{
   assert.match(html,/id="code-image-dialog"/);
   assert.match(html,/id="code-image-full"/);
-  assert.match(html,/id="code-image-zoom"/);
+  assert.doesNotMatch(html,/id="code-image-zoom"/);
   assert.match(script,/event\.target\.closest\('a\.game-code-preview, a\.about-code-example'\)/);
   assert.match(script,/event\.preventDefault\(\)/);
   assert.match(script,/codeImageDialog\.showModal\(\)/);
-  assert.match(script,/codeImageDialog\.classList\.toggle\('actual-size'\)/);
-  assert.match(css,/#code-image-dialog\.actual-size #code-image-full/);
+  assert.match(script,/querySelector\('\.group-title'\)/);
+  assert.match(script,/querySelector\('\.about-code-heading h3'\)/);
+  assert.doesNotMatch(script,/codeImageDialog\.classList\.toggle\('actual-size'\)/);
+  assert.doesNotMatch(css,/#code-image-dialog\.actual-size/);
   const gallery=html.slice(html.indexOf('<section class="page" id="library"'),html.indexOf('<section class="page" id="create"'));
   assert.equal((gallery.match(/class="game-code-preview/g)||[]).length,12);
   assert.equal((html.match(/class="about-code-example"/g)||[]).length,12);
