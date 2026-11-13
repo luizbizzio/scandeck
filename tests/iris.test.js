@@ -35,7 +35,7 @@ test('IRIS clean RGB markers can be decoded independently',()=>{
   const viaMarkers=decodeColorMarkers(renderColorRaster(sym));
   assert.equal(viaMarkers?.text,text);
 });
-for(const name of ['iris-chroma','iris-wire']){
+for(const name of ['iris-chroma']){
   test(name+' contains an entire independently decodable game in its PNG pixels',()=>{
     const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const png=readRgbPng(name);

@@ -111,16 +111,15 @@ The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micr
 
 Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.
 
-## Experimental IRIS color codes
+## Color codes: IRIS and ChromaQR
 
-- **Chroma Rush (IRIS):** the complete compressed HTML game is inside a circular eight-color IRIS symbol.
-- **Wire Crisis (IRIS):** a complete standalone JavaScript game is stored in a separate IRIS symbol.
-- The codes use the MIT-licensed reference implementation from [AllTerrainDeveloper/iris](https://github.com/AllTerrainDeveloper/iris), pinned to commit `4a59a8b165afd1633f497188bd47ff8e8c98640c`. The library's MIT license is retained in `vendor/iris/LICENSE`.
-- Both codes include three RGB registration markers. The build generates SVG and PNG images, then verifies data recovery from the actual RGB pixel arrays. Play loads the generated PNG and runs the IRIS image decoder in a Web Worker.
-- Camera and uploaded-image scanning try the normal ZXing formats and then the IRIS marker-aware and geometric decoders. Scanning remains experimental: automatic pixel tests do not establish reliability with real mobile-camera captures.
-- No game source is fetched from a remote URL or service. The entire game payload is inside each IRIS image.
+- **Chroma Rush (IRIS):** the complete compressed HTML game is in a circular eight-color IRIS symbol. The reference implementation comes from [AllTerrainDeveloper/iris](https://github.com/AllTerrainDeveloper/iris) (MIT), pinned to commit `4a59a8b165afd1633f497188bd47ff8e8c98640c` and bundled under `vendor/iris/`.
+- **Wire Crisis (ChromaQR):** the complete standalone JavaScript program is split into three aligned QR layers, one per red, green and blue color channel. This is a browser-native adaptation of [w-henderson/ChromaQR](https://github.com/w-henderson/ChromaQR) (MIT). A length/checksum envelope lets ScanDeck distinguish the complete game from any partial channel.
+- Both codes are true color symbols, not standard QR alternatives or external links. The build generates SVG and PNG images, then independently decodes actual RGB pixels to recover the game exactly.
+- IRIS uses a local browser worker with marker and geometry recovery. ChromaQR uses the existing local ZXing WebAssembly QR decoder three times, once for each RGB channel.
+- Both formats can be processed from uploads or camera frames through ScanDeck. Physical mobile-camera reliability remains unverified, especially for dense symbols or poor lighting.
 
-The MaxiCode Perfect Timing game uses a randomized millisecond target. Other scanner formats are QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR.
+The site retains the standard QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR readers.
 
 ## Redesigned games
 
@@ -129,9 +128,9 @@ The MaxiCode Perfect Timing game uses a randomized millisecond target. Other sca
 - **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
 - **Chroma Rush (IRIS):** ten color targets, three lives, progressively faster reaction times and replay. The full HTML game is embedded in the color code.
-- **Wire Crisis (IRIS):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in IRIS.
+- **Wire Crisis (ChromaQR):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in ChromaQR.
 
-IRIS supports browser image decoding through a local worker. Real-phone camera performance still requires manual validation.
+IRIS and ChromaQR both have independent browser image decoding. Physical mobile-camera testing is still required.
 
 ## UX fixes in the beta player
 
@@ -147,7 +146,7 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
 - **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
 - **Chroma Rush (IRIS):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
-- **Wire Crisis (IRIS):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
+- **Wire Crisis (ChromaQR):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
 
-The IRIS reader decodes each generated PNG image's pixels. A physical mobile-camera test remains necessary.
+The IRIS and ChromaQR readers decode generated image pixels independently. Physical mobile-camera testing remains necessary.

@@ -63,8 +63,8 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
 - [ ] rMQR: solve the math puzzle using the input field.
 - [ ] IRIS Chroma Rush: the complete game decodes from the image pixels, with no fallback payload lookup.
-- [ ] IRIS Wire Crisis: the complete game decodes from the image pixels, with no fallback payload lookup.
-- [ ] IRIS: validate camera framing, focus, lighting and perspective on real mobile devices.
+- [ ] ChromaQR Wire Crisis: all three RGB QR channels decode and reconstruct the complete game, with no fallback payload lookup.
+- [ ] IRIS and ChromaQR: independently validate camera framing, focus, lighting and perspective on real mobile devices.
 
 ## Redesigned games
 - [ ] Brick Rush: slow ball, bouncing angles, three lives, 15 bricks, touch controls and restart

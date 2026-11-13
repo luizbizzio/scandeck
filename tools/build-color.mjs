@@ -10,8 +10,7 @@ mkdirSync(asset(''),{recursive:true});
 // This encoder and decoder are sourced from AllTerrainDeveloper/iris (MIT).
 // Full games remain inside the color symbol. The RGB markers improve camera registration.
 const games=[
-  {input:'examples/colorpath-jab.html',output:'iris-chroma',kind:'html'},
-  {input:'examples/colormatch-ultra.js',output:'iris-wire',kind:'script'}
+  {input:'examples/colorpath-jab.html',output:'iris-chroma',kind:'html'}
 ];
 const crcTable=Uint32Array.from({length:256},(_,n)=>{
   for(let k=0;k<8;k++)n=n&1?(n>>>1)^0xedb88320:n>>>1;

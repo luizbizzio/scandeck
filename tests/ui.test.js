@@ -50,7 +50,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','maxi','microqr','rmqr','iris'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','maxi','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -89,22 +89,23 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
-test('both colored games use actual IRIS symbols and image decoding',()=>{
+test('IRIS and ChromaQR use separate, scan-ready code formats',()=>{
   assert.ok(html.includes('id="iris-games-heading"'));
+  assert.ok(html.includes('id="chroma-games-heading"'));
   assert.ok(html.includes('assets/iris-chroma.svg'));
-  assert.ok(html.includes('assets/iris-wire.svg'));
-  assert.ok(!html.includes('JAB Code')&&!html.includes('Ultracode'));
-  for(const id of ['try-iris-chroma','try-iris-wire']){
+  assert.ok(html.includes('assets/chromaqr-wire.svg'));
+  assert.ok(!html.includes('iris-wire.svg'));
+  for(const id of ['try-iris-chroma','try-chromaqr-wire']){
     assert.ok(html.includes('id="'+id+'"'));
     assert.ok(script.includes("$('"+id+"')"));
   }
+  assert.ok(html.includes('data-format="chromaqr"'));
   assert.ok(script.includes('playIrisExample('));
   assert.ok(script.includes('readIrisPixels('));
-  assert.ok(script.includes("format='IRIS'"));
+  assert.ok(script.includes('readChromaImage('));
+  assert.ok(script.includes("'ChromaQR'"));
   assert.ok(!script.includes('playColorExample('));
-  assert.ok(!html.includes('colorpath-jab.svg')&&!html.includes('colormatch-ultra.svg'));
 });
-
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
   const {gameDocument}=await import('../runtime.js');
   const doc=gameDocument({kind:'standalone',title:'Perfect Timing',instructions:'TAP WHEN 7',

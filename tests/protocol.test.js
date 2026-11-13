@@ -154,8 +154,8 @@ test('Micro QR carries a complete arithmetic instruction in at most 15 bytes',as
   assert.throws(()=>packMicroQuiz('Q100+400=500'),/Micro QR/);
 });
 
-test('IRIS color symbols store complete embedded game payloads',async()=>{
-  for(const name of ['iris-chroma','iris-wire']){
+test('both RGB color formats store complete embedded game payloads',async()=>{
+  for(const name of ['iris-chroma','chromaqr-wire']){
     const raw=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const result=await decodeGame(raw);
     assert.ok(result.source.length>40);

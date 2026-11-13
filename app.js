@@ -1,6 +1,7 @@
 import { decodeGame, packHtml, packScript, packMicroQuiz, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js';
 import { gameDocument } from './runtime.js';
 import { code128Svg, decodeCode128Svg } from './code128.js';
+import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -28,13 +29,13 @@ async function acceptPayload(raw, mode='manual', format='') {
     const game = await decodeGame(raw);
     if(format==='MaxiCode'&&game.kind==='standalone')game.title='Perfect Timing';
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
-    if(format==='IRIS'&&game.kind==='standalone'&&game.source.startsWith("document.write('<p id=t>"))game.title='Wire Crisis';
+    if((format==='IRIS'||format==='ChromaQR')&&game.kind==='standalone'&&game.source.startsWith("document.write('<p id=t>"))game.title='Wire Crisis';
     if(format==='IRIS'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    const labels={IRIS:'IRIS',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
+    const labels={IRIS:'IRIS',ChromaQR:'ChromaQR',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MaxiCode:'MaxiCode',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
     for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
@@ -190,6 +191,13 @@ async function startCamera() {
     void cameraLoop(token,engine);
   } catch(error) {stopCamera();status('Could not open the camera. Check its permissions or upload an image.',true)}
 }
+async function readChromaImage(image){
+  const engine=await getMatrixEngine();
+  return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
+}
+function isGamePayload(text){
+  return /^(?:SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+}
 async function cameraLoop(token,engine){
   // One scan per iteration: ZXing for standard codes, IRIS in an off-thread worker.
   while(live&&cameraToken===token&&!document.hidden){
@@ -212,12 +220,18 @@ async function cameraLoop(token,engine){
           const result=firstResult(await engine.engine.readBarcodes(pixels,wasmOptions));
           text=result?.text||'';format=result?.format||'';
         }
-        if(!text&&live&&cameraToken===token){
-          text=await readIrisPixels(pixels);
-          if(text)format='IRIS';
+        if(live&&token===cameraToken&&isGamePayload(text)&&await acceptPayload(text,'camera',format))return;
+        // A ChromaQR channel can look like an ordinary QR. Never accept a
+        // partial channel as a game; reconstruct all RGB layers first.
+        if(live&&token===cameraToken){
+          const chroma=await readChromaImage(pixels);
+          if(chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
+        }
+        if(live&&token===cameraToken){
+          const iris=await readIrisPixels(pixels);
+          if(iris&&await acceptPayload(iris,'camera','IRIS'))return;
         }
         canvas.width=canvas.height=1;
-        if(live&&token===cameraToken&&text&&await acceptPayload(text,'camera',format))return;
       }
     }catch(error){
       if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
@@ -236,13 +250,13 @@ async function detectImage(file) {
     try {
       bitmap=await createImageBitmap(file);
       const hit=(await engine.engine.detect(bitmap)).find(x=>x.rawValue);
-      if(hit)return {text:hit.rawValue,format:hit.format};
+      if(hit&&isGamePayload(hit.rawValue))return {text:hit.rawValue,format:hit.format};
     } finally {bitmap?.close()}
   }
   const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
   try {
     const hit=firstResult(await lib.readBarcodes(file,wasmOptions));
-    if(hit)return {text:hit.text,format:hit.format};
+    if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
   } catch (_) { /* SVG and some image encodings need a browser bitmap */ }
   const bitmap=await createImageBitmap(file);
   const canvas=document.createElement('canvas');
@@ -255,7 +269,9 @@ async function detectImage(file) {
     let hit;
     try{hit=firstResult(await lib.readBarcodes(pixels,wasmOptions))}
     catch(_){/* An unknown experimental format must not abort IRIS detection. */}
-    if(hit)return {text:hit.text,format:hit.format};
+    if(hit&&isGamePayload(hit.text))return {text:hit.text,format:hit.format};
+    const chroma=await readChromaImage(pixels);
+    if(chroma)return {text:chroma,format:'ChromaQR'};
     // The IRIS decoder operates on <=2 MP to bound worker memory and mobile CPU.
     // Large originals stay full-resolution for ZXing; only the IRIS pass is resized.
     if(canvas.width*canvas.height>1_690_000){
@@ -332,13 +348,23 @@ async function playIrisExample(name,title){
   }catch(error){switchTab('scan');status('Could not scan '+title+': '+error.message,true)}
 }
 $('try-iris-chroma').addEventListener('click',()=>playIrisExample('iris-chroma','Chroma Rush'));
-$('try-iris-wire').addEventListener('click',()=>playIrisExample('iris-wire','Wire Crisis'));
+$('try-chromaqr-wire').addEventListener('click',async()=>{
+  try{
+    const response=await fetch('assets/chromaqr-wire.png');
+    if(!response.ok)throw Error('ChromaQR image not found');
+    const hit=await detectImage(await response.blob());
+    if(hit.format!=='ChromaQR')throw Error('ChromaQR image decoder did not recover all three channels');
+    const game=await decodeGame(hit.text);
+    game.title='Wire Crisis';
+    playGame(game);
+  }catch(error){switchTab('scan');status('Could not scan Wire Crisis: '+error.message,true)}
+});
 
 function selectGenerator(format) {
   generatorFormat=format;
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
-  const script=['bar','maxi','rmqr'].includes(format);
+  const script=['bar','maxi','rmqr','chromaqr'].includes(format);
   $('create-label').textContent=tiny?'Program (maze bytecode)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
@@ -347,7 +373,7 @@ function selectGenerator(format) {
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
     format==='data-matrix'?'Data Matrix works best with small self-contained HTML games.':
-    format==='aztec'?'Aztec Code can store a compact HTML game.':format==='iris'?'IRIS stores the full game in a colored circular symbol. Use ScanDeck to scan it.':'QR codes can store more game data.';
+    format==='aztec'?'Aztec Code can store a compact HTML game.':format==='chromaqr'?'ChromaQR stores the entire JavaScript game across three RGB QR layers.':format==='iris'?'IRIS stores the full game in a colored circular symbol. Use ScanDeck to scan it.':'QR codes can store more game data.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
@@ -379,7 +405,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     let svg;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
@@ -390,6 +416,9 @@ $('generate').addEventListener('click',async()=>{
     } else if(generatorFormat==='iris') {
       const {encodeColor,renderColorSVG}=await import('./vendor/iris/color.js');
       svg=displaySvg(renderColorSVG(encodeColor(payload,{markers:true}),{style:'slices'}));
+    } else if(generatorFormat==='chromaqr'){
+      const factory=await loadExternal(QR_GENERATOR_URL,'qrcode');
+      svg=displaySvg(chromaSvg(encodeChroma(factory,payload)));
     } else {
       const lib=await getMatrixEngine();
       const format=({ 'data-matrix':'DataMatrix',aztec:'Aztec',pdf:'PDF417',maxi:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode' })[generatorFormat];
