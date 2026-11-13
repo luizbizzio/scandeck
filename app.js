@@ -262,7 +262,7 @@ function getExoticWorker(){
   }
   return exoticWorker;
 }
-function readExoticPixels(image,format){
+function readExoticPixels(image,format,exact=false){
   const {width,height,data}=image;
   if(!['codablockf','dotcode'].includes(format)||!width||!height||
     width*height>2_000_000||data?.length!==width*height*4)return Promise.resolve('');
@@ -271,7 +271,7 @@ function readExoticPixels(image,format){
     const id=++exoticSeq;
     const timer=setTimeout(resetExoticWorker,4500);
     exoticWaiting.set(id,{timer,resolve});
-    try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer},[rgba.buffer])}
+    try{getExoticWorker().postMessage({id,format,width,height,buffer:rgba.buffer,exact},[rgba.buffer])}
     catch{clearTimeout(timer);exoticWaiting.delete(id);resolve('')}
   });
 }
@@ -422,6 +422,8 @@ async function detectImage(file) {
       if(focused)return {text:focused.text,format:focused.format};
     }
     for(const exotic of ['codablockf','dotcode']){
+      const exact=await readExoticPixels(pixels,exotic,true);
+      if(exact)return {text:exact,format:exotic==='codablockf'?'CodablockF':'DotCode'};
       const found=await readExoticPixels(pixels,exotic);
       if(found)return {text:found,format:exotic==='codablockf'?'CodablockF':'DotCode'};
     }
@@ -490,7 +492,7 @@ async function playExoticExample(name,title,format){
     bitmap.close();
     const bytes=canvas.getContext('2d',{willReadFrequently:true}).getImageData(0,0,canvas.width,canvas.height);
     canvas.width=canvas.height=1;
-    const payload=await readExoticPixels(bytes,format);
+    const payload=await readExoticPixels(bytes,format,true);
     if(!payload)throw Error('The experimental decoder could not read this PNG.');
     const game=await decodeGame(payload);
     game.title=title;
