@@ -1,7 +1,7 @@
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
 import {deflateRawSync} from 'node:zlib';
 import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
-import {base43Encode,packScript,decodeGame} from '../protocol.js';
+import {base43Encode,packScript,decodeGame} from '../src/protocol.js';
 
 // Both extra formats use the MIT-licensed Sythos SDK v1.6.8.
 // Store complete games, never an URL, game identifier, or interpreter bytecode.

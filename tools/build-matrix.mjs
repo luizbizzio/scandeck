@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import { deflateRawSync } from 'node:zlib';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
-import { base43Encode, packScript } from '../protocol.js';
+import { base43Encode, packScript } from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateRawSync, deflateSync } from 'node:zlib';
 import { encodeColor, renderColorSVG, renderColorRaster, decodeColor } from '../vendor/iris/color.js';
-import { base43Encode, packScript } from '../protocol.js';
+import { base43Encode, packScript } from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const asset=name=>new URL('assets/'+name,root);

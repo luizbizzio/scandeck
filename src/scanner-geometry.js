@@ -5,7 +5,7 @@ export function captureDimensions(width,height,mode='auto'){
     return {width:1,height:1};
   const dense=DENSE.has(mode);
   const maxEdge=dense?1920:mode==='auto'?1280:mode==='iris'||mode==='chromaqr'?1680:1440;
-  const maxPixels=dense?1_900_000:mode==='chromaqr'||mode==='iris'?1_650_000:1_350_000;
+  const maxPixels=dense?1_500_000:mode==='chromaqr'||mode==='iris'?1_200_000:1_000_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }
@@ -32,7 +32,7 @@ export function focusedCrop(width,height,mode){
     outputHeight:Math.max(1,Math.floor(roiHeight*s))};
 }
 export function scanPause(mode){
-  if(mode==='iris'||mode==='chromaqr')return 360;
-  if(mode==='codablockf'||mode==='dotcode')return 300;
-  return 180;
+  if(mode==='iris'||mode==='chromaqr')return 650;
+  if(mode==='codablockf'||mode==='dotcode')return 500;
+  return 350;
 }

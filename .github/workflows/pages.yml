@@ -30,15 +30,16 @@ jobs:
         run: npm run build
       - name: Validate browser JavaScript
         run: |
-          node --check app.js
-          node --check lib/scanner-geometry.js
-          node --check protocol.js
-          node --check runtime.js
-          node --check microvm.js
+          node --check src/app.js
+          node --check src/scanner-geometry.js
+          node --check src/barcode-worker.js
+          node --check src/protocol.js
+          node --check src/runtime.js
+          node --check src/microvm.js
           node --check tools/build-matrix.mjs
-          node --check chroma.js
-          node --check iris-worker.js
-          node --check exotic-worker.js
+          node --check src/chroma.js
+          node --check src/iris-worker.js
+          node --check src/exotic-worker.js
           node --check tools/build-exotic.mjs
           node --check tools/build-code-sizes.mjs
           node --check sw.js
@@ -46,9 +47,9 @@ jobs:
         run: npm test
       - name: Prepare static site
         run: |
-          mkdir -p dist/assets dist/vendor/zxing-wasm dist/lib
-          cp index.html style.css app.js chroma.js iris-worker.js exotic-worker.js protocol.js runtime.js microvm.js maze.js code128.js sw.js .nojekyll CNAME robots.txt sitemap.xml dist/
-          cp lib/scanner-geometry.js dist/lib/
+          mkdir -p dist/assets dist/vendor/zxing-wasm dist/src
+          cp index.html sw.js .nojekyll CNAME robots.txt sitemap.xml dist/
+          cp src/*.js src/style.css dist/src/
           mkdir -p dist/vendor/iris
           cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
           cp assets/favicon.svg assets/*.png assets/*.txt assets/*.json dist/assets/

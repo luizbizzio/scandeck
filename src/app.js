@@ -2,7 +2,7 @@ import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, deflateRa
 import { gameDocument } from './runtime.js?v=28';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { captureDimensions, focusedCrop, scanPause } from './lib/scanner-geometry.js?v=33';
+import { captureDimensions, focusedCrop, scanPause } from './scanner-geometry.js?v=34';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -11,6 +11,8 @@ const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
 let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
+let barcodeWorker=null,barcodeSequence=0;
+const barcodePending=new Map();
 let generatorFormat = 'qr', outputData = null, lastGame = null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 let codeSizesRequest=null;
@@ -19,7 +21,7 @@ function formatCodeSize(bytes){
 }
 async function loadCodeSizes(){
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=33',{cache:'force-cache'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=34',{cache:'force-cache'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -274,12 +276,48 @@ addEventListener('orientationchange',syncCameraLayout);
 function centeredIrisFrame(video){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
   const canvas=document.createElement('canvas');
-  const size=Math.min(side,1250);canvas.width=size;canvas.height=size;
+  const size=Math.min(side,950);canvas.width=size;canvas.height=size;
   canvas.getContext('2d',{willReadFrequently:true}).drawImage(video,(w-side)/2,(h-side)/2,side,side,0,0,size,size);
   return canvas;
 }
+// A worker does expensive barcode decoding, keeping the camera preview responsive.
+function stopBarcodeWorker(){
+  if(barcodeWorker){barcodeWorker.terminate();barcodeWorker=null}
+  for(const job of barcodePending.values()){
+    clearTimeout(job.timer);job.resolve(job.mode==='chroma'?'':[]);
+  }
+  barcodePending.clear();
+}
+function getBarcodeWorker(){
+  if(!barcodeWorker){
+    barcodeWorker=new Worker(new URL('./barcode-worker.js',import.meta.url));
+    barcodeWorker.onmessage=({data})=>{
+      const job=barcodePending.get(data?.id);
+      if(!job)return;
+      clearTimeout(job.timer);barcodePending.delete(data.id);
+      job.resolve(job.mode==='chroma'?(typeof data.result==='string'?data.result:''):(Array.isArray(data.result)?data.result:[]));
+    };
+    barcodeWorker.onerror=stopBarcodeWorker;
+    barcodeWorker.onmessageerror=stopBarcodeWorker;
+  }
+  return barcodeWorker;
+}
+function requestBarcodeWorker(pixels,mode='standard',options={}){
+  return new Promise(resolve=>{
+    const {width,height,data}=pixels;
+    if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
+    const id=++barcodeSequence;
+    const timer=setTimeout(stopBarcodeWorker,6500);
+    barcodePending.set(id,{resolve,timer,mode});
+    try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
+    catch{stopBarcodeWorker()}
+  });
+}
+const readCameraBarcodes=(pixels,options)=>requestBarcodeWorker(pixels,'standard',options);
+const readCameraChroma=pixels=>requestBarcodeWorker(pixels,'chroma');
 function stopCamera() {
   cameraToken++;live=false;clearTimeout(scanTimeout);
+  stopBarcodeWorker();failIrisWorker();resetExoticWorker();
   if(scanStream)scanStream.getTracks().forEach(track=>track.stop());scanStream=null;
   const video=$('camera');video.pause();video.srcObject=null;
   show('camera-panel',false);show('scan-idle',true);show('stop-camera',false);
@@ -314,10 +352,9 @@ async function startCamera() {
     document.documentElement.classList.toggle('camera-open',isMobileCamera());
     setScanFocus(scanFocus());
     status('Camera ready. Initializing code reader...');
-    const engine=await getScanner();
     if(!live||token!==cameraToken)return;
     status('Camera ready. '+focusTips[scanFocus()]);
-    void cameraLoop(token,engine);
+    void cameraLoop(token);
   }catch(error){
     if(token===cameraToken){
       stopCamera();
@@ -414,7 +451,7 @@ async function readFocused(lib,source,mode,frame){
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
 }
-async function cameraLoop(token,engine){
+async function cameraLoop(token){
   let frame=0;
   // Reuse the capture surface. Native BarcodeDetector can work directly on video.
   const canvas=document.createElement('canvas');
@@ -425,10 +462,7 @@ async function cameraLoop(token,engine){
       if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
         try{
           const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
-          if(engine.kind==='native'&&mode==='auto'){
-            const result=(await engine.engine.detect(video)).find(x=>isGamePayload(x.rawValue));
-            if(live&&token===cameraToken&&result&&await acceptPayload(result.rawValue,'camera',result.format))return;
-          }else if(mode==='iris'){
+          if(mode==='iris'){
             // IRIS is color-sensitive and benefits from the centered square source.
             const crop=centeredIrisFrame(video);
             try{
@@ -442,7 +476,7 @@ async function cameraLoop(token,engine){
             }
             ctx.drawImage(video,0,0,canvas.width,canvas.height);
             if(mode==='auto'||focused){
-              const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
+              const lib={readBarcodes:readCameraBarcodes};
               let result;
               if(['rmqr','maxicode','pdf417','code128'].includes(mode)){
                 result=await readFocused(lib,canvas,mode,frame);
@@ -459,7 +493,7 @@ async function cameraLoop(token,engine){
               if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
             }else if(mode==='chromaqr'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-              const chroma=await readChromaImage(pixels);
+              const chroma=await readCameraChroma(pixels);
               if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);

@@ -2,8 +2,8 @@ import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {deflateSync,deflateRawSync} from 'node:zlib';
 import qrcode from 'qrcode-generator';
 import {readBarcodes} from 'zxing-wasm';
-import {base43Encode} from '../protocol.js';
-import {encodeChroma,chromaSvg,chromaPixels,decodeChromaPixels} from '../chroma.js';
+import {base43Encode} from '../src/protocol.js';
+import {encodeChroma,chromaSvg,chromaPixels,decodeChromaPixels} from '../src/chroma.js';
 
 // RGB-channel ChromaQR adapted from w-henderson/ChromaQR (MIT).
 // The barcode is assembled from three independent, identically sized QR planes.

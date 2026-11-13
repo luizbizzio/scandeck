@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-import {packScript} from '../protocol.js';
+import {packScript} from '../src/protocol.js';
 
 // The entire independent Snake program is packed into a scannable QR image
 // by tools/build-matrix.mjs, not a physically unscannable linear barcode.

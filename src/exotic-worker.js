@@ -1,6 +1,6 @@
 // MIT-licensed Sythos Barcode Universal 1.6.8.
 // Strict Codablock-F and DotCode decoding, isolated from the camera UI thread.
-import {BitMatrix,decode,decodeCodablockF,decodeDotCode} from './vendor/sythos-barcode.esm.js';
+import {BitMatrix,decode,decodeCodablockF,decodeDotCode} from '../vendor/sythos-barcode.esm.js';
 self.onmessage=({data:task})=>{
   const {id,format,width,height,buffer,exact=false}=task||{};
   let text='';
