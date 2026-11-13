@@ -28,6 +28,8 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build all game codes and scanner
         run: npm run build
+      - name: Probe independent Codablock F generator
+        run: node tools/probe-codablock.mjs
       - name: Validate browser JavaScript
         run: |
           node --check src/app.js
