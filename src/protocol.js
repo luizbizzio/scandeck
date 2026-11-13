@@ -66,6 +66,57 @@ export function base64Decode(text){
     throw Error('Invalid compressed game encoding.');
   return Uint8Array.from(atob(text),ch=>ch.charCodeAt(0));
 }
+// Z85 stores 4 compressed bytes in 5 printable characters, avoiding base64 padding.
+export const Z85='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.-:+=^!/*?&<>()[]{}@%$#';
+export function base85Encode(bytes){
+  const padding=(4-bytes.length%4)%4;
+  let out=String(padding);
+  for(let i=0;i<bytes.length;i+=4){
+    let n=0;
+    for(let j=0;j<4;j++)n=n*256+(bytes[i+j]||0);
+    let group='';
+    for(let j=0;j<5;j++){group=Z85[n%85]+group;n=Math.floor(n/85)}
+    out+=group;
+  }
+  return out;
+}
+export function base85Decode(value){
+  if(typeof value!=='string'||value.length<1||value.length>85000||
+     !/^[0-3]/.test(value)||(value.length-1)%5)
+    throw Error('Invalid compact game encoding.');
+  const padding=Number(value[0]),data=value.slice(1);
+  const total=data.length/5*4-padding;
+  if(total<0)throw Error('Invalid compact game padding.');
+  const result=new Uint8Array(total);
+  for(let i=0,j=0;i<data.length;i+=5){
+    let n=0;
+    for(let k=0;k<5;k++){
+      const index=Z85.indexOf(data[i+k]);
+      if(index<0)throw Error('Invalid compact game characters.');
+      n=n*85+index;
+    }
+    if(n>4294967295)throw Error('Invalid compact game number.');
+    for(let k=3;k>=0;k--){
+      const pos=j+k;
+      if(pos<result.length)result[pos]=n%256;
+      n=Math.floor(n/256);
+    }
+    j+=4;
+  }
+  return result;
+}
+export async function packDenseHtml(html){
+  const source=String(html).trim();
+  if(!/<(?:canvas|html|body|svg|div|script)\b/i.test(source))
+    throw Error('Paste an HTML game, not plain text.');
+  return 'SDC:'+base85Encode(await deflateRaw(source));
+}
+export async function packDenseScript(script){
+  const source=String(script).trim();
+  packScript(source);
+  return 'SDB:'+base85Encode(await deflateRaw(source));
+}
+
 export async function packCompactHtml(html){
   const source=String(html).trim();
   if(!/<(?:canvas|html|body|svg|div|script)\b/i.test(source))
@@ -120,6 +171,21 @@ export async function decodeGame(raw) {
     const code=packMicroQuiz(value);
     const isMaze=code[3]==='M';
     return {title:isMaze?'Pocket Maze':'Micro Math',type:'MQ / MICRO QR',kind:isMaze?'maze':'bytecode',source:code.slice(3),payload:code,size:code.length};
+  }
+  if(value.startsWith('SDC:')){
+    const html=await inflateRaw(base85Decode(value.slice(4)));
+    if(!/<(?:script|canvas|body|html|svg|div)\b/i.test(html))
+      throw Error('Compressed payload is not an HTML game.');
+    const heading=html.match(/<h[1-3][^>]*>([^<]{1,60})<\/h[1-3]>/i);
+    return {title:heading?heading[1].trim():'Custom game',type:'SDC / DOTCODE',
+      kind:'html',source:html,payload:value,size:new TextEncoder().encode(html).length};
+  }
+  if(value.startsWith('SDB:')){
+    const script=await inflateRaw(base85Decode(value.slice(4)));
+    if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
+      throw Error('Invalid compressed JavaScript game.');
+    return {title:'Standalone Barcode Game',type:'SDB / CODABLOCK F',
+      kind:'standalone',source:script,payload:value,size:script.length};
   }
   if(value.startsWith('SDH:')){
     const html=await inflateRaw(base64Decode(value.slice(4)));

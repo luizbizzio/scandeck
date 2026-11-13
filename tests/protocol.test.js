@@ -249,3 +249,19 @@ test('SDY alphanumeric compressed JavaScript remains a full standalone game',asy
  assert.equal(game.payload,payload);
  assert.match(payload,/^[A-Z0-9$*+\-./:]+$/);
 });
+
+test('Z85 game transport round-trips bytes and both source types',async()=>{
+  const {base85Encode,base85Decode,packDenseHtml,packDenseScript}=await import('../src/protocol.js');
+  for(const n of [0,1,2,3,4,5,13,257,1024]){
+    const bytes=Uint8Array.from({length:n},(_,i)=>(i*73+19)%256);
+    assert.deepEqual(base85Decode(base85Encode(bytes)),bytes);
+  }
+  const html='<body><canvas id=c></canvas><script>onload=()=>c.width++</script>';
+  const js="document.body.textContent='OK';onclick=()=>alert(1)";
+  const compressedHtml=await packDenseHtml(html),compressedJs=await packDenseScript(js);
+  const h=await decodeGame(compressedHtml),s=await decodeGame(compressedJs);
+  assert.equal(h.source,html);assert.equal(h.kind,'html');
+  assert.equal(s.source,js);assert.equal(s.kind,'standalone');
+  for(const bad of ['SDB:0abcde!','SDC:4abcde','SDB:0zzzzz'])
+    await assert.rejects(()=>decodeGame(bad),/Invalid|TypeError|decompress/i);
+});
