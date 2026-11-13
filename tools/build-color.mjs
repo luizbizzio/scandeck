@@ -10,7 +10,7 @@ mkdirSync(asset(''),{recursive:true});
 // This encoder and decoder are sourced from AllTerrainDeveloper/iris (MIT).
 // Full games remain inside the color symbol. The RGB markers improve camera registration.
 const games=[
-  {input:'examples/colorpath-jab.html',output:'iris-chroma',kind:'html'}
+  {input:'examples/colormatch-ultra.js',output:'iris-wire',kind:'script'}
 ];
 const crcTable=Uint32Array.from({length:256},(_,n)=>{
   for(let k=0;k<8;k++)n=n&1?(n>>>1)^0xedb88320:n>>>1;
@@ -40,7 +40,6 @@ for(const game of games){
   if(decodeColor(grid).text!==payload)throw Error(game.output+' failed its RGB-pixel round trip');
   const svg=renderColorSVG(symbol,{style:'slices'});
   if(!svg.includes('<svg'))throw Error(game.output+' SVG generation failed');
-  writeFileSync(asset(game.output+'.svg'),svg);
   writeFileSync(asset(game.output+'.png'),encodePng(grid));
   writeFileSync(asset(game.output+'.txt'),payload);
   console.log('IRIS | '+game.output+' | '+payload.length+' characters | '+symbol.params.K+' rings | RGB-pixel round trip verified');

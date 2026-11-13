@@ -1,8 +1,8 @@
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
-import {deflateSync} from 'node:zlib';
+import {deflateSync,deflateRawSync} from 'node:zlib';
 import qrcode from 'qrcode-generator';
 import {readBarcodes} from 'zxing-wasm';
-import {packScript} from '../protocol.js';
+import {base43Encode} from '../protocol.js';
 import {encodeChroma,chromaSvg,chromaPixels,decodeChromaPixels} from '../chroma.js';
 
 // RGB-channel ChromaQR adapted from w-henderson/ChromaQR (MIT).
@@ -28,13 +28,12 @@ function png(rgb){
  const head=Buffer.alloc(13);head.writeUInt32BE(width,0);head.writeUInt32BE(height,4);head[8]=8;head[9]=2;
  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',head),chunk('IDAT',deflateSync(bytes,{level:9})),chunk('IEND',Buffer.alloc(0))]);
 }
-const source=readFileSync(new URL('examples/colormatch-ultra.js',root),'utf8').trim();
-const payload=packScript(source);
+const source=readFileSync(new URL('examples/colorpath-jab.html',root),'utf8').trim();
+const payload='SD1:'+base43Encode(deflateRawSync(Buffer.from(source)));
 const symbol=encodeChroma(qrcode,payload);
 const pixels=chromaPixels(symbol,10);
 const recovered=await decodeChromaPixels(pixels,readBarcodes);
 if(recovered!==payload)throw Error('ChromaQR RGB-channel pixel round trip failed');
-writeFileSync(asset('chromaqr-wire.svg'),chromaSvg(symbol));
-writeFileSync(asset('chromaqr-wire.png'),png(pixels));
-writeFileSync(asset('chromaqr-wire.txt'),payload);
-console.log('ChromaQR | Wire Crisis | '+payload.length+' game characters | '+symbol.modules+' QR modules per RGB layer | pixel round trip verified');
+writeFileSync(asset('chromaqr-chroma.png'),png(pixels));
+writeFileSync(asset('chromaqr-chroma.txt'),payload);
+console.log('ChromaQR | Chroma Rush | '+payload.length+' game characters | '+symbol.modules+' QR modules per RGB layer | pixel round trip verified');

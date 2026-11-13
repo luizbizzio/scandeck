@@ -11,20 +11,21 @@ ScanDeck is a small open-source game console in your browser. Games are stored *
 | Game | Code format | How to play |
 | --- | --- | --- |
 | Ironpass Micro | QR Code | Defend your towers from enemy waves |
-| Snake | Code 128 | Use WASD or arrow keys on a computer, or swipe on a phone |
+| Snake | QR Code | Use WASD or arrow keys on a computer, or swipe on a phone |
+| Lucky Six | Code 128 | Tap to roll; a six wins |
 | Catch 10 | Data Matrix | Catch ten moving targets while a timer counts up from zero |
 | Pattern Memory | Aztec Code | Tap a color to begin, listen, and repeat each sequence |
 
-Snake is an extreme storage experiment. Its full program is about **696 bytes** and its barcode is very wide. The Play button decodes the real bars, but most phone cameras may not be able to scan the whole barcode. Do not use it as the only scanning demo.
+Snake's original program is about 696 bytes. Its old Code 128 barcode was 7,759 modules wide, too large for practical camera scanning. Its independent game source is now stored in a QR Code. A much shorter self-contained Lucky Six microgame takes the Code 128 slot.
 
 The other games use compressed, self-contained HTML. Their HTML, styles, and JavaScript are all inside the code. Catch 10 has an elapsed-time timer that starts at zero and has no time limit. Pattern Memory creates four notes with the browser's built-in Web Audio API. Tap one of the four original color tiles to start the game and enable sound. No sound files or external game scripts are loaded. They do not need a game engine supplied by the website.
 
 ## What you can do
 
 - Scan supported codes using your phone or computer camera.
-- Upload an image of a code, including a saved SVG or PNG when your browser supports it.
+- Upload a PNG image of a game code.
 - Play any compatible game after reading its data.
-- Browse and download the four official examples.
+- Browse and download the game examples as PNG images.
 - Create a new QR, Code 128, Data Matrix, or Aztec game.
 - View the game source before you play it.
 - Use the app offline after the site and its files have been saved by the browser.
@@ -72,7 +73,7 @@ The old `SDJ:` and 126-byte Snake formats are kept for backward compatibility. N
 
 For QR, Data Matrix, or Aztec, paste a complete HTML game with its JavaScript and CSS inside the same file. ScanDeck compresses it and creates a code. For Code 128, paste a short, standalone JavaScript game.
 
-After generating a code, you can test it, download the SVG, or copy the full encoded text. For a small, easy-to-scan result, use very short games. Code 128 gets physically wider with every extra character.
+After generating a code, you can test it, download the PNG, or copy the full encoded text. For a small, easy-to-scan result, use very short games. Code 128 gets physically wider with every extra character.
 
 ## Safety and privacy
 
@@ -96,13 +97,13 @@ Games run in an iframe with `sandbox="allow-scripts"` and a Content Security Pol
 
 ## Publishing
 
-GitHub Actions installs the dependencies, builds the codes, runs the tests, and publishes the static site. The beta runs without a server-side database or API.
+GitHub Actions installs the dependencies, builds the codes, runs the tests, and publishes the static site. The site runs without a server-side database or API.
 
 The ScanDeck source is under the MIT license. See [LICENSE](LICENSE). The bundled libraries include ZXing WebAssembly (MIT, Apache-2.0, and BSD-3-Clause components) and qrcode-generator (MIT).
 
 ## Extra code experiments
 
-The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micro Math** (Micro QR) and **Math Check** (rMQR).
+The site also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micro Math** (Micro QR) and **Math Check** (rMQR).
 
 - **PDF417:** contains a compressed, complete HTML/JavaScript Breakout game.
 - **MaxiCode:** contains a short, standalone JavaScript tap counter.
@@ -111,15 +112,20 @@ The beta also contains **Breakout Mini** (PDF417), **Tap 10** (MaxiCode), **Micr
 
 Large codes and MaxiCode in particular can be difficult to read from real cameras. Automatic pixel round-trip tests are not physical-camera validation.
 
-## Color codes: IRIS and ChromaQR
+## Color codes: ChromaQR and IRIS
 
-- **Chroma Rush (IRIS):** the complete compressed HTML game is in a circular eight-color IRIS symbol. The reference implementation comes from [AllTerrainDeveloper/iris](https://github.com/AllTerrainDeveloper/iris) (MIT), pinned to commit `4a59a8b165afd1633f497188bd47ff8e8c98640c` and bundled under `vendor/iris/`.
-- **Wire Crisis (ChromaQR):** the complete standalone JavaScript program is split into three aligned QR layers, one per red, green and blue color channel. This is a browser-native adaptation of [w-henderson/ChromaQR](https://github.com/w-henderson/ChromaQR) (MIT). A length/checksum envelope lets ScanDeck distinguish the complete game from any partial channel.
-- Both codes are true color symbols, not standard QR alternatives or external links. The build generates SVG and PNG images, then independently decodes actual RGB pixels to recover the game exactly.
-- IRIS uses a local browser worker with marker and geometry recovery. ChromaQR uses the existing local ZXing WebAssembly QR decoder three times, once for each RGB channel.
-- Both formats can be processed from uploads or camera frames through ScanDeck. Physical mobile-camera reliability remains unverified, especially for dense symbols or poor lighting.
+- **Chroma Rush (ChromaQR):** the complete compressed HTML game is encoded across three aligned RGB QR layers. The MIT-licensed [ChromaQR](https://github.com/w-henderson/ChromaQR) method is implemented in browser JavaScript and decoded locally through the ZXing WebAssembly QR reader.
+- **Wire Crisis (IRIS):** the compact standalone JavaScript program is inside an experimental eight-color circular symbol. The MIT-licensed [IRIS](https://github.com/AllTerrainDeveloper/iris) implementation is pinned in `vendor/iris` at commit `4a59a8b165afd1633f497188bd47ff8e8c98640c`.
+- This assignment reduces IRIS from a 48-ring Chroma Rush symbol to a 16-ring Wire Crisis symbol, making camera localization and color sampling more practical. Both formats use the real game bytes, not URLs, alternate QR codes, or hardcoded fallback text.
+- Generated game symbols are served and downloaded as **PNG**, not SVG. The page Create also exports PNG. Internally, SVG may be used as a temporary rendering representation before rasterization.
+- The scanner uses a higher-resolution camera feed, disables ZXing's automatic downscaling and offers focused scanning for PDF417, MaxiCode, rMQR, Code 128, IRIS and ChromaQR. Focused IRIS reading analyzes a central square crop in a Web Worker.
+- PNG pixel round trips are automated, but real phone-camera scanning remains dependent on focus, lighting, screen size, perspective and symbol density. This is **not** a guarantee that every format scans reliably on every device.
 
-The site retains the standard QR Code, Code 128, Data Matrix, Aztec, PDF417, MaxiCode, Micro QR and rMQR readers.
+## Practical scanning limits
+
+The original Snake was over 700 JavaScript characters and produced a Code 128 symbol **7,759 modules wide**. That is not practical for a typical phone camera. The full self-contained Snake program is now in a QR Code, while the Code 128 contains a short self-contained Lucky Six game. Neither barcode relies on an external game URL.
+
+When scanning a dense code from another screen, open the complete PNG, not the small gallery thumbnail. Under **Scan**, set **Scanner focus** to the exact code type, keep it centered, and provide bright, even light. A PNG image that decodes in automated tests may still fail from an unfocused or low-resolution camera frame.
 
 ## Redesigned games
 
@@ -127,12 +133,12 @@ The site retains the standard QR Code, Code 128, Data Matrix, Aztec, PDF417, Max
 - **Perfect Timing (MaxiCode):** a fast-changing number; click when it reaches seven. A compact standalone program is stored inside MaxiCode. Reload the game to retry.
 - **Pocket Maze (Micro QR):** the complete level data, wall bitmap and move limit are encoded as `MQ:M36509` (nine characters). ScanDeck provides the *generic* movement, maze and rendering interpreter. This is bytecode, **not independent JavaScript**.
 - **Codebreaker (rMQR):** discover a secret number from 0 to 98 in seven guesses using UP/DOWN hints. Its standalone JavaScript is encoded in rMQR.
-- **Chroma Rush (IRIS):** ten color targets, three lives, progressively faster reaction times and replay. The full HTML game is embedded in the color code.
-- **Wire Crisis (ChromaQR):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in ChromaQR.
+- **Chroma Rush (ChromaQR):** ten color targets, three lives, progressively faster reaction times and replay. The full HTML game is embedded across the RGB channels.
+- **Wire Crisis (IRIS):** memorize three to seven wires in five timed rounds. Wrong cuts and expired timers end the game. Its complete JavaScript program is encoded in IRIS.
 
-IRIS and ChromaQR both have independent browser image decoding. Physical mobile-camera testing is still required.
+IRIS and ChromaQR both have browser image decoders. Real mobile-camera testing is still required.
 
-## UX fixes in the beta player
+## UX fixes in the player
 
 Pocket Maze is now accepted by Play after the scanner decodes its Micro QR level. Standalone JavaScript games have a generic dark player, readable input controls, instructions and a clear visual result for boolean feedback. Their game-specific program logic remains embedded in the respective code.
 
@@ -145,8 +151,8 @@ Perfect Timing uses the compact original one-shot timer to stay within MaxiCode'
 - **Perfect Timing (MaxiCode):** choose a new millisecond-derived target between 999 and 1,997 milliseconds. Start the clock, then stop close to that target. The MaxiCode contains its randomized target and time-difference logic. The shared ScanDeck player renders the millisecond clock and clear result.
 - **Codebreaker (rMQR):** the seven-guess program stays inside the code. The shared player displays full UP/DOWN hints in a separate status section and the remaining attempts below. The time-derived number changes when a new game starts, though duplicate numbers remain statistically possible.
 - **Pocket Maze (Micro QR):** this remains a bytecode game. The Micro QR holds a seed and difficulty; the generic ScanDeck interpreter generates randomized, fully connected 6×6 mazes and move limits. The engine is not embedded in the Micro QR.
-- **Chroma Rush (IRIS):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
-- **Wire Crisis (ChromaQR):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
+- **Chroma Rush (ChromaQR):** the word color, status, lives, timer bar and buttons now have separate spaces. The first reaction window is three seconds, gradually shortening as you score.
+- **Wire Crisis (IRIS):** five increasingly difficult memory rounds. Memorize three to seven colored wires and cut them in order. One wrong cut or the decreasing timer ends the run. The shared player renders large wire buttons, a memorization preview, a shrinking countdown and status text.
 - **Brick Rush (PDF417):** centered canvas and platform through shared presentation CSS without increasing the encoded physics program.
 
-The IRIS and ChromaQR readers decode generated image pixels independently. Physical mobile-camera testing remains necessary.
+IRIS and ChromaQR decode generated PNG pixels independently. Physical mobile-camera testing remains necessary.

@@ -29,8 +29,10 @@ async function acceptPayload(raw, mode='manual', format='') {
     const game = await decodeGame(raw);
     if(format==='MaxiCode'&&game.kind==='standalone')game.title='Perfect Timing';
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
+    if((format==='QRCode'||format==='qr_code')&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
+    if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('onclick=()=>document.body.innerText=(r='))game.title='Lucky Six';
     if((format==='IRIS'||format==='ChromaQR')&&game.kind==='standalone'&&game.source.startsWith("document.write('<p id=t>"))game.title='Wire Crisis';
-    if(format==='IRIS'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
+    if(format==='ChromaQR'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
     selectedGame = game;
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
@@ -66,7 +68,7 @@ function playGame(game) {
   stopCamera();
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
-  const hints={'Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
+  const hints={'Lucky Six':'TAP ANYWHERE TO ROLL · GET A SIX TO WIN','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Maze':'RANDOM 6×6 MAZE · FIND THE STAR','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
   game.instructions=hints[game.title]||game.instructions||'';
   $('game-score').textContent=game.instructions;
   show('touch-controls',game.kind==='snake'||game.kind==='micro');
@@ -169,7 +171,21 @@ async function getScanner() {
   return scanner;
 }
 const firstResult=results=>results.find(x=>x.text||x.rawValue);
-const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true};
+const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryRotate:true,tryInvert:true,tryDenoise:true,tryDownscale:false};
+const FOCUS_FORMATS={pdf417:'PDF417',maxicode:'MaxiCode',rmqr:'RMQRCode',code128:'Code128'};
+const scanFocus=()=> $('scan-mode').value;
+$('scan-mode').addEventListener('change',()=>{
+  const selected=$('scan-mode').selectedOptions[0].textContent;
+  $('camera-label').textContent='SCANNING · '+selected.toUpperCase();
+  if(live)status('Scanning '+selected+'. Keep the full code sharp and inside the camera frame.');
+});
+function centeredIrisFrame(video){
+  const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
+  const canvas=document.createElement('canvas');
+  const size=Math.min(side,1250);canvas.width=size;canvas.height=size;
+  canvas.getContext('2d',{willReadFrequently:true}).drawImage(video,(w-side)/2,(h-side)/2,side,side,0,0,size,size);
+  return canvas;
+}
 function stopCamera() {
   cameraToken++;live=false;clearTimeout(scanTimeout);
   if(scanStream)scanStream.getTracks().forEach(track=>track.stop());scanStream=null;
@@ -183,7 +199,7 @@ async function startCamera() {
   $('start-camera').disabled=true;status('Opening camera...');
   try {
     const engine=await getScanner();
-    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:20,max:24}},audio:false});
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080},frameRate:{ideal:15,max:24}},audio:false});
     scanStream=stream;$('camera').srcObject=stream;await $('camera').play();
     live=true;const token=++cameraToken;
     show('scan-idle',false);show('camera-panel',true);show('stop-camera',true);$('camera-label').textContent='SCANNING';
@@ -199,44 +215,50 @@ function isGamePayload(text){
   return /^(?:SD1:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 async function cameraLoop(token,engine){
-  // One scan per iteration: ZXing for standard codes, IRIS in an off-thread worker.
+  let frame=0;
+  // Full-resolution source, focused formats and disabled ZXing downscale.
   while(live&&cameraToken===token&&!document.hidden){
     try{
       const video=$('camera');
-      if(video.readyState>=2){
+      if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
+        const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
+        const limit=mode==='code128'?2000:mode==='pdf417'||mode==='rmqr'?1800:1600;
+        const ratio=Math.min(1,limit/Math.max(video.videoWidth,video.videoHeight));
         const canvas=document.createElement('canvas');
-        const width=video.videoWidth,height=video.videoHeight;
-        const scale=Math.min(1,900/Math.max(width,height));
-        canvas.width=Math.max(1,Math.round(width*scale));
-        canvas.height=Math.max(1,Math.round(height*scale));
+        canvas.width=Math.max(1,Math.round(video.videoWidth*ratio));
+        canvas.height=Math.max(1,Math.round(video.videoHeight*ratio));
         const ctx=canvas.getContext('2d',{willReadFrequently:true});
         ctx.drawImage(video,0,0,canvas.width,canvas.height);
         const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-        let text='',format='';
-        if(engine.kind==='native'){
-          const result=(await engine.engine.detect(video)).find(x=>x.rawValue);
-          text=result?.rawValue||'';format=result?.format||'';
-        }else{
-          const result=firstResult(await engine.engine.readBarcodes(pixels,wasmOptions));
-          text=result?.text||'';format=result?.format||'';
+        if(mode==='auto'||focused){
+          let result;
+          if(engine.kind==='native'&&!focused){
+            result=(await engine.engine.detect(video)).find(x=>isGamePayload(x.rawValue));
+          }else{
+            const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
+            const results=await lib.readBarcodes(pixels,{...wasmOptions,formats:focused?[focused]:WASM_FORMATS});
+            result=firstResult(results.filter(x=>isGamePayload(x.text)));
+          }
+          const raw=result?.text||result?.rawValue;
+          if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
         }
-        if(live&&token===cameraToken&&isGamePayload(text)&&await acceptPayload(text,'camera',format))return;
-        // A ChromaQR channel can look like an ordinary QR. Never accept a
-        // partial channel as a game; reconstruct all RGB layers first.
-        if(live&&token===cameraToken){
+        if((mode==='auto'&&frame%2===0)||mode==='chromaqr'){
           const chroma=await readChromaImage(pixels);
-          if(chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
+          if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
         }
-        if(live&&token===cameraToken){
-          const iris=await readIrisPixels(pixels);
-          if(iris&&await acceptPayload(iris,'camera','IRIS'))return;
+        if((mode==='auto'&&frame%2===1)||mode==='iris'){
+          const crop=centeredIrisFrame(video);
+          const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
+          crop.width=crop.height=1;
+          if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
         }
         canvas.width=canvas.height=1;
+        frame++;
       }
     }catch(error){
       if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
     }
-    if(live&&token===cameraToken)await delay(450);
+    if(live&&token===cameraToken)await delay(250);
   }
 }
 $('start-camera').addEventListener('click',startCamera);
@@ -299,17 +321,6 @@ $('image-input').addEventListener('change',async e=>{await uploadImage(e.target.
 $('scan-viewport').addEventListener('dragover',e=>e.preventDefault());
 $('scan-viewport').addEventListener('drop',e=>{e.preventDefault();void uploadImage(e.dataTransfer.files?.[0])});
 
-$('try-snake').addEventListener('click',async()=>{
-  try {
-    const response=await fetch('assets/snake-code128.svg',{cache:'no-cache'});
-    if(!response.ok)throw Error('Snake barcode not found.');
-    const payload=decodeCode128Svg(await response.text());
-    const game=await decodeGame(payload);
-    if(game.kind!=='standalone')throw Error('Snake barcode is not standalone.');
-    game.title='Snake';
-    playGame(game);
-  }catch(error){switchTab('scan');status('Snake could not load: '+error.message,true)}
-});
 $('try-ironpass').addEventListener('click',async()=>{
   try{const response=await fetch('assets/ironpass-micro-v3.txt',{cache:'force-cache'});if(!response.ok)throw Error('Game payload not found.');playGame(await decodeGame(await response.text()))}
   catch(error){switchTab('scan');status('Ironpass could not load: '+error.message,true)}
@@ -320,7 +331,7 @@ async function playMatrixExample(name,title,format) {
     const response=await fetch('assets/'+name+'.png');
     if(!response.ok)throw Error('Game code image not found.');
     const engine=await getMatrixEngine();
-    const hit=firstResult(await engine.readBarcodes(await response.blob(),{formats:[format],tryHarder:true,maxNumberOfSymbols:1}));
+    const hit=firstResult(await engine.readBarcodes(await response.blob(),{...wasmOptions,formats:[format]}));
     if(!hit?.text)throw Error('Could not read the game from its code image.');
     const game=await decodeGame(hit.text);
     if(!['html','standalone','bytecode','maze'].includes(game.kind))throw Error('Unsupported embedded game program.');
@@ -334,6 +345,8 @@ $('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf41
 $('try-tap').addEventListener('click',()=>playMatrixExample('tap-maxicode','Perfect Timing','MaxiCode'));
 $('try-micro').addEventListener('click',()=>playMatrixExample('math-microqr','Pocket Maze','MicroQRCode'));
 $('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
+$('try-snake').addEventListener('click',()=>playMatrixExample('snake-qr','Snake','QRCode'));
+$('try-dice').addEventListener('click',()=>playMatrixExample('dice-code128','Lucky Six','Code128'));
 
 // Every IRIS Play button reads the generated image using the actual color decoder.
 async function playIrisExample(name,title){
@@ -347,17 +360,17 @@ async function playIrisExample(name,title){
     playGame(game);
   }catch(error){switchTab('scan');status('Could not scan '+title+': '+error.message,true)}
 }
-$('try-iris-chroma').addEventListener('click',()=>playIrisExample('iris-chroma','Chroma Rush'));
-$('try-chromaqr-wire').addEventListener('click',async()=>{
+$('try-iris-wire').addEventListener('click',()=>playIrisExample('iris-wire','Wire Crisis'));
+$('try-chromaqr-chroma').addEventListener('click',async()=>{
   try{
-    const response=await fetch('assets/chromaqr-wire.png');
+    const response=await fetch('assets/chromaqr-chroma.png');
     if(!response.ok)throw Error('ChromaQR image not found');
     const hit=await detectImage(await response.blob());
     if(hit.format!=='ChromaQR')throw Error('ChromaQR image decoder did not recover all three channels');
     const game=await decodeGame(hit.text);
-    game.title='Wire Crisis';
+    game.title='Chroma Rush';
     playGame(game);
-  }catch(error){switchTab('scan');status('Could not scan Wire Crisis: '+error.message,true)}
+  }catch(error){switchTab('scan');status('Could not scan Chroma Rush: '+error.message,true)}
 });
 
 function selectGenerator(format) {
@@ -368,7 +381,7 @@ function selectGenerator(format) {
   $('create-label').textContent=tiny?'Program (maze bytecode)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'M36509':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores a seed and difficulty instruction. ScanDeck generates different solvable 6×6 mazes. This is bytecode, not standalone JavaScript.':
-    format==='bar'?'Keep JavaScript short. Code 128 can become too wide to scan.':
+    format==='bar'?'Use at most 75 encoded characters including the SDS prefix. Larger games belong in a 2D code.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
@@ -376,6 +389,7 @@ function selectGenerator(format) {
     format==='aztec'?'Aztec Code can store a compact HTML game.':format==='chromaqr'?'ChromaQR stores the entire JavaScript game across three RGB QR layers.':format==='iris'?'IRIS stores the full game in a colored circular symbol. Use ScanDeck to scan it.':'QR codes can store more game data.';
   document.querySelectorAll('[data-format]').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.format===format)));
   $('create-source').value='';
+  if(outputData?.url)URL.revokeObjectURL(outputData.url);
   outputData=null;$('output-label').textContent='READY';$('output-stats').textContent='';$('generated-payload').value='';
   $('output-preview').replaceChildren();show('create-result',false);show('create-error',false);
   for(const id of ['download-code','copy-code','test-code'])$(id).disabled=true;
@@ -384,7 +398,7 @@ document.querySelectorAll('[data-format]').forEach(b=>b.addEventListener('click'
 $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
     $('create-source').value='M36509';
-  }else if(!['bar','maxi','rmqr'].includes(generatorFormat)){
+  }else if(!['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
@@ -394,19 +408,59 @@ async function packIrisHtml(input){
   if(!/<(?:canvas|html|body|svg|div|script)\b/i.test(input))throw Error('Paste an HTML game, not plain text.');
   return 'SD1:'+base43Encode(await deflateRaw(input));
 }
-function displaySvg(svg) {
-  const box=$('output-preview');box.innerHTML=svg;
-  const el=box.querySelector('svg');if(!el)throw Error('Image generation failed.');
-  el.setAttribute('role','img');el.setAttribute('aria-label','Generated game code');
-  if(!el.getAttribute('xmlns'))el.setAttribute('xmlns','http://www.w3.org/2000/svg');
-  return new XMLSerializer().serializeToString(el);
+// Render all creator formats into a real PNG before preview and download.
+function displaySvg(source){
+  const doc=new DOMParser().parseFromString(source,'image/svg+xml');
+  const svg=doc.documentElement;
+  if(svg.localName!=='svg'||doc.querySelector('parsererror'))throw Error('Invalid generated barcode image.');
+  if(!svg.getAttribute('xmlns'))svg.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  const box=svg.getAttribute('viewBox')?.split(/[ ,]+/).map(Number);
+  if(box?.length===4&&box.every(Number.isFinite)){
+    svg.setAttribute('width',String(box[2]));
+    svg.setAttribute('height',String(box[3]));
+  }
+  return new XMLSerializer().serializeToString(svg);
+}
+async function svgToPng(svg){
+  const src=new Blob([svg],{type:'image/svg+xml'});
+  const url=URL.createObjectURL(src);
+  try{
+    const img=new Image();
+    await new Promise((resolve,reject)=>{
+      img.onload=resolve;
+      img.onerror=()=>reject(Error('Could not rasterize this barcode.'));
+      img.src=url;
+    });
+    const rawWidth=img.naturalWidth||640,rawHeight=img.naturalHeight||640;
+    const scale=Math.min(3,4096/Math.max(rawWidth,rawHeight),Math.sqrt(8000000/(rawWidth*rawHeight)));
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.max(1,Math.round(rawWidth*scale));
+    canvas.height=Math.max(1,Math.round(rawHeight*scale));
+    const ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=false;
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+    const png=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('PNG conversion failed')),'image/png'));
+    canvas.width=canvas.height=1;
+    return png;
+  }finally{URL.revokeObjectURL(url)}
+}
+function setGeneratedImage(blob){
+  if(outputData?.url)URL.revokeObjectURL(outputData.url);
+  const url=URL.createObjectURL(blob);
+  const img=document.createElement('img');
+  img.src=url;img.alt='Generated PNG game code';
+  img.style.maxWidth='100%';img.style.height='auto';img.style.objectFit='contain';
+  $('output-preview').replaceChildren(img);
+  return url;
 }
 $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
     const payload=generatorFormat==='microqr'?packMicroQuiz(input):['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
-    let svg;
+    if(generatorFormat==='bar'&&payload.length>75)throw Error('Code 128 is too wide for camera scanning. Keep the total code under 75 characters or use QR Code.');
+    let svg,png;
     if(generatorFormat==='qr'){
       const qrFactory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       const qr=qrFactory(0,'L');qr.addData(payload,'Alphanumeric');qr.make();
@@ -423,14 +477,17 @@ $('generate').addEventListener('click',async()=>{
       const lib=await getMatrixEngine();
       const format=({ 'data-matrix':'DataMatrix',aztec:'Aztec',pdf:'PDF417',maxi:'MaxiCode',microqr:'MicroQRCode',rmqr:'RMQRCode' })[generatorFormat];
       if(!format)throw Error('Unsupported code format.');
-      const result=await lib.writeBarcode(payload,{format,scale:5});
-      svg=displaySvg(result.svg);
+      const result=await lib.writeBarcode(payload,{format,scale:format==='PDF417'||format==='RMQRCode'?10:8});
+      png=result.image;
+      if(!png)throw Error('The decoder could not generate a PNG barcode.');
     }
-    outputData={svg,payload,kind:generatorFormat};
+    png ||= await svgToPng(svg);
+    const url=setGeneratedImage(png);
+    outputData={blob:png,url,payload,kind:generatorFormat};
     show('create-result',true);
     $('output-label').textContent='READY';
     $('output-stats').replaceChildren();
-    for(const s of [generatorFormat==='bar'?(payload.length>190?'Code 128 is very wide and may not scan on a phone.':'Code 128 ready'):(generatorFormat==='microqr'?'Micro QR bytecode ready (requires ScanDeck interpreter)':generatorFormat.toUpperCase()+' game code ready'),payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
+    for(const s of [generatorFormat==='bar'?'Short Code 128 PNG ready':generatorFormat==='microqr'?'Micro QR bytecode ready (requires ScanDeck interpreter)':generatorFormat.toUpperCase()+' PNG ready',payload.length+' encoded characters']){const span=document.createElement('span');span.textContent=s;$('output-stats').append(span)}
     $('generated-payload').value=payload;
     for(const id of ['download-code','copy-code','test-code'])$(id).disabled=false;
     $('create-result').scrollIntoView({behavior:'smooth',block:'nearest'});
@@ -443,8 +500,10 @@ $('generate').addEventListener('click',async()=>{
 });
 $('download-code').addEventListener('click',()=>{
   if(!outputData)return;
-  const blob=new Blob([outputData.svg],{type:'image/svg+xml'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`scandeck-${outputData.kind}-game.svg`;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  const a=document.createElement('a');
+  a.href=outputData.url;
+  a.download='scandeck-'+outputData.kind+'-game.png';
+  a.click();
 });
 $('copy-code').addEventListener('click',async()=>{
   if(!outputData)return;

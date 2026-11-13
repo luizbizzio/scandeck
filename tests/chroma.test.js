@@ -42,10 +42,9 @@ test('ChromaQR splits and reassembles the full game with checksum',()=>{
   assert.equal(joinChromaPayload(damaged),null);
 });
 
-test('Wire Crisis ChromaQR PNG independently decodes all three color channels',async()=>{
-  const expected=readFileSync(new URL('../assets/chromaqr-wire.txt',import.meta.url),'utf8');
-  assert.ok(expected.startsWith('SDS:'));
-  const actual=await decodeChromaPixels(pngPixels('chromaqr-wire.png'),readBarcodes);
+test('Chroma Rush ChromaQR PNG independently decodes all three color channels',async()=>{
+  const expected=readFileSync(new URL('../assets/chromaqr-chroma.txt',import.meta.url),'utf8');
+  assert.ok(expected.startsWith('SD1:'));
+  const actual=await decodeChromaPixels(pngPixels('chromaqr-chroma.png'),readBarcodes);
   assert.equal(actual,expected);
-  assert.match(readFileSync(new URL('../assets/chromaqr-wire.svg',import.meta.url),'utf8'),/<svg/);
 });

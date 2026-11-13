@@ -50,7 +50,8 @@
             </div>
             <div class="scan-controls">
               <div class="scan-guide"><h3>Ready to play?</h3><p>Use your camera or upload an image of a ScanDeck game code.</p></div>
-              <div class="scan-actions">
+              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">All formats</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="rmqr">rMQR</option><option value="code128">Code 128</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option></select></div>
+            <div class="scan-actions">
                 <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
                 <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
                 <button id="stop-camera" class="btn btn-small stop-camera" disabled hidden>Stop camera</button>
@@ -77,68 +78,72 @@
             <a class="game-code-preview qr-code-preview" href="assets/ironpass-micro-v3-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Ironpass Micro QR code"><span class="game-code-paper"><img src="assets/ironpass-micro-v3-qr.png" alt="QR code containing Ironpass Micro" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
             <div class="game-body"><h3>Ironpass Micro</h3><p>Defend your towers against waves of enemies.</p><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download QR</a></div></div>
           </article>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview" href="assets/snake-qr.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Snake QR code"><span class="game-code-paper"><img src="assets/snake-qr.png" alt="QR Code containing the complete standalone Snake game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Snake</h3><p>The full independent Snake program, including keyboard and swipe controls, is embedded in the QR Code.</p><div class="game-actions"><button class="btn btn-primary" id="try-snake">Play</button><a class="btn" href="assets/snake-qr.png" download>Download PNG</a></div></div>
+          </article>
         </section>
         <section class="game-group" aria-labelledby="bar-games-heading">
           <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
           <article class="surface game-card">
-            <a class="game-code-preview barcode-code-preview" href="assets/snake-code128.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size Snake Code 128 barcode"><span class="game-code-paper"><img src="assets/snake-code128.svg" alt="Code 128 barcode containing Snake" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Snake</h3><p>The whole game is in this barcode. Use WASD or arrow keys, or swipe on your phone.</p><small class="barcode-note">This is an extra-wide barcode. Phone cameras may not read it.</small><div class="game-actions"><button class="btn btn-primary" id="try-snake">Play</button><a class="btn" href="assets/snake-code128.svg" download>Download barcode</a></div></div>
+            <a class="game-code-preview barcode-code-preview" href="assets/dice-code128.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size Lucky Six Code 128 barcode"><span class="game-code-paper"><img src="assets/dice-code128.png" alt="Code 128 containing the complete Lucky Six mini game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Lucky Six</h3><p>Tap to roll a die. Get a six to win. The entire short JavaScript game is stored inside the barcode.</p><small class="barcode-note">Code 128 has very little practical camera capacity. The full Snake game is now in QR Code.</small><div class="game-actions"><button class="btn btn-primary" id="try-dice">Play</button><a class="btn" href="assets/dice-code128.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dm-games-heading">
           <h2 class="group-title" id="dm-games-heading">Data Matrix</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/catch-datamatrix.svg" target="_blank" rel="noopener noreferrer" aria-label="View Catch 10 Data Matrix code"><span class="game-code-paper"><img src="assets/catch-datamatrix.svg" alt="Data Matrix containing Catch 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Catch 10</h3><p>Catch ten moving targets. The timer counts up from zero, with no time limit.</p><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.svg" download>Download Data Matrix</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/catch-datamatrix.png" target="_blank" rel="noopener noreferrer" aria-label="View Catch 10 Data Matrix code"><span class="game-code-paper"><img src="assets/catch-datamatrix.png" alt="Data Matrix containing Catch 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Catch 10</h3><p>Catch ten moving targets. The timer counts up from zero, with no time limit.</p><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.png" download>Download Data Matrix</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="aztec-games-heading">
           <h2 class="group-title" id="aztec-games-heading">Aztec Code</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/memory-aztec.svg" target="_blank" rel="noopener noreferrer" aria-label="View Pattern Memory Aztec code"><span class="game-code-paper"><img src="assets/memory-aztec.svg" alt="Aztec Code containing Pattern Memory" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Pattern Memory</h3><p>Tap a color to start. Listen to the tones and repeat each pattern.</p><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.svg" download>Download Aztec</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/memory-aztec.png" target="_blank" rel="noopener noreferrer" aria-label="View Pattern Memory Aztec code"><span class="game-code-paper"><img src="assets/memory-aztec.png" alt="Aztec Code containing Pattern Memory" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Pattern Memory</h3><p>Tap a color to start. Listen to the tones and repeat each pattern.</p><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.png" download>Download Aztec</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="pdf-games-heading">
           <h2 class="group-title" id="pdf-games-heading">PDF417</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/breakout-pdf417.svg" target="_blank" rel="noopener noreferrer" aria-label="View PDF417 Brick Rush code"><span class="game-code-paper"><img src="assets/breakout-pdf417.svg" alt="PDF417 containing Brick Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Brick Rush</h3><p>Use a slower ball, clear twelve bricks and survive with three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.svg" download>Download PDF417</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/breakout-pdf417.png" target="_blank" rel="noopener noreferrer" aria-label="View PDF417 Brick Rush code"><span class="game-code-paper"><img src="assets/breakout-pdf417.png" alt="PDF417 containing Brick Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Brick Rush</h3><p>Use a slower ball, clear twelve bricks and survive with three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.png" download>Download PDF417</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="maxi-games-heading">
           <h2 class="group-title" id="maxi-games-heading">MaxiCode</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/tap-maxicode.svg" target="_blank" rel="noopener noreferrer" aria-label="View MaxiCode Perfect Timing code"><span class="game-code-paper"><img src="assets/tap-maxicode.svg" alt="MaxiCode containing Perfect Timing" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Perfect Timing</h3><p>A random target between 999 and 1,997 ms. Press Start, then Stop as close to the target as possible.</p><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/tap-maxicode.svg" download>Download MaxiCode</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/tap-maxicode.png" target="_blank" rel="noopener noreferrer" aria-label="View MaxiCode Perfect Timing code"><span class="game-code-paper"><img src="assets/tap-maxicode.png" alt="MaxiCode containing Perfect Timing" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Perfect Timing</h3><p>A random target between 999 and 1,997 ms. Press Start, then Stop as close to the target as possible.</p><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/tap-maxicode.png" download>Download MaxiCode</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="micro-games-heading">
           <h2 class="group-title" id="micro-games-heading">Micro QR</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/math-microqr.svg" target="_blank" rel="noopener noreferrer" aria-label="View Micro QR Pocket Maze code"><span class="game-code-paper"><img src="assets/math-microqr.svg" alt="Micro QR containing Pocket Maze" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Pocket Maze</h3><p>Solve a randomized 6×6 maze. New patterns, a guaranteed exit and a move limit. Micro QR holds seed bytecode.</p><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/math-microqr.svg" download>Download Micro QR</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/math-microqr.png" target="_blank" rel="noopener noreferrer" aria-label="View Micro QR Pocket Maze code"><span class="game-code-paper"><img src="assets/math-microqr.png" alt="Micro QR containing Pocket Maze" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Pocket Maze</h3><p>Solve a randomized 6×6 maze. New patterns, a guaranteed exit and a move limit. Micro QR holds seed bytecode.</p><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/math-microqr.png" download>Download Micro QR</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="rmqr-games-heading">
           <h2 class="group-title" id="rmqr-games-heading">rMQR</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/math-rmqr.svg" target="_blank" rel="noopener noreferrer" aria-label="View rMQR Codebreaker code"><span class="game-code-paper"><img src="assets/math-rmqr.svg" alt="rMQR containing Codebreaker" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
-            <div class="game-body"><h3>Codebreaker</h3><p>Guess a new number from 0 to 98. UP and DOWN clues are separate from your seven remaining attempts.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.svg" download>Download rMQR</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/math-rmqr.png" target="_blank" rel="noopener noreferrer" aria-label="View rMQR Codebreaker code"><span class="game-code-paper"><img src="assets/math-rmqr.png" alt="rMQR containing Codebreaker" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full code ↗</span></a>
+            <div class="game-body"><h3>Codebreaker</h3><p>Guess a new number from 0 to 98. UP and DOWN clues are separate from your seven remaining attempts.</p><div class="game-actions"><button class="btn btn-primary" id="try-rmqr">Play</button><a class="btn" href="assets/math-rmqr.png" download>Download rMQR</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="iris-games-heading">
           <h2 class="group-title" id="iris-games-heading">IRIS <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/iris-chroma.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size IRIS Chroma Rush code"><span class="game-code-paper"><img src="assets/iris-chroma.svg" alt="IRIS color symbol containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View IRIS ↗</span></a>
-            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the written word. Clear instructions, a separated timer, score and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-iris-chroma">Play</button><a class="btn" href="assets/iris-chroma.svg" download>Download IRIS</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/iris-wire.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size IRIS Wire Crisis code"><span class="game-code-paper"><img src="assets/iris-wire.png" alt="IRIS color code containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
+            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="game-actions"><button class="btn btn-primary" id="try-iris-wire">Play</button><a class="btn" href="assets/iris-wire.png" download>Download PNG</a></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="chroma-games-heading">
           <h2 class="group-title" id="chroma-games-heading">ChromaQR <small>(Experimental)</small></h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/chromaqr-wire.svg" target="_blank" rel="noopener noreferrer" aria-label="View full-size ChromaQR Wire Crisis code"><span class="game-code-paper"><img src="assets/chromaqr-wire.svg" alt="ChromaQR RGB symbol containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View ChromaQR ↗</span></a>
-            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize 3 to 7 wire colors, then cut them in order. Five rounds with less time each round.</p><div class="game-actions"><button class="btn btn-primary" id="try-chromaqr-wire">Play</button><a class="btn" href="assets/chromaqr-wire.svg" download>Download ChromaQR</a></div></div>
+            <a class="game-code-preview qr-code-preview" href="assets/chromaqr-chroma.png" target="_blank" rel="noopener noreferrer" aria-label="View full-size ChromaQR Chroma Rush code"><span class="game-code-paper"><img src="assets/chromaqr-chroma.png" alt="ChromaQR RGB code containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">View full PNG ↗</span></a>
+            <div class="game-body"><h3>Chroma Rush</h3><p>Tap the ink color, not the word. Ten rounds, a separate timer and three lives.</p><div class="game-actions"><button class="btn btn-primary" id="try-chromaqr-chroma">Play</button><a class="btn" href="assets/chromaqr-chroma.png" download>Download PNG</a></div></div>
           </article>
         </section>
       </div>
@@ -171,7 +176,7 @@
           <div class="result-heading"><h2>Your game code</h2><span id="output-label" class="small-label" aria-live="polite">READY</span></div>
           <div id="output-preview" class="output-preview"></div>
           <div class="output-stats" id="output-stats" role="status" aria-live="polite"></div>
-          <div class="create-actions result-actions"><button class="btn btn-primary" id="download-code" disabled>Download SVG</button><button class="btn" id="test-code" disabled>Test game</button></div>
+          <div class="create-actions result-actions"><button class="btn btn-primary" id="download-code" disabled>Download PNG</button><button class="btn" id="test-code" disabled>Test game</button></div>
           <details class="advanced-output"><summary>Copy game data</summary><div class="advanced-inner"><textarea id="generated-payload" spellcheck="false" readonly rows="3" aria-label="Generated game data"></textarea><button class="btn btn-small" id="copy-code" disabled>Copy data</button></div></details>
         </section>
       </div>
@@ -189,7 +194,7 @@
           <div><h3>PDF417</h3><p>Rows of bars for larger games.</p></div>
           <div><h3>MaxiCode</h3><p>Short, self-contained JavaScript.</p></div>
           <div><h3>Micro QR</h3><p>Tiny instructions executed by a reusable interpreter.</p></div>
-          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>IRIS</h3><p>Experimental eight-color circular code. Scan with the built-in IRIS camera decoder.</p></div><div><h3>ChromaQR</h3><p>Three QR code data layers combined in red, green and blue. Requires the ScanDeck RGB reader.</p></div>
+          <div><h3>rMQR</h3><p>Short JavaScript in a rectangular QR.</p></div><div><h3>IRIS</h3><p>Experimental circular code. Small payloads are easier to scan with a camera.</p></div><div><h3>ChromaQR</h3><p>Three QR code data layers combined in red, green and blue. Requires the ScanDeck RGB reader.</p></div>
         </div>
         <p class="about-note">Only compatible game codes work. Regular QR links and product barcodes are not games.</p>
         <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>

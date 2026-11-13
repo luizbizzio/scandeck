@@ -62,8 +62,8 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
 - [ ] rMQR: solve the math puzzle using the input field.
-- [ ] IRIS Chroma Rush: the complete game decodes from the image pixels, with no fallback payload lookup.
-- [ ] ChromaQR Wire Crisis: all three RGB QR channels decode and reconstruct the complete game, with no fallback payload lookup.
+- [ ] IRIS Wire Crisis: the complete game decodes from the image pixels, with no fallback payload lookup.
+- [ ] ChromaQR Chroma Rush: all three RGB QR channels decode and reconstruct the complete game, with no fallback payload lookup.
 - [ ] IRIS and ChromaQR: independently validate camera framing, focus, lighting and perspective on real mobile devices.
 
 ## Redesigned games
@@ -90,3 +90,12 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Chroma Rush: balanced spacing, three-second initial response window, 3 lives and 10 rounds
 - [ ] Wire Crisis: memorize three to seven wires, 1.6-second preview, shrinking ten-to-six-second timer, no continuing after BOOM or timeout
 - [ ] Brick Rush: the full game area is centered on desktop and mobile
+
+## PNG and focused camera regression
+
+- [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, MaxiCode, rMQR, IRIS and ChromaQR.
+- [ ] Create outputs PNG files, without exposing SVG downloads.
+- [ ] QR Snake carries the complete original standalone script. Short Code 128 Lucky Six also carries a full game.
+- [ ] Test focused PDF417, MaxiCode and rMQR scanning from a second screen with a real mobile phone.
+- [ ] Test the compact 16-ring IRIS Wire Crisis and the RGB ChromaQR Chroma Rush under bright and dim lighting.
+- [ ] Compare default All formats with individual focused scanning; verify the camera runs without freezing.

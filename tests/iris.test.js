@@ -35,7 +35,7 @@ test('IRIS clean RGB markers can be decoded independently',()=>{
   const viaMarkers=decodeColorMarkers(renderColorRaster(sym));
   assert.equal(viaMarkers?.text,text);
 });
-for(const name of ['iris-chroma']){
+for(const name of ['iris-wire']){
   test(name+' contains an entire independently decodable game in its PNG pixels',()=>{
     const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const png=readRgbPng(name);
@@ -44,8 +44,8 @@ for(const name of ['iris-chroma']){
   });
 }
 
-test('large IRIS games remain decodable after mobile-sized nearest-neighbor resizing',()=>{
-  const original=readRgbPng('iris-chroma');
+test('compact IRIS game remains decodable after mobile-sized nearest-neighbor resizing',()=>{
+  const original=readRgbPng('iris-wire');
   const maxSide=1300,scale=Math.min(1,maxSide/Math.max(original.width,original.height));
   const width=Math.round(original.width*scale),height=Math.round(original.height*scale);
   const data=new Uint8Array(width*height*3);
@@ -56,6 +56,6 @@ test('large IRIS games remain decodable after mobile-sized nearest-neighbor resi
     data[to]=original.data[from];data[to+1]=original.data[from+1];data[to+2]=original.data[from+2];
   }
   assert.ok(width*height<=1_690_000);
-  const expected=readFileSync(new URL('../assets/iris-chroma.txt',import.meta.url),'utf8');
+  const expected=readFileSync(new URL('../assets/iris-wire.txt',import.meta.url),'utf8');
   assert.equal(decodeColor({width,height,data}).text,expected);
 });

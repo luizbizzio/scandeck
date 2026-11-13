@@ -155,11 +155,11 @@ test('Micro QR carries a complete arithmetic instruction in at most 15 bytes',as
 });
 
 test('both RGB color formats store complete embedded game payloads',async()=>{
-  for(const name of ['iris-chroma','chromaqr-wire']){
+  for(const name of ['iris-wire','chromaqr-chroma']){
     const raw=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
     const result=await decodeGame(raw);
     assert.ok(result.source.length>40);
-    assert.match(readFileSync(new URL('../assets/'+name+'.svg',import.meta.url),'utf8'),/<svg/);
+    assert.equal(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)).subarray(0,8).toString('hex'),'89504e470d0a1a0a');
     assert.ok(!/^https?:\/\//.test(raw));
     assert.ok(raw.startsWith('SD1:')||raw.startsWith('SDS:'));
   }

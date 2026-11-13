@@ -27,15 +27,15 @@ test('games are clearly split by code type', () => {
 });
 
 test('games show their actual QR and Code 128 images with full-size links', () => {
-  for (const name of ['ironpass-micro-v3-qr.png','snake-code128.svg']) {
+  for (const name of ['ironpass-micro-v3-qr.png','snake-qr.png','dice-code128.png']) {
     assert.match(html, new RegExp('href="assets/' + name.replace('.', '\\.') + '"'));
     assert.match(html, new RegExp('src="assets/' + name.replace('.', '\\.') + '"'));
   }
   assert.match(html, /class="game-code-preview qr-code-preview"/);
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
-  assert.match(script, /fetch\('assets\/snake-code128\.svg'/);
-  assert.match(script, /decodeCode128Svg\(await response\.text\(\)\)/);
+  assert.match(script, /playMatrixExample\('snake-qr','Snake','QRCode'\)/);
+  assert.match(script, /playMatrixExample\('dice-code128','Lucky Six','Code128'\)/);
   assert.match(script, /fetch\('assets\/'\+name\+'\.png'\)/);
   assert.match(script, /getMatrixEngine\(\)/);
   assert.doesNotMatch(script, /decodeGame\(LEGACY_SNAKE\)/);
@@ -65,7 +65,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
+  for (const id of ['scan-games','try-dice','try-snake','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -89,22 +89,43 @@ test('scanner has a visible idle preview and keeps the camera available on deman
   assert.match(script, /\$\('scan-viewport'\)\.addEventListener\('drop'/);
   assert.match(css, /\.scan-workspace\{display:grid/);
 });
-test('IRIS and ChromaQR use separate, scan-ready code formats',()=>{
+test('IRIS and ChromaQR use PNG files with separate format handlers',()=>{
   assert.ok(html.includes('id="iris-games-heading"'));
   assert.ok(html.includes('id="chroma-games-heading"'));
-  assert.ok(html.includes('assets/iris-chroma.svg'));
-  assert.ok(html.includes('assets/chromaqr-wire.svg'));
-  assert.ok(!html.includes('iris-wire.svg'));
-  for(const id of ['try-iris-chroma','try-chromaqr-wire']){
+  assert.ok(html.includes('assets/iris-wire.png'));
+  assert.ok(html.includes('assets/chromaqr-chroma.png'));
+  assert.ok(!html.includes('iris-chroma.png'));
+  for(const id of ['try-iris-wire','try-chromaqr-chroma']){
     assert.ok(html.includes('id="'+id+'"'));
     assert.ok(script.includes("$('"+id+"')"));
   }
   assert.ok(html.includes('data-format="chromaqr"'));
-  assert.ok(script.includes('playIrisExample('));
   assert.ok(script.includes('readIrisPixels('));
   assert.ok(script.includes('readChromaImage('));
+  assert.ok(script.includes("format:'IRIS'"));
   assert.ok(script.includes("'ChromaQR'"));
   assert.ok(!script.includes('playColorExample('));
+});
+
+test('camera keeps detail and enables focused scanning for dense symbols',()=>{
+  assert.match(script,/width:\{ideal:1920\}/);
+  assert.match(script,/tryDownscale:false/);
+  assert.match(script,/tryDenoise:true/);
+  assert.match(script,/centeredIrisFrame\(video\)/);
+  assert.match(script,/FOCUS_FORMATS/);
+  for(const name of ['pdf417','maxicode','rmqr','code128','iris','chromaqr'])
+    assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
+});
+
+test('every displayed and downloadable game code uses PNG',()=>{
+  const gallery=html.split('id="library"')[1].split('id="create"')[0];
+  assert.ok(gallery.includes('assets/dice-code128.png'));
+  assert.ok(gallery.includes('assets/snake-qr.png'));
+  assert.doesNotMatch(gallery,/assets\/[\w-]+\.svg/);
+  assert.match(html,/Download PNG/);
+  assert.match(script,/svgToPng\(/);
+  assert.match(script,/image\/png/);
+  assert.match(script,/game\.png/);
 });
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
   const {gameDocument}=await import('../runtime.js');

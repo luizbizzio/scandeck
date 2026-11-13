@@ -28,6 +28,12 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Build all game codes and scanner
         run: npm run build
+      - name: Validate browser JavaScript
+        run: |
+          node --check app.js
+          node --check chroma.js
+          node --check iris-worker.js
+          node --check sw.js
       - name: Run tests
         run: npm test
       - name: Prepare static site
@@ -36,7 +42,7 @@ jobs:
           cp index.html style.css app.js chroma.js iris-worker.js protocol.js runtime.js maze.js code128.js sw.js .nojekyll dist/
           mkdir -p dist/vendor/iris
           cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
-          cp assets/*.svg assets/*.png assets/*.txt dist/assets/
+          cp assets/favicon.svg assets/*.png assets/*.txt dist/assets/
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
           cp vendor/qrcode-generator.js dist/vendor/
       - name: Configure Pages
