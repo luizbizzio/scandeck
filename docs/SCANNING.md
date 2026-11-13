@@ -44,7 +44,7 @@ The previous independent BWIPP-generated PNG was 1941 × 1371 pixels and was too
 
 The experimental scanner now rotates, increases contrast, and periodically tries a centered crop with the stricter camera decoding settings. These attempts improve tolerance to framing but do not replace a perspective-correcting decoder. Keep the full stacked code and quiet margins visible; scanning on real hardware remains unverified.
 
-The Codablock F generator tries multiple row counts and chooses a balanced layout that fully decodes. The latest successful matrix is 365 × 197 modules. The full JavaScript game is inside the code. Show the PNG large enough to preserve individual bar widths.
+The Codablock F generator tries multiple row counts and chooses a balanced layout that fully decodes. The latest successful matrix is 365 × 169 modules. The full JavaScript game is inside the code. Show the PNG large enough to preserve individual bar widths.
 
 ## Compact game data
 
