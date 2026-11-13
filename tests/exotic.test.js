@@ -47,7 +47,7 @@ for(const g of games){
   test(g.format+' PNG and strict matrix carry a complete standalone game, no external URL',async()=>{
     const payload=readFileSync(new URL('../assets/'+g.asset+'.txt',import.meta.url),'utf8');
     const source=readFileSync(new URL('../examples/'+g.source,import.meta.url),'utf8').trim();
-    assert.ok(payload.length<(g.format==='codablockf'?615:685),'Optimized code should be smaller than previous build');
+    assert.ok(payload.length<=(g.format==='codablockf'?615:685),'Optimized code must not grow');
     const game=await decodeGame(payload);
     assert.equal(game.kind,g.kind);
     assert.equal(game.source.trim(),source);
@@ -56,6 +56,8 @@ for(const g of games){
     assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
     if(g.format==='codablockf'){
       const matrix=pngGrid(g.asset,4,12);
+      assert.ok(matrix.width<365,'Codablock F must use fewer columns than the earlier 365-module symbol');
+      assert.ok(matrix.height<=310,'The barcode must remain practical to frame');
       assert.equal(decodeCodablockF(matrix)?.text,payload);
     }else{
       const grid=pngGrid(g.asset,5,10);

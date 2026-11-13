@@ -10,36 +10,52 @@ const asset=n=>new URL('assets/'+n,root);
 mkdirSync(asset(''),{recursive:true});
 mkdirSync(new URL('vendor/',root),{recursive:true});
 const generatedShapes={};
+function compact(source,prefix){
+  // Choose the smallest standards-compatible raw DEFLATE stream without
+  // requiring a new decompressor or a network-hosted dictionary.
+  const input=Buffer.from(source);
+  let best=null;
+  for(const windowBits of [9,10,11,12,13,14,15]){
+    const candidate=base85Encode(deflateRawSync(input,{level:9,windowBits,memLevel:9}));
+    if(best===null||candidate.length<best.length)best=candidate;
+  }
+  return prefix+best;
+}
 const games=[
   {
     name:'snake-codablockf',
     input:'examples/snake-standalone.js',
-    payload:source=>'SDB:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9,windowBits:9,memLevel:9})),
+    payload:source=>compact(source,'SDB:'),
     format:'codablockf',
     encode:payload=>{
       // Try several legal layouts. Prefer fewer tall, redundant-looking rows
       // without turning the symbol into an impossibly wide barcode.
       const candidates=[];
-      for(const rows of [20,24,26,28,30,32,36]){
-        try{
-          const matrix=encodeCodablockF(payload,{rows,columns:28,rowHeight:6,separatorHeight:1});
-          if(decodeCodablockF(matrix)?.text!==payload)continue;
-          const ratio=matrix.width/matrix.height;
-          const score=900*Math.abs(Math.log(ratio/2.2))+
-            matrix.width*matrix.height/4000;
-          candidates.push({rows,matrix,score});
-        }catch{}
+      for(const columns of [18,20,22,24,26,28]){
+        for(const rows of [24,26,28,30,32,34,36,40,44]){
+          try{
+            const matrix=encodeCodablockF(payload,{rows,columns,rowHeight:6,separatorHeight:1});
+            if(matrix.width>400||matrix.height>310)continue;
+            if(decodeCodablockF(matrix)?.text!==payload)continue;
+            const ratio=matrix.width/matrix.height;
+            // Favor a compact, camera-friendly balanced footprint, not a
+            // 365-column symbol with very thin bars on a phone screen.
+            const score=850*Math.abs(Math.log(ratio/1.55))+
+              matrix.width*matrix.height/3300;
+            candidates.push({rows,columns,matrix,score});
+          }catch{}
+        }
       }
       candidates.sort((a,b)=>a.score-b.score);
       if(!candidates.length)throw Error('No complete Codablock F layout fits the full Snake');
-      console.log('Codablock layout selected '+candidates[0].rows+' rows');
+      console.log('Codablock layout selected '+candidates[0].rows+' rows / '+candidates[0].columns+' columns');
       return candidates[0].matrix;
     },
     margin:12,scale:4
   },{
     name:'neon-dodge-dotcode',
     input:'examples/neon-dodge-dotcode.html',
-    payload:source=>'SDC:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9,windowBits:10,memLevel:9})),
+    payload:source=>compact(source,'SDC:'),
     format:'dotcode',
     encode:payload=>encodeDotCode(payload,{aspectRatio:1}),
     margin:10,scale:5

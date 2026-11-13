@@ -71,3 +71,7 @@ The experimental reader additionally isolates the largest light card component i
 ## Dense-code camera and upload performance
 
 Exotic camera scans now alternate strict frontal and projective quadrilateral sampling instead of sending megapixel frames through the expensive generic detector. When available, continuous camera autofocus is requested without blocking preview. Uploaded photos above the 2-megapixel decoder bound get a downscaled full view and a centered, higher-detail crop. Both views are tested with exact checksums. DotCode and Codablock F sample programs were further minified without removing their games. These changes are tested on simulated images; physical device read rates remain unverified.
+
+## Symbol footprint optimization
+
+The build now tests DEFLATE window sizes from 9 through 15 and selects the shortest complete Z85 representation for each full game. Codablock F tests multiple legal row and column counts, checks each candidate with its actual strict decoder and prefers a narrower, balanced symbol for camera scanning. This avoids reducing complexity by throwing away game behavior.
