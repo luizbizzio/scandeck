@@ -25,7 +25,7 @@ const games=[
           const matrix=encodeCodablockF(payload,{rows,columns:28,rowHeight:6,separatorHeight:1});
           if(decodeCodablockF(matrix)?.text!==payload)continue;
           const ratio=matrix.width/matrix.height;
-          const score=900*Math.abs(Math.log(ratio/1.8))+
+          const score=900*Math.abs(Math.log(ratio/2.2))+
             matrix.width*matrix.height/4000;
           candidates.push({rows,matrix,score});
         }catch{}
