@@ -17,7 +17,7 @@ test('Micro QR contains every game operation in 13 characters',async()=>{
   assert.equal(game.title,'Pocket Reflex');
   assert.equal(game.source,source);
   assert.deepEqual(parseMicroProgram(source).map(([op,n])=>op+(n||'')),
-    ['R4','D','T3','I','C','+','L5','X']);
+    ['R4','T3','D','I','C','+','L5','X']);
   const html=gameDocument(game);
   assert.match(html,/POCKET REFLEX/);
   assert.match(html,/FIND THIS NUMBER/);
