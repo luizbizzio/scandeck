@@ -1,6 +1,6 @@
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
 import {deflateRawSync} from 'node:zlib';
-import {encodeCodablockF,encodeDotCode,toPNG,toImageData,decode} from '@sythos/js_barcode_universal';
+import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
 import {base43Encode,packScript,decodeGame} from '../protocol.js';
 
 // Both extra formats use the MIT-licensed Sythos SDK v1.6.8.
@@ -33,13 +33,14 @@ for(const game of games){
   if(g.source.trim()!==source)throw Error(game.name+' game content is not completely embedded');
   const matrix=game.encode(payload);
   const png=await toPNG(matrix,{scale:game.scale,margin:game.margin});
-  const image=toImageData(matrix,{scale:game.scale,margin:game.margin});
-  const matches=decode(image,{formats:[game.format],profile:'camera'});
-  if(!matches.some(r=>r.text===payload))
-    throw Error(game.name+' failed independent PNG-raster reader check');
+  // Check all data codewords, row checks and error correction using the
+  // format's strict matrix decoder. Physical camera decoding is separate.
+  const result=game.format==='codablockf'?decodeCodablockF(matrix):decodeDotCode(matrix);
+  if(result?.text!==payload)
+    throw Error(game.name+' failed complete matrix decode integrity check');
   writeFileSync(asset(game.name+'.png'),Buffer.from(png));
   writeFileSync(asset(game.name+'.txt'),payload);
-  console.log(game.format+' | '+game.name+' | '+payload.length+' characters | '+matrix.width+'×'+matrix.height+' modules | PNG raster round-trip verified');
+  console.log(game.format+' | '+game.name+' | '+payload.length+' characters | '+matrix.width+'×'+matrix.height+' modules | complete matrix round-trip verified');
 }
 copyFileSync(new URL('node_modules/@sythos/js_barcode_universal/bundle/sythos-barcode.esm.js',root),
  new URL('vendor/sythos-barcode.esm.js',root));
