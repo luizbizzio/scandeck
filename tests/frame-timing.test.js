@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 function runGame(filename,fps){
  const source=readFileSync(new URL('../examples/'+filename,import.meta.url),'utf8');
- const code=source.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+ const code=source.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
  assert.ok(code,filename+' must contain a playable script');
  const pen={clearRect(){},fillRect(){},fillText(){}};
  const canvas={clientWidth:300,getContext:()=>pen};
@@ -27,7 +27,7 @@ test('Neon Dodge scrolls at the same speed at 30 and 60 FPS',()=>{
 
 test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
  const html=readFileSync(new URL('../examples/neon-dodge-dotcode.html',import.meta.url),'utf8');
- const src=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+ const src=html.match(/<script\b[^>]*>([\s\S]*?)<\/script\s*>/i)?.[1];
  const g={fillRect(){},fillText(){},set fillStyle(x){},set font(x){}};
  const c={getContext:()=>g};
  const state={c,Math,requestAnimationFrame(fn){state.next=fn}};
