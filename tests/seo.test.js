@@ -31,7 +31,7 @@ test('metadata and structured data describe actual site',()=>{
   assert.doesNotMatch(html,/noindex/);
 });
 test('camera helper is part of published offline site',()=>{
-  assert.match(workflow,/cp lib\/scanner-geometry.js dist\/lib\//);
+  assert.match(workflow,/cp src\/\*\.js src\/style\.css dist\/src\//);
   assert.match(sw,/lib\/scanner-geometry.js/);
   assert.match(html,/src\/app\.js\?v=34/);
 });

@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {packMicroVm,decodeGame} from '../protocol.js';
-import {parseMicroProgram,executeMicroProgram,microVmHtml} from '../microvm.js';
-import {gameDocument} from '../runtime.js';
+import {packMicroVm,decodeGame} from '../src/protocol.js';
+import {parseMicroProgram,executeMicroProgram,microVmHtml} from '../src/microvm.js';
+import {gameDocument} from '../src/runtime.js';
 
 const CODE='V1R4T3DIC+L5X';
 
