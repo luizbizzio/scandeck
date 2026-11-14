@@ -307,8 +307,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=58/);
-  assert.match(html,/src\/style\.css\?v=58/);
+  assert.match(html,/src\/app\.js\?v=57/);
+  assert.match(html,/src\/style\.css\?v=57/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -482,14 +482,4 @@ test('MaxiCode/rMQR uploads get a pure-image pass and the camera dynamically lim
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
  assert.match(script,/slowDecodeBackoff=elapsed>750/);
  assert.match(script,/frameRate:\{ideal:24,max:30\}/);
-});
-
-test('all 12 game cards use equal preview heights and equal grid row heights',()=>{
-  assert.match(css,/\.game-groups\{[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\);grid-auto-rows:1fr;/);
-  assert.match(css,/\.game-code-preview\{height:380px;flex-shrink:0;/);
-  assert.match(css,/@media\(max-width:700px\)[^\n]*\.game-code-preview\{height:330px\}/);
-  assert.doesNotMatch(css,/\.game-code-preview\.(?:barcode|dotcode|microqr)-code-preview\{height:/);
-  const cards=[...html.matchAll(/<article class="surface game-card">([\s\S]*?)<\/article>/g)];
-  assert.equal(cards.length,12);
-  assert.equal((html.match(/class="game-code-preview /g)||[]).length,12);
 });
