@@ -89,16 +89,13 @@ textarea:focus{border-color:var(--accent);outline:none}textarea::placeholder{col
 .game-code-preview{height:228px;flex-shrink:0;min-width:0;padding:7px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#0d1510;border-bottom:1px solid var(--line);text-decoration:none;transition:background .15s}
 .game-code-preview:hover{background:#152119}
 .game-code-paper{display:flex;align-items:center;justify-content:center;max-width:100%;max-height:190px;flex-shrink:0;overflow:hidden;border-radius:5px;background:#fff}
-.qr-code-preview .game-code-paper{width:190px;height:190px;padding:9px}
-.barcode-code-preview .game-code-paper{width:100%;height:166px;padding:10px 12px}
-.stacked-code-preview .game-code-paper{width:190px;height:190px;padding:9px}
-.stacked-code-preview .game-code-paper img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+/* Match white preview paper to symbol shape; preserve the 228px outer preview. */
+.square-code-preview .game-code-paper{width:min(100%,190px);height:190px;aspect-ratio:1;padding:8px}
+.wide-code-preview .game-code-paper{width:100%;height:166px;padding:10px 12px}
 .game-code-paper img{display:block;max-width:100%;max-height:100%;object-fit:contain}
-/* Code 128 is linear: horizontal stretching widens the bars without changing their order. */
-.barcode-code-preview .game-code-paper img{width:100%;height:100%;object-fit:fill;image-rendering:pixelated}
-/* Every game has the same 228px preview. The barcode fits the area, never changes its height. */
-.dotcode-code-preview .game-code-paper,.microqr-code-preview .game-code-paper{width:min(100%,190px);height:190px;padding:6px}
-.dotcode-code-preview .game-code-paper img,.microqr-code-preview .game-code-paper img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+.square-code-preview .game-code-paper img,.wide-code-preview .game-code-paper img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+/* Only linear barcodes use the full paper width; 2D codes are not distorted. */
+.barcode-code-preview .game-code-paper img{object-fit:fill}
 .game-code-caption{font-size:11px;line-height:1.2;color:#a8b8aa}
 .game-code-preview:hover .game-code-caption{color:var(--accent)}
 .barcode-note{display:block;color:#a8b3ab;font-size:11px;line-height:1.5;margin-top:12px}
