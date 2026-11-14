@@ -371,3 +371,12 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 
 /* Keep game result actions on one line except on small screens. */
 @media(max-width:700px){.detected-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}.detected-actions .btn{flex:1 1 140px}}
+
+/* rMQR is a thin rectangle. A square aim box makes phone users keep it too small. */
+#camera-panel[data-focus="rmqr"] .scan-graphic{width:min(90%,860px);height:auto;aspect-ratio:7.5/1;max-height:28%;opacity:.83}
+@media(max-width:700px), (pointer:coarse){
+ html.camera-open #camera-panel[data-focus="rmqr"] .scan-graphic{width:min(90vw,900px);max-height:28dvh}
+}
+@media(orientation:landscape) and (pointer:coarse){
+ html.camera-open #camera-panel[data-focus="rmqr"] .scan-graphic{width:min(88vw,1000px)}
+}
