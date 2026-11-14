@@ -86,37 +86,19 @@ textarea:focus{border-color:var(--accent);outline:none}textarea::placeholder{col
 .game-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .game-group{min-width:0;display:flex;flex-direction:column}.group-title{font-size:15px;color:#b0bdb2;margin:0 0 12px;font-weight:650}
 .game-card{min-width:0;overflow:hidden;display:flex;flex-direction:column;flex:1}
-.game-code-preview{height:228px;min-width:0;padding:15px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;background:#0d1510;border-bottom:1px solid var(--line);text-decoration:none;transition:background .15s}
+.game-code-preview{height:228px;flex-shrink:0;min-width:0;padding:7px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#0d1510;border-bottom:1px solid var(--line);text-decoration:none;transition:background .15s}
 .game-code-preview:hover{background:#152119}
-.game-code-paper{display:flex;align-items:center;justify-content:center;max-width:100%;overflow:hidden;border-radius:5px;background:#fff}
+.game-code-paper{display:flex;align-items:center;justify-content:center;max-width:100%;max-height:190px;flex-shrink:0;overflow:hidden;border-radius:5px;background:#fff}
 .qr-code-preview .game-code-paper{width:190px;height:190px;padding:9px}
-.barcode-code-preview .game-code-paper{width:min(100%,920px);height:208px;padding:12px 16px}
+.barcode-code-preview .game-code-paper{width:100%;height:166px;padding:10px 12px}
 .stacked-code-preview .game-code-paper{width:190px;height:190px;padding:9px}
 .stacked-code-preview .game-code-paper img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 .game-code-paper img{display:block;max-width:100%;max-height:100%;object-fit:contain}
 /* Code 128 is linear: horizontal stretching widens the bars without changing their order. */
 .barcode-code-preview .game-code-paper img{width:100%;height:100%;object-fit:fill;image-rendering:pixelated}
-/* Give scanners more real screen pixels while retaining each code's proportions. */
-.game-code-preview.barcode-code-preview{height:298px}
-.game-code-preview.dotcode-code-preview{height:370px}
-.game-code-preview.microqr-code-preview{height:318px}
-.dotcode-code-preview .game-code-paper{width:min(100%,322px);aspect-ratio:1;height:auto;padding:5px}
-.microqr-code-preview .game-code-paper{width:min(100%,264px);aspect-ratio:1;height:auto;padding:8px}
+/* Every game has the same 228px preview. The barcode fits the area, never changes its height. */
+.dotcode-code-preview .game-code-paper,.microqr-code-preview .game-code-paper{width:min(100%,190px);height:190px;padding:6px}
 .dotcode-code-preview .game-code-paper img,.microqr-code-preview .game-code-paper img{width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
-@media(max-width:700px){
-  .game-code-preview.barcode-code-preview{height:250px}
-  .barcode-code-preview .game-code-paper{height:166px;padding:9px 12px}
-  .game-code-preview.dotcode-code-preview{height:322px}
-  .dotcode-code-preview .game-code-paper{width:min(100%,266px)}
-  .game-code-preview.microqr-code-preview{height:304px}
-  .microqr-code-preview .game-code-paper{width:min(100%,250px)}
-}
-@media(max-width:380px){
-  .game-code-preview.dotcode-code-preview{height:302px}
-  .dotcode-code-preview .game-code-paper{width:min(100%,246px)}
-  .game-code-preview.microqr-code-preview{height:286px}
-  .microqr-code-preview .game-code-paper{width:min(100%,232px)}
-}
 .game-code-caption{font-size:11px;line-height:1.2;color:#a8b8aa}
 .game-code-preview:hover .game-code-caption{color:var(--accent)}
 .barcode-note{display:block;color:#a8b3ab;font-size:11px;line-height:1.5;margin-top:12px}

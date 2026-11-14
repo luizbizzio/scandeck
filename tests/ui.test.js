@@ -39,10 +39,12 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(css, /\.game-groups\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(css, /\.game-group--scan-wide|\.game-group--barcode\{order:|\.game-group--dotcode\{order:/);
   assert.doesNotMatch(html, /game-group--scan-wide/);
-  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:min\(100%,920px\)/);
+  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:100%;height:166px/);
   assert.match(css, /\.barcode-code-preview \.game-code-paper img\{width:100%;height:100%;object-fit:fill/);
-  assert.match(css, /\.dotcode-code-preview \.game-code-paper\{width:min\(100%,322px\);aspect-ratio:1/);
-  assert.match(css, /\.microqr-code-preview \.game-code-paper\{width:min\(100%,264px\);aspect-ratio:1/);
+  assert.match(css, /\.dotcode-code-preview \.game-code-paper,\.microqr-code-preview \.game-code-paper\{width:min\(100%,190px\);height:190px/);
+  assert.match(css, /\.game-code-preview\{height:228px;flex-shrink:0;/);
+  assert.match(css, /\.game-code-paper\{[^}]*max-height:190px;flex-shrink:0;/);
+  assert.doesNotMatch(css, /\.game-code-preview\.(?:barcode|dotcode|microqr)-code-preview\{height:/);
   assert.match(css, /@media\(max-width:700px\)/);
   assert.match(css, /\.stacked-code-preview \.game-code-paper\{width:190px;height:190px/);
   assert.doesNotMatch(html, /class="game-art/);
@@ -307,8 +309,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=57/);
-  assert.match(html,/src\/style\.css\?v=57/);
+  assert.match(html,/src\/app\.js\?v=58/);
+  assert.match(html,/src\/style\.css\?v=58/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
