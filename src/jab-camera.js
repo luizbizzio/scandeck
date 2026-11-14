@@ -50,12 +50,14 @@ export function decodeJabPixels(lib,image,{phase=0}={}){
  const {width,height,data}=image||{};
  if(!Number.isInteger(width)||!Number.isInteger(height)||width<65||height<65||
     width*height>2_100_000||data?.length!==width*height*4)return '';
- const color=coloredBounds(image);
- if(!color)return '';
+ // Isolate the white code card before running any global colour tests.
+ // Other colourful items on a phone's screen used to stretch the entire
+ // frame's colour bounds and reject an otherwise perfectly visible JAB.
  const card=findLightCard(image);
  const regions=[];
  if(card&&card.width>95&&card.height>95&&card.width*card.height<width*height*.96)
   regions.push(cropRgba(image,card));
+ if(!regions.length&&!coloredBounds(image))return '';
  regions.push(image);
  // One JAB version per frame on the first attempt. The Codebreaker is v2.
  // Wrong versions trigger a costly LDPC reduction on cold start, so distribute
