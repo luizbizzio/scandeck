@@ -893,7 +893,7 @@ function selectGenerator(format) {
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
   const ean=format==='ean13';
-  const script=['bar','rmqr','chromaqr','dotcode'].includes(format);
+  const script=['bar','jab','chromaqr','dotcode'].includes(format);
   $('create-label').textContent=ean?'Timing level (12 digits)':tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=ean?'299000124450':tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and endless loop with a shorter timer for each point). A generic interpreter runs the instructions. Not standalone JavaScript.':
@@ -901,7 +901,7 @@ function selectGenerator(format) {
     format==='micropdf417'?'MicroPDF417 stores a compact full HTML game. Keep all bars and both white margins sharp and inside the camera frame.':
     format==='dotcode'?'DotCode stores compressed JavaScript, with the interface supplied by ScanDeck. Its camera reader is experimental.':
     format==='ean13'?'EAN-13 stores a numeric timing level. ScanDeck runs the game rules, so this is Bytecode, not standalone JavaScript.':
-    format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
+    format==='jab'?'JAB Code stores JavaScript in an 8-color square. Keep the full white border visible when scanning. Its browser camera reader is experimental.':
     format==='pdf'?'PDF417 holds a compact, self-contained HTML game.':
     format==='data-matrix'?'Data Matrix works best with small self-contained HTML games.':
     format==='aztec'?'Aztec Code can store a compact HTML game.':format==='chromaqr'?'ChromaQR stores the entire JavaScript game across three RGB QR layers.':format==='iris'?'IRIS stores the full game in a colored circular symbol. Use ScanDeck to scan it.':'QR codes can store more game data.';
