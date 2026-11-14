@@ -476,7 +476,7 @@ test('all code previews open an in-page dialog headed with the barcode type',()=
   assert.match(css,/#code-image-dialog\.dotcode-viewer \.code-image-viewport\{width:100%;aspect-ratio:1/);
   assert.match(css,/#code-image-dialog\.dotcode-viewer #code-image-full\{width:100%;height:100%;/);
   assert.match(css,/padding:14px;background:#0c120f;border-radius:9px/);
-  assert.match(script,/classList\.remove\('dotcode-viewer'\)/);
+  assert.match(script,/classList\.remove\('dotcode-viewer','jab-code-viewer'\)/);
   assert.match(script,/querySelector\('\.group-title'\)/);
   assert.match(script,/querySelector\('\.about-code-heading h3'\)/);
   assert.doesNotMatch(script,/codeImageDialog\.classList\.toggle\('actual-size'\)/);
@@ -583,4 +583,13 @@ test('JAB replaces rMQR in the public game cards and focus controls',()=>{
  assert.match(script,/mode==='jab'\|\|autoJab/);
  assert.match(script,/requestBarcodeWorker\(jabPixels,'jab'/);
  assert.match(script,/generatorFormat==='jab'/);
+});
+
+test('JAB previews use a larger square and expand in the in-page image viewer',()=>{
+ const card=html.slice(html.indexOf('id="jab-games-heading"'),html.indexOf('id="iris-games-heading"'));
+ assert.match(card,/square-code-preview jab-code-preview/);
+ assert.doesNotMatch(card,/tight-code-preview/);
+ assert.match(css,/\.jab-code-preview \.game-code-paper\{width:min\(100%,204px\);height:204px/);
+ assert.match(script,/classList\.toggle\('jab-code-viewer'/);
+ assert.match(css,/#code-image-dialog\.jab-code-viewer #code-image-full/);
 });
