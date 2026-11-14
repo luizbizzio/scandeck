@@ -353,7 +353,7 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
     const {width,height,data}=pixels;
     if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
     const id=++barcodeSequence;
-    const timeout=mode==='jab'?4800:options.specialty==='rmqr'?7500:mode==='chroma'?6800:options.formats?.length===1?3000:2200;
+    const timeout=mode==='jab'?14000:options.specialty==='rmqr'?7500:mode==='chroma'?6800:options.formats?.length===1?3000:2200;
     const timer=setTimeout(stopBarcodeWorker,timeout);
     barcodePending.set(id,{resolve,timer,mode});
     try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
@@ -532,7 +532,7 @@ async function detectNativeFocused(mode,video){
   catch{return null}
 }
 async function cameraLoop(token){
-  let frame=0,slowDecodeBackoff=0,autoPdfPass=0;
+  let frame=0,slowDecodeBackoff=0,autoPdfPass=0,jabPass=0;
   // Reuse the capture surface. Native BarcodeDetector can work directly on video.
   const canvas=document.createElement('canvas');
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -568,7 +568,7 @@ async function cameraLoop(token){
             ctx.drawImage(video,0,0,canvas.width,canvas.height);
             if(mode==='jab'||autoJab){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-              const found=await requestBarcodeWorker(pixels,'jab',{phase:frame});
+              const found=await requestBarcodeWorker(pixels,'jab',{phase:jabPass++});
               const hit=found.find(x=>isGamePayload(x.text));
               if(live&&token===cameraToken&&hit&&await acceptPayload(hit.text,'camera','JABCode'))return;
             }else if(mode==='chromaqr'||autoChroma){
