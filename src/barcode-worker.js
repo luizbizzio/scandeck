@@ -86,6 +86,15 @@ self.onmessage=async({data:task})=>{
           if(more.some(hit=>hit.text)){hits=more;break}
         }
       }
+      // Rxing is an independent Rust decoder. Keep it rMQR-only and intermittent
+      // so a difficult camera scene cannot slow other barcode formats.
+      if(specialty==='rmqr'&&!hits.some(hit=>hit.text)&&specialtyPhase%3===0){
+        try{
+          const {readRxingRMQRFrame}=await import('./rmqr-rxing.js');
+          const alternative=await readRxingRMQRFrame(pixels,specialtyPhase);
+          if(alternative.length)hits=alternative;
+        }catch{/* Keep ZXing and AnyDCode available if Rxing cannot load. */}
+      }
       result=hits.filter(hit=>typeof hit.text==='string'&&hit.text.length).map(hit=>({text:hit.text,format:hit.format})).slice(0,2);
     }
   }catch{
