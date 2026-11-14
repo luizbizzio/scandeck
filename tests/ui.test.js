@@ -554,7 +554,8 @@ test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=
 });
 
 test('detected game exposes Play and View source as aligned direct buttons',()=>{
- const result=html.slice(html.indexOf('<section id="detected"'),html.indexOf('id="scan-games"'));
+ const start=html.indexOf('<section id="detected"');
+ const result=html.slice(start,html.indexOf('</section>',start));
  assert.match(result,/<div class="detected-actions"><button[^>]*id="play-detected"/);
  assert.match(result,/<button[^>]*id="inspect-detected"/);
  assert.doesNotMatch(result,/<details class="detected-more"/);
