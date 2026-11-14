@@ -800,7 +800,7 @@ async function readCatalogGame(name){
         const payload=(await response.text()).trim();
         if(!isGamePayload(payload))throw Error('The saved game data is invalid.');
         const game=await decodeGame(payload);
-        if(!['html','standalone','bytecode','maze','lights','microvm','micro','eanlevel'].includes(game.kind))
+        if(!['html','standalone','bytecode','maze','lights','microvm','micro','eanlevel','codebreaker'].includes(game.kind))
           throw Error('Unsupported embedded game program.');
         return game;
       }).catch(error=>{catalogPromises.delete(name);throw error});
