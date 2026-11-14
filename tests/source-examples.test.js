@@ -85,7 +85,10 @@ test('each gallery example decodes into readable source and Micro QR is identifi
     const decoded=await decodeGame(payload);
     assert.equal(typeof decoded.source,'string',game+' source is not text');
     assert.ok(decoded.source.length>0,game+' source is empty');
-    if(id==='timing-ean13'){
+    if(id==='dice-streak-micropdf417'){
+      assert.equal(decoded.kind,'html');
+      assert.equal(decoded.source,readFileSync(new URL('examples/dice-streak-micropdf417.html',root),'utf8').trim());
+    }else if(id==='timing-ean13'){
       assert.equal(decoded.kind,'eanlevel');
     }else if(id==='reflex-microqr'){
       assert.equal(decoded.kind,'microvm');

@@ -309,8 +309,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=64/);
-  assert.match(html,/src\/style\.css\?v=64/);
+  assert.match(html,/src\/app\.js\?v=65/);
+  assert.match(html,/src\/style\.css\?v=65/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -391,8 +391,8 @@ test('footer has the centered creator credit and keeps version 1.0.0',()=>{
   assert.match(css,/\.footer-credit\{justify-self:center/);
 });
 test('About correctly explains Full, Partial and Bytecode without changing the game count',()=>{
-  assert.match(html,/Five games contain a full HTML game/);
-  assert.match(html,/Five contain JavaScript/);
+  assert.match(html,/Six games contain a full HTML game/);
+  assert.match(html,/Four contain JavaScript/);
   assert.match(html,/Two are Bytecode/);
   assert.match(html,/legend-bytecode/);
 });

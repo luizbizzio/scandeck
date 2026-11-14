@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=64';
-import { gameDocument } from './runtime.js?v=64';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=65';
+import { gameDocument } from './runtime.js?v=65';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=64';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=65';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=64',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=65',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -87,7 +87,7 @@ void loadCodeSizes();
 async function acceptPayload(raw, mode='manual', format='') {
   try {
     const game = await decodeGame(raw);
-    if(format==='MicroPDF417'&&game.kind==='standalone'&&game.source.startsWith("s=0;document.write('<button id=b>ROLL"))game.title='Dice Streak';
+    if(format==='MicroPDF417'&&game.kind==='html'&&game.source.startsWith('<button onclick="r=Math.random()*6|0;'))game.title='Dice Streak';
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
     if(['QRCode','qr_code','CodablockF'].includes(format)&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
     if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('n=0;onclick=_=>n++'))game.title='Tap Rush';
@@ -420,7 +420,7 @@ async function readChromaImage(image){
   return decodeChromaPixels(image,(pixels,options)=>engine.readBarcodes(pixels,options));
 }
 function isGamePayload(text){
-  return /^(?:299000[0-9]{7}$|V1|LO:|SD1:|SDC:|SDB:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
+  return /^(?:299000[0-9]{7}$|V1|LO:|SDM:|SD1:|SDC:|SDB:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
 let exoticWorker=null,exoticSeq=0;
@@ -852,12 +852,12 @@ function selectGenerator(format) {
   document.querySelectorAll('[data-format]').forEach(x=>x.classList.toggle('selected',x.dataset.format===format));
   const tiny=format==='microqr';
   const ean=format==='ean13';
-  const script=['bar','rmqr','chromaqr','micropdf417','dotcode'].includes(format);
+  const script=['bar','rmqr','chromaqr','dotcode'].includes(format);
   $('create-label').textContent=ean?'Timing level (12 digits)':tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=ean?'299000124450':tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and endless loop with a shorter timer for each point). A generic interpreter runs the instructions. Not standalone JavaScript.':
     format==='bar'?'The Tap Rush example uses 22 encoded characters. Its JavaScript counter is in the barcode; ScanDeck provides the five-second timer. Larger barcodes may be hard to scan on phones.':
-    format==='micropdf417'?'MicroPDF417 holds a short JavaScript game. Keep the entire barcode sharp and inside the camera frame.':
+    format==='micropdf417'?'MicroPDF417 stores a compact full HTML game. Keep all bars and both white margins sharp and inside the camera frame.':
     format==='dotcode'?'DotCode stores compressed JavaScript, with the interface supplied by ScanDeck. Its camera reader is experimental.':
     format==='ean13'?'EAN-13 stores a numeric timing level. ScanDeck runs the game rules, so this is Bytecode, not standalone JavaScript.':
     format==='rmqr'?'rMQR is rectangular. Keep standalone JavaScript very short.':
@@ -878,7 +878,7 @@ $('use-example').addEventListener('click',async()=>{
   }else if(generatorFormat==='bar'){
     $('create-source').value='n=0;onclick=_=>n++';
   }else if(generatorFormat==='micropdf417'){
-    $('create-source').value="s=0;document.write('<button id=b>ROLL</button><p id=p>0');b.onclick=()=>{r=Math.random()*6|0;s=r?s+r+1:0;p.textContent=s?'SCORE '+s:'BUST'}";
+    $('create-source').value="<button onclick=\"r=Math.random()*6|0;s=r?s+r+1:0;p.textContent=s?'SCORE '+s:'BUST'\">ROLL</button><p id=p>0<script>s=0</script>";
   }else if(generatorFormat==='dotcode'){
     $('create-source').value="g=c.getContext('2d');p=s=z=0;o=-35;v=h=0;a=3.6;c.onclick=()=>z?(z=p=s=0,o=-35,a=3.6):p^=1;r=(k,x,y,w,h)=>{g.fillStyle=k;g.fillRect(x,y,w,h)};function f(t=0){d=h?Math.min(3,(t-h)/17):1;h=t;r('#122',0,0,240,360);if(!z){a+=.009*d;o+=a*d;if(o>360)o=-35,v=Math.random()*2|0,s++;if(o>288&&o<332&&v==p)z=1}r('#e67',35+v*120,o,45,32);r('#afa',40+p*120,300,35,35);g.fillStyle='#fff';g.font='19px system-ui';g.fillText(z?'CRASH - TAP TO RETRY':'DODGE '+s,10,23);requestAnimationFrame(f)}f()";
   }else if(generatorFormat==='ean13'){
@@ -943,8 +943,8 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packScript(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
-    if(generatorFormat==='micropdf417'&&new TextEncoder().encode(payload).length>150)throw Error('MicroPDF417 is limited to 150 encoded bytes. Shorten the JavaScript game.');
+    const payload=generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packMicroHtml(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    if(generatorFormat==='micropdf417'&&new TextEncoder().encode(payload).length>150)throw Error('MicroPDF417 is limited to 150 encoded bytes. Shorten the HTML game.');
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
     if(generatorFormat==='qr'){

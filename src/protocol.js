@@ -134,6 +134,18 @@ export async function packHtml(html) {
   if (packed.length > QR_LIMIT) throw new Error(`This game needs ${packed.length} QR characters. The maximum is ${QR_LIMIT}. Reduce the HTML.`);
   return packed;
 }
+// Short uncompressed HTML transport for tiny 2D codes (keeps the game standalone).
+export function packMicroHtml(input){
+  const source=String(input||'').trim();
+  if(!source||/[^\x20-\x7e]/.test(source)||
+    !/<(?:button|canvas|body|div|script|svg)\b/i.test(source)||
+    !/(?:<script\b|\bonclick\s*=)/i.test(source))
+    throw Error('MicroPDF417 needs a one-line executable HTML game.');
+  const payload='SDM:'+source;
+  if(new TextEncoder().encode(payload).length>150)
+    throw Error('MicroPDF417 supports up to 150 encoded bytes here. Shorten the HTML game.');
+  return payload;
+}
 export function packScript(script) {
   const source = script.trim();
   if (!source || /[^\x20-\x7e]/.test(source)) throw new Error('Code 128 supports printable ASCII. Put the script on a single line.');
@@ -166,7 +178,7 @@ export function packEanLevel(input){
 }
 export async function decodeGame(raw) {
   const trimmed = raw.trim();
-  const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') ? trimmed : trimmed.replace(/\s+/g, '');
+  const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') || trimmed.startsWith('SDM:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
   if(/^299000[0-9]{7}$/.test(value)){
     const payload=packEanLevel(value);
@@ -185,6 +197,13 @@ export async function decodeGame(raw) {
     const code=packMicroQuiz(value);
     const isMaze=code[3]==='M';
     return {title:isMaze?'Pocket Maze':'Micro Math',type:'MQ / MICRO QR',kind:isMaze?'maze':'bytecode',source:code.slice(3),payload:code,size:code.length};
+  }
+  if(value.startsWith('SDM:')){
+    const source=value.slice(4);
+    packMicroHtml(source);
+    return {title:source.startsWith('<button onclick="r=Math.random()*6|0;')?'Dice Streak':'Custom game',
+      type:'SDM / MICROPDF417',kind:'html',source,payload:value,
+      size:new TextEncoder().encode(source).length};
   }
   if(value.startsWith('SDC:')){
     const html=await inflateRaw(base85Decode(value.slice(4)));

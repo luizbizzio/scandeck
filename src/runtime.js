@@ -22,9 +22,10 @@ export function gameDocument(game) {
   }
   if (game.kind === 'html') {
     // The policy and optional presentation rules precede the self-contained game.
+    const dice=game.title==='Dice Streak'?'<style>:root{color-scheme:dark}body{margin:0;min-height:100dvh;background:#0b1410;color:#dff4e0;display:flex;align-items:center;justify-content:center;gap:18px;flex-direction:column;font:20px system-ui}button{border:0;border-radius:14px;background:#b8f37a;color:#122013;padding:19px 38px;font:800 24px system-ui;cursor:pointer}p{margin:0;font:750 28px system-ui}</style>':'';
     const brick=game.title==='Brick Rush'?
       '<style>body{margin:0;min-height:100dvh;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:11px;text-align:center;background:#0b1410;color:#d6f6c5;font:18px system-ui}h3{font-size:25px;margin:0;color:#c9f89e}p{margin:0;color:#d1e9d0}canvas{display:block;margin:8px auto;width:min(300px,90vw);height:auto;background:#15251b;border:1px solid #3d6749;border-radius:12px}</style>':'';
-    return CSP + brick + game.source;
+    return CSP + brick + dice + game.source;
   }
   if (game.kind === 'standalone') {
     const attrs=' data-title="'+escapeAttr(game.title||'Standalone Game')+'" data-hint="'+escapeAttr(game.instructions||'Tap to play')+'"';

@@ -26,6 +26,6 @@ test('MicroPDF417 Dice Streak decodes from camera-style RGBA pixels without a cu
   formats:['MicroPDF417'],tryHarder:true,tryRotate:true,tryDownscale:false,maxNumberOfSymbols:1
  });
  assert.ok(hits.some(hit=>hit.text===payload),'MicroPDF417 reader must recover every game byte');
- assert.ok(payload.startsWith('SDS:'),'The entire JavaScript game must be in the code, not a URL');
+ assert.ok(payload.startsWith('SDM:<button'),'The complete HTML game must be in the code, not a URL');
  assert.ok(payload.length<=150,'Keep bars readable by limiting MicroPDF417 payload size');
 });

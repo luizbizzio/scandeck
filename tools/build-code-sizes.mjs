@@ -30,7 +30,7 @@ for(const id of entries){
   const payload=bytes.toString('utf8');
   const completeness=payload.startsWith('V1')||/^299000[0-9]{7}$/.test(payload)?'bytecode'
     :payload.startsWith('SDS:')||payload.startsWith('SDJ:')||payload.startsWith('SDZ:')||payload.startsWith('SDB:')?'partial'
-    :payload.startsWith('IP3:')||payload.startsWith('SD1:')||payload.startsWith('SDH:')||payload.startsWith('SDC:')?'full'
+    :payload.startsWith('IP3:')||payload.startsWith('SD1:')||payload.startsWith('SDH:')||payload.startsWith('SDC:')||payload.startsWith('SDM:')?'full'
     :null;
   if(!completeness)throw Error('Unknown game encoding: '+id);
   if(completeness==='bytecode'&&!['reflex-microqr','timing-ean13'].includes(id))throw Error('Unexpected bytecode game: '+id);
