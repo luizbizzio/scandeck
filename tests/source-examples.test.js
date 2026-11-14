@@ -18,7 +18,7 @@ const examples=[
   ['PDF417','breakout-pdf417','Brick Rush'],
   ['EAN-13','timing-ean13','Perfect Timing'],
   ['Micro QR','reflex-microqr','Pocket Reflex'],
-  ['JAB Code','codebreaker-jab','Codebreaker'],
+  ['GS1 DataBar Expanded Stacked','codebreaker-databar','Codebreaker'],
   ['IRIS','iris-wire','Wire Crisis'],
   ['ChromaQR','chromaqr-chroma','Chroma Rush']
 ];
@@ -90,6 +90,9 @@ test('each gallery example decodes into readable source and Micro QR is identifi
       assert.equal(decoded.source,readFileSync(new URL('examples/dice-streak-micropdf417.html',root),'utf8').trim());
     }else if(id==='timing-ean13'){
       assert.equal(decoded.kind,'eanlevel');
+    }else if(id==='codebreaker-databar'){
+      assert.equal(decoded.kind,'codebreaker');
+      assert.equal(decoded.source,'SDCB7');
     }else if(id==='reflex-microqr'){
       assert.equal(decoded.kind,'microvm');
       assert.equal(decoded.source,'V1R4T3DIC+L0X');
@@ -106,7 +109,7 @@ test('source dialog reports Full for HTML, Partial for JavaScript and yellow Byt
   assert.match(app,/function getEmbeddingStatus\(game\)/);
   assert.match(app,/game\.kind==='html'\)return \{status:'full',label:'Full'/);
   assert.match(app,/status:'partial',label:'Partial',format:'JavaScript only'/);
-  assert.match(app,/status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'\?'EAN-13 numeric level':'VM instructions'/);
+  assert.match(app,/game.kind==='codebreaker'\?'GS1 Codebreaker rules'/);
   assert.match(app,/badge\.className='code-embedding code-embedding-'\+embedding\.status/);
   assert.match(app,/\$\('source-status-label'\)\.textContent=embedding\.label/);
   assert.match(css,/\.code-embedding-bytecode\{color:#f1d77d\}/);
