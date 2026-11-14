@@ -446,7 +446,7 @@ test('experimental upload processes full-resolution photos without discarding 2M
 
 test('dense experimental camera uses direct full and cropped sensor pixels, not stretched images',()=>{
  assert.match(script,/exoticCaptureRegion\(target\.width,target\.height,frame\)/);
- assert.match(script,/ctx\.getImageData\(roi\.left,roi\.top,roi\.width,roi\.height\)/);
+ assert.match(script,/draw\.getImageData\(roi\.left,roi\.top,roi\.width,roi\.height\)/);
  assert.match(script,/micropdf417:'Keep every bar and both white margins visible/);
 });
 
