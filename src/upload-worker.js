@@ -41,6 +41,18 @@ function capture(bitmap,ratio=1,maxPixels=2_100_000,maxEdge=2200){
   ctx.drawImage(bitmap,0,0,width,height);
   return ctx.getImageData(0,0,width,height);
 }
+function captureCenter(bitmap,fraction=.70){
+  const rw=bitmap.width*fraction,rh=bitmap.height*fraction;
+  const scale=Math.min(1.15,1920/Math.max(rw,rh),
+    Math.sqrt(1_900_000/(rw*rh)));
+  const width=Math.max(1,Math.floor(rw*scale));
+  const height=Math.max(1,Math.floor(rh*scale));
+  const canvas=new OffscreenCanvas(width,height);
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  ctx.drawImage(bitmap,(bitmap.width-rw)/2,(bitmap.height-rh)/2,
+    rw,rh,0,0,width,height);
+  return ctx.getImageData(0,0,width,height);
+}
 function cropBitmap(bitmap,mode,phase){
   const w=bitmap.width,h=bitmap.height;
   let rw,rh;
@@ -168,7 +180,7 @@ async function decodeFile(file,id){
       }
     }
     const normal=capture(bitmap,1,1_900_000,1920);
-    const center=capture(bitmap,.70,1_900_000,1920);
+    const center=captureCenter(bitmap);
     for(const format of ['codablockf','dotcode']){
       for(const image of [normal,center]){
         for(const phase of [2,0]){
