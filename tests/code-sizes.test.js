@@ -49,18 +49,18 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
   assert.equal(manifest['taprush-code128'].completeness,'partial');
   assert.equal(manifest['chromaqr-chroma'].completeness,'full');
   assert.equal(manifest['reflex-microqr'].payloadBytes,13);
-  assert.equal(manifest['taprush-code128'].payloadBytes,53);
+  assert.equal(manifest['taprush-code128'].payloadBytes,22);
   assert.equal(manifest['dice-streak-micropdf417'].completeness,'partial');
   assert.ok(manifest['dice-streak-micropdf417'].payloadBytes<=150);
 });
 
 test('one lightweight metadata request updates all sizes without decoding any images',()=>{
-  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=55'/);
+  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=56'/);
   assert.match(source,/function formatCodeSize\(/);
   assert.match(source,/querySelectorAll\('\.code-metadata\[data-code-asset\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-payload-size\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-png-size\]'\)/);
   assert.match(source,/if\(tab==='library'\)void loadCodeSizes\(\)/);
-  assert.match(html,/src="src\/app\.js\?v=55"/);
-  assert.match(html,/href="src\/style\.css\?v=55"/);
+  assert.match(html,/src="src\/app\.js\?v=56"/);
+  assert.match(html,/href="src\/style\.css\?v=56"/);
 });

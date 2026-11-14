@@ -56,12 +56,12 @@ for (const game of matrixGames) {
 
 // Preserve the full self-contained Snake in a 2D QR so it can be scanned.
 const snake=packScript(readFileSync(new URL('examples/snake-standalone.js',root),'utf8').trim());
-// Tap Rush is an independent JavaScript game, not compact interpreter bytecode.
-// Its compact source is encoded literally, including scoring and a 5-second timer.
+// Tap Rush stores its executable JavaScript counter; ScanDeck supplies the 5-second timer.
+// No URL or remote game data is stored in the barcode.
 const tapRush=packScript(readFileSync(new URL('examples/tap-rush-code128.js',root),'utf8').trim());
 for(const game of [
   {name:'snake-qr',payload:snake,format:'QRCode',scale:8},
-  {name:'taprush-code128',payload:tapRush,format:'Code128',scale:4}
+  {name:'taprush-code128',payload:tapRush,format:'Code128',scale:6}
 ]){
   const result=await writeBarcode(game.payload,{format:game.format,scale:game.scale});
   if(!result.image)throw Error(game.name+' PNG generation failed');

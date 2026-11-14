@@ -38,7 +38,8 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(html, /class="game-code-preview microqr-code-preview"/);
   assert.match(html, /class="game-group game-group--scan-wide game-group--barcode"/);
   assert.match(html, /class="game-group game-group--scan-wide game-group--dotcode"/);
-  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:min\(100%,850px\)/);
+  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:min\(100%,920px\)/);
+  assert.match(css, /\.barcode-code-preview \.game-code-paper img\{width:100%;height:100%;object-fit:fill/);
   assert.match(css, /\.dotcode-code-preview \.game-code-paper\{width:min\(100%,322px\);aspect-ratio:1/);
   assert.match(css, /\.microqr-code-preview \.game-code-paper\{width:min\(100%,264px\);aspect-ratio:1/);
   assert.match(css, /@media\(max-width:700px\)/);
@@ -246,7 +247,7 @@ test('Tap Rush is a five-second high-score challenge and its player shows a live
   assert.ok(html.includes('Tap as fast as you can for five seconds'));
   assert.ok(!html.includes('Make ten taps in three seconds'));
   assert.ok(script.includes('AS MANY TAPS AS YOU CAN IN 5 SECONDS'));
-  assert.ok(script.includes("game.source.startsWith('n=0;onclick=()=>n++||setTimeout')"),'Camera scans should get the correct Tap Rush title and scoreboard');
+  assert.ok(script.includes("game.source.startsWith('n=0;onclick=_=>n++')"),'Camera scans should get the correct Tap Rush title and scoreboard');
   const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes('sd-rush-count'));
   assert.ok(runtime.includes('sd-rush-clock'));
@@ -305,8 +306,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=55/);
-  assert.match(html,/src\/style\.css\?v=55/);
+  assert.match(html,/src\/app\.js\?v=56/);
+  assert.match(html,/src\/style\.css\?v=56/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{

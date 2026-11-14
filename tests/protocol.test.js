@@ -72,40 +72,31 @@ test('full independent Snake program is kept in a QR image rather than a giant C
   const png=readFileSync(new URL('../assets/snake-qr.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
-test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
+test('Code 128 contains the compact Tap Rush JavaScript tap counter',async()=>{
   const payload=readFileSync(new URL('../assets/taprush-code128.txt',import.meta.url),'utf8');
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
   assert.equal(payload,'SDS:'+source);
-  assert.equal(payload.length,53,'The five-second game must remain compact');
+  assert.equal(payload.length,22,'The encoded tap counter must remain compact');
   const game=await decodeGame(payload);
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,source);
   assert.match(game.source,/onclick/);
-  assert.match(game.source,/setTimeout/);
-  assert.match(game.source,/alert\(n\)/);
-  assert.doesNotMatch(game.source,/onclick=0/);
+  assert.doesNotMatch(game.source,/setTimeout/);
+  assert.equal(game.source,'n=0;onclick=_=>n++');
   assert.match(gameDocument(game),/setTimeout/);
   const png=readFileSync(new URL('../assets/taprush-code128.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
-test('Tap Rush scores every click for exactly five seconds using encoded JavaScript',()=>{
+test('Tap Rush counts every click and its runtime enforces five seconds',()=>{
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
-  const timers=[],scores=[];
-  const context={
-    setTimeout(fn,ms){timers.push({fn,ms});return timers.length;},
-    alert(score){scores.push(score)}
-  };
+  const context={};
   vm.runInNewContext(source,context,{timeout:500});
-  assert.equal(context.n,0);
   for(let click=1;click<=37;click++)context.onclick();
-  assert.equal(context.n,37,'All clicks count, not just the first ten');
-  assert.equal(timers.length,1,'First click starts exactly one timer');
-  assert.equal(timers[0].ms,5000,'Tap Rush lasts five seconds');
-  assert.deepEqual(scores,[],'The result is not shown early');
-  timers[0].fn();
-  assert.deepEqual(scores,[37],'The final result is the tap count');
-  assert.equal(typeof context.onclick,'function','The runtime disables input after receiving the final score');
-  assert.match(gameDocument({kind:'standalone',title:'Tap Rush',source}),/window\.__sdRushDone=true;window\.onclick=0;/);
+  assert.equal(context.n,37);
+  assert.doesNotMatch(source,/setTimeout|alert/);
+  const doc=gameDocument({kind:'standalone',title:'Tap Rush',source});
+  assert.ok(doc.includes('setTimeout(()=>{if(!window.__sdRushDone)window.alert(Number(window.n)||0)},5000)'));
+  assert.ok(doc.includes('window.__sdRushDone=true;window.onclick=0;'));
 });
 
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{
