@@ -593,3 +593,13 @@ test('DataBar displays a stacked code, not a square JAB preview',()=>{
  assert.match(card,/code-embedding-bytecode/);
  assert.match(card,/>Bytecode<\/span>/);
 });
+
+test('all 12 library formats are unique and DataBar bytecode is playable',()=>{
+ const groups=[...html.matchAll(/<h2 class="group-title" id="[^"]+">([^<]+)<\/h2>/g)].map(x=>x[1]);
+ assert.equal(groups.length,12);
+ assert.equal(new Set(groups).size,12,'A barcode symbology must not be repeated in ScanDeck');
+ assert.match(script,/kind==='codebreaker'/);
+ assert.match(script,/,'eanlevel','codebreaker'\]\.includes\(game\.kind\)/);
+ assert.match(script,/packCodebreakerDataBar\(input\)/);
+ assert.match(script,/decodeCodebreakerDataBar\(text\)/);
+});
