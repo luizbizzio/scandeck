@@ -38,6 +38,12 @@ test('JAB photo-like white card on dark camera background can be located',()=>{
  }
  const result=decodeJabPixels(jab,{width,height,data},{phase:0});
  assert.equal(result,payload);
+ // A colored app UI can surround the scan target without being part of it.
+ for(let y=10;y<55;y++)for(let x=18;x<145;x++){
+  const i=(y*width+x)*4;data[i]=245;data[i+1]=35;data[i+2]=98;
+ }
+ assert.equal(decodeJabPixels(jab,{width,height,data},{phase:0}),payload,
+  'Colored UI outside the white code card must not block JAB detection');
 });
 
 test('unrelated dark frames are not misidentified as JAB',()=>{
