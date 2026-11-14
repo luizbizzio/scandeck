@@ -7,6 +7,16 @@ const CSP = `<meta http-equiv="Content-Security-Policy" content="default-src 'no
 const shell = (body,attrs='',headExtra='') => '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + CSP + headExtra + '</head><body'+attrs+'>' + body + '</body></html>';
 const escapeAttr=x=>String(x||'').slice(0,180).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 export function gameDocument(game) {
+  if(game.kind==='codebreaker'){
+    // GS1 AI (91) carries only SDCB plus an attempt count; the shared
+    // Codebreaker interpreter keeps the original random secret and UP/DOWN rules.
+    const attempts=Number(String(game.source||'').slice(4));
+    if(!/^SDCB[1-9]$/.test(game.source)||!Number.isInteger(attempts))
+      throw Error('Invalid Codebreaker bytecode.');
+    const source="n=new Date%99;t="+attempts+
+      ";b.onclick=()=>b.innerText=a.value==n?'WIN':--t?t+(a.value<n?'UP':'DOWN'):'LOSE'";
+    return gameDocument({...game,kind:'standalone',title:'Codebreaker',source});
+  }
   if(game.kind==='eanlevel'){
     const data=String(game.source||'');
     if(!/^299000[0-9]{7}$/.test(data))throw Error('Invalid EAN-13 timing data.');
