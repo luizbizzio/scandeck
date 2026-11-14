@@ -1,10 +1,10 @@
-import { decodeGame, packHtml, packScript, packCodebreakerDataBar, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=76';
-import { gameDocument } from './runtime.js?v=76';
+import { decodeGame, packHtml, packScript, packCodebreakerDataBar, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=77';
+import { gameDocument } from './runtime.js?v=77';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
 import {decodeCodebreakerDataBar} from './databar.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=76';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=77';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr'];
@@ -26,7 +26,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=76',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=77',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -119,7 +119,9 @@ $('play-detected').addEventListener('click',()=>selectedGame&&playGame(selectedG
 function getEmbeddingStatus(game){
   if(game.kind==='html')return {status:'full',label:'Full',format:'HTML game',
     description:'The full HTML game and its JavaScript are stored inside the code.'};
-  if(['microvm','bytecode','maze','lights','eanlevel','codebreaker'].includes(game.kind))
+  if(game.kind==='codebreaker')return {status:'partial',label:'Partial',format:'Compact game rules',
+    description:'The barcode contains Codebreaker instructions and the number of guesses, not JavaScript. ScanDeck supplies the game runtime.'};
+  if(['microvm','bytecode','maze','lights','eanlevel'].includes(game.kind))
     return {status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'?'EAN-13 numeric level':game.kind==='codebreaker'?'GS1 Codebreaker rules':'VM instructions',
       description:'The symbol contains game instructions, not JavaScript. ScanDeck provides the interpreter and interface.'};
   return {status:'partial',label:'Partial',format:'JavaScript only',
@@ -135,7 +137,7 @@ function showGameSource(game,title=game.title){
   badge.querySelector('.code-tick').textContent=embedding.status==='bytecode'?'⌘':'✓';
   $('source-status-label').textContent=embedding.label;
   $('source-format').textContent=embedding.format;
-  $('source-description').textContent=embedding.description+' The text below is the actual decoded program, not a substitute example.';
+  $('source-description').textContent=embedding.description+(game.kind==='codebreaker'?' The text below is the exact instruction data decoded from the barcode.':' The text below is the actual decoded program, not a substitute example.');
   $('source-view').textContent=source;
   $('copy-source').textContent='Copy code';
   if(!$('source-dialog').open)$('source-dialog').showModal();
