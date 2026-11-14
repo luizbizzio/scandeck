@@ -18,7 +18,7 @@ const examples=[
   ['PDF417','breakout-pdf417','Brick Rush'],
   ['EAN-13','timing-ean13','Perfect Timing'],
   ['Micro QR','reflex-microqr','Pocket Reflex'],
-  ['rMQR','math-rmqr','Codebreaker'],
+  ['JAB Code','codebreaker-jab','Codebreaker'],
   ['IRIS','iris-wire','Wire Crisis'],
   ['ChromaQR','chromaqr-chroma','Chroma Rush']
 ];
