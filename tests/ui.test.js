@@ -127,7 +127,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/width:\{ideal:1920\}/);
   assert.match(script,/tryDownscale:false/);
   assert.match(script,/tryDenoise:true/);
-  assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
+  assert.match(script,/centeredIrisFrame\(video,frame%3===2,irisCanvas\)/);
   assert.match(script,/FOCUS_FORMATS/);
   for(const name of ['pdf417','micropdf417','ean13','databar','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
@@ -289,18 +289,20 @@ test('mobile and desktop scanner selectors contain every format exactly once and
   assert.match(script,/\$\('camera-mode'\)\.value=mode/);
   assert.match(script,/\$\('scan-mode'\)\.value=mode/);
 });
-test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames',()=>{
+test('Auto schedules color scans without starving standard formats',()=>{
  const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
  assert.ok(open.includes("show('camera-panel',true)"));
  assert.doesNotMatch(open,/await getScanner\(\)/);
  assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
- assert.match(script,/const autoIris=mode==='auto'&&frame%12===7/);
- assert.match(script,/const autoChroma=mode==='auto'&&frame%6===4/);
- assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
+ assert.match(script,/createAutoScanScheduler\(performance\.now\(\)\)/);
+ assert.match(script,/const plan=mode==='auto'\?scheduler\.next\(decodeStarted\):null/);
+ assert.match(script,/const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417'/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
- assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:canvas\)/);
- assert.match(html,/Auto \(all supported\)/);
+ assert.match(script,/const formats=FOCUS_FORMATS\[mode\]\?\[FOCUS_FORMATS\[mode\]\]:autoQuickFormats\(quickPass\+\+\)/);
+ assert.match(script,/scheduler\.report\(plan,performance\.now\(\),elapsed\)/);
+ assert.match(script,/readFocused\(lib,target,autoPdf\?'pdf417':mode,/);
+ assert.match(html,/Auto \(fast\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
   const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
@@ -312,8 +314,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=78/);
-  assert.match(html,/src\/style\.css\?v=78/);
+  assert.match(html,/src\/app\.js\?v=79/);
+  assert.match(html,/src\/style\.css\?v=79/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -457,7 +459,7 @@ test('exotic gallery pictures open the original PNG directly',()=>{
   assert.doesNotMatch(html,/id="scan-ready-dialog"/);
 });
 test('Auto lists all supported formats and retains dedicated color scan controls',()=>{
- assert.match(html,/Auto \(all supported\)/);
+ assert.match(html,/Auto \(fast\)/);
  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
  assert.ok(html.includes('<option value="iris">IRIS</option>'));
  assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
@@ -491,7 +493,7 @@ test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU u
  assert.match(upload,/for\(const format of \['DataBarExpStk','RMQRCode'\]\)/);
  assert.match(upload,/formats:\[format\],isPure:true/);
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
- assert.match(script,/slowDecodeBackoff=Math\.min\(320,Math\.max\(0,Math\.round\(\(elapsed-650\)\*\.18\)\)\)/);
+ assert.match(script,/slowDecodeBackoff=mode==='auto'&&plan!=='standard'\?0:/);
  assert.match(script,/frameRate:\{ideal:24,max:30\}/);
 });
 
@@ -546,8 +548,8 @@ test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML contr
 });
 
 test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=>{
- assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
- assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:canvas\)/);
+ assert.match(script,/const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417'/);
+ assert.match(script,/autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:target,focusCanvas\)/);
  assert.match(script,/detectNativeFocused\(autoPdf\?'pdf417':mode,video\)/);
  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
  assert.match(runtime,/const codeMarkup=game.title==='Codebreaker'/);
