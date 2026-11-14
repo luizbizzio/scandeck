@@ -11,8 +11,13 @@ self.onmessage=({data:job})=>{
   try{
     if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width*height>2_000_000)
       throw Error('Invalid camera image');
-    const grid={width,height,data:new Uint8Array(buffer)};
-    if(grid.data.length!==width*height*3)throw Error('Invalid RGB data');
+    const rgba=new Uint8ClampedArray(buffer);
+    if(rgba.length!==width*height*4)throw Error('Invalid RGBA data');
+    const rgb=new Uint8Array(width*height*3);
+    for(let src=0,dst=0;src<rgba.length;src+=4,dst+=3){
+      rgb[dst]=rgba[src];rgb[dst+1]=rgba[src+1];rgb[dst+2]=rgba[src+2];
+    }
+    const grid={width,height,data:rgb};
     // In camera captures the symbol occupies only part of the sensor.
     // Running the pure decoder on the entire square camera image first
     // repeatedly wastes time and assumes the code is already aligned.
