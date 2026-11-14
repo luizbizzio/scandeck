@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=72';
-import { gameDocument } from './runtime.js?v=72';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=73';
+import { gameDocument } from './runtime.js?v=73';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=72';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=73';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=72',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=73',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -278,7 +278,7 @@ const focusTips={
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
   microqr:'Move closer to the small Micro QR without cutting off the edges.',
-  rmqr:'Uses an independent rMQR detector. Keep the complete rectangular symbol visible.',
+  rmqr:'Turn your phone sideways. Fill most of the frame width with the entire code and keep the white margins sharp.',
   ean13:'Keep every EAN-13 bar and its white side margins visible.',
   pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.',
   micropdf417:'Keep every bar and both white margins visible. Try landscape if the code is small.',
