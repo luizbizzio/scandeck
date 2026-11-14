@@ -100,7 +100,7 @@ export async function decodeChromaPixels(image,readBarcode){
         const value=data[j*stride+channel]>pivot?255:0,o=j*4;
         plane[o]=value;plane[o+1]=value;plane[o+2]=value;plane[o+3]=255;
       }
-      const found=await readBarcode({width,height,data:plane},{formats:['QRCode'],maxNumberOfSymbols:1,tryHarder:true,tryRotate:true,tryInvert:false,tryDownscale:false});
+      const found=await readBarcode({width,height,data:plane},{formats:['QRCode'],maxNumberOfSymbols:1,tryHarder:pivot!==thresholds[0],tryRotate:true,tryInvert:false,tryDownscale:false});
       chunk=found?.find(x=>x.text)?.text||'';
       if(chunk)break;
     }

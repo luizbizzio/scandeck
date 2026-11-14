@@ -294,9 +294,9 @@ test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames'
  assert.ok(open.includes("show('camera-panel',true)"));
  assert.doesNotMatch(open,/await getScanner\(\)/);
  assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
- assert.match(script,/const autoIris=mode==='auto'&&frame%9===4/);
- assert.match(script,/const autoChroma=mode==='auto'&&frame%9===7/);
- assert.match(script,/const autoPdf=mode==='auto'&&frame%9===5/);
+ assert.match(script,/const autoIris=mode==='auto'&&frame%12===7/);
+ assert.match(script,/const autoChroma=mode==='auto'&&frame%6===4/);
+ assert.match(script,/const autoPdf=mode==='auto'&&frame%6===2/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
  assert.match(script,/autoPdf\?'pdf417':mode,frame/);
@@ -491,7 +491,7 @@ test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU u
  assert.match(upload,/for\(const format of \['RMQRCode'\]\)/);
  assert.match(upload,/formats:\[format\],isPure:true/);
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
- assert.match(script,/slowDecodeBackoff=elapsed>750/);
+ assert.match(script,/slowDecodeBackoff=Math\.min\(320,Math\.max\(0,Math\.round\(\(elapsed-650\)\*\.18\)\)\)/);
  assert.match(script,/frameRate:\{ideal:24,max:30\}/);
 });
 

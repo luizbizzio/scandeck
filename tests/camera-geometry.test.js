@@ -68,3 +68,12 @@ test('Auto capture stays bounded for sustained camera performance',()=>{
   const r0=focusedCrop(1920,1080,'rmqr',0),r1=focusedCrop(1920,1080,'rmqr',1);
   assert.ok(r0.width>0&&r0.height>0&&r1.width>0&&r1.height>0);
 });
+
+test('live camera processing has bounded pixel budgets for color and stacked formats',()=>{
+ for(const mode of ['auto','iris','chromaqr','pdf417','micropdf417','dotcode']){
+  const frame=captureDimensions(4032,3024,mode);
+  const limit=['iris','chromaqr'].includes(mode)?700_000:mode==='auto'?500_000:mode==='dotcode'?1_100_000:1_600_000;
+  assert.ok(frame.width*frame.height<=limit,'Excessive '+mode+' worker frame');
+ }
+ assert.ok(scanPause('auto')<scanPause('iris'));
+});

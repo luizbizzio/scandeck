@@ -228,7 +228,7 @@ function getIrisWorker(){
       const pending=irisPending.get(data?.id);
       if(!pending)return;
       clearTimeout(pending.timer);irisPending.delete(data.id);
-      if(++irisReads>=16&&irisPending.size===0){
+      if(++irisReads>=32&&irisPending.size===0){
         irisWorker.terminate();irisWorker=null;irisReads=0;
       }
       pending.resolve(typeof data.text==='string'?data.text:'');
@@ -310,7 +310,7 @@ addEventListener('resize',syncCameraLayout);
 addEventListener('orientationchange',syncCameraLayout);
 function centeredIrisFrame(video,full=false){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
-  const scale=full?Math.min(1,1200/Math.max(w,h),Math.sqrt(1_350_000/(w*h))):Math.min(1,1200/side);
+  const scale=full?Math.min(1,1100/Math.max(w,h),Math.sqrt(850_000/(w*h))):Math.min(1,960/side);
   const canvas=document.createElement('canvas');
   canvas.width=Math.max(1,Math.round((full?w:side)*scale));
   canvas.height=Math.max(1,Math.round((full?h:side)*scale));
@@ -338,7 +338,7 @@ function getBarcodeWorker(){
       clearTimeout(job.timer);barcodePending.delete(data.id);
       // WASM memory can grow with varied frame sizes over long camera sessions.
       // Recycle only after this job finishes, never while a decode is pending.
-      if(++barcodeReads>=40&&barcodePending.size===0){
+      if(++barcodeReads>=90&&barcodePending.size===0){
         barcodeWorker.terminate();barcodeWorker=null;barcodeReads=0;
       }
       job.resolve(job.mode==='chroma'?(typeof data.result==='string'?data.result:''):(Array.isArray(data.result)?data.result:[]));
@@ -353,7 +353,8 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
     const {width,height,data}=pixels;
     if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
     const id=++barcodeSequence;
-    const timer=setTimeout(stopBarcodeWorker,options.formats?.length===1?4500:2300);
+    const timeout=mode==='chroma'?6800:options.formats?.length===1?3000:2200;
+    const timer=setTimeout(stopBarcodeWorker,timeout);
     barcodePending.set(id,{resolve,timer,mode});
     try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
     catch{stopBarcodeWorker()}
@@ -543,9 +544,9 @@ async function cameraLoop(token){
             const native=await detectNativeFocused(mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
           }
-          const autoIris=mode==='auto'&&frame%9===4;
-          const autoChroma=mode==='auto'&&frame%9===7;
-          const autoPdf=mode==='auto'&&frame%9===5;
+          const autoIris=mode==='auto'&&frame%12===7;
+          const autoChroma=mode==='auto'&&frame%6===4;
+          const autoPdf=mode==='auto'&&frame%6===2;
           if(mode==='iris'||autoIris){
             // Preserve RGB channels; expensive IRIS scans run periodically in auto.
             const crop=centeredIrisFrame(video,frame%3===2);
@@ -571,9 +572,10 @@ async function cameraLoop(token){
                 result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,frame);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-                const formats=focused?[focused]:frame%3===0
+                const formats=focused?[focused]:frame%4===0
                   ?['QRCode','DataMatrix','Aztec','Code128','EAN13']
-                  :frame%3===1?['PDF417','MicroPDF417','RMQRCode','MicroQRCode']:['EAN13'];
+                  :frame%4===1?['PDF417','MicroPDF417']
+                  :frame%4===2?['RMQRCode','MicroQRCode']:['QRCode','DataMatrix','EAN13'];
                 result=(await lib.readBarcodes(pixels,{
                   ...wasmOptions,formats,tryHarder:false,tryDenoise:false,tryRotate:true
                 })).find(x=>isGamePayload(x.text));
@@ -591,13 +593,13 @@ async function cameraLoop(token){
             }
           }
           const elapsed=performance.now()-decodeStarted;
-          slowDecodeBackoff=elapsed>750
-            ?Math.min(800,slowDecodeBackoff+140)
-            :Math.max(0,slowDecodeBackoff-70);
-          frame++;
+          // Derive backoff from the most recent decode. Accumulating it across
+          // slow color scans made the scanner progressively slower over time.
+          slowDecodeBackoff=Math.min(320,Math.max(0,Math.round((elapsed-650)*.18)));
         }catch(error){
-          if(live&&token===cameraToken)status('Scanner error: '+error.message,true);
+          if(live&&token===cameraToken&&frame%20===0)status('Scanner error: '+error.message,true);
         }
+        frame++; // Keep Auto's format schedule moving even when a decoder fails.
       }
       if(live&&token===cameraToken)await delay(scanPause(scanFocus())+slowDecodeBackoff);
     }

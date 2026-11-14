@@ -48,3 +48,10 @@ test('Chroma Rush ChromaQR PNG independently decodes all three color channels',a
   const actual=await decodeChromaPixels(pngPixels('chromaqr-chroma.png'),readBarcodes);
   assert.equal(actual,expected);
 });
+
+test('ChromaQR camera tries a fast pass before expensive QR recovery',()=>{
+ const source=readFileSync(new URL('../src/chroma.js',import.meta.url),'utf8');
+ assert.match(source,/tryHarder:pivot!==thresholds\[0\]/);
+ const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
+ assert.match(app,/mode==='chroma'\?6800/);
+});
