@@ -13,11 +13,14 @@ mkdirSync(new URL('vendor/',root),{recursive:true});
 // Cache each reduced parity matrix inside the bundled worker module so the
 // first decode warms it and subsequent camera frames run without that work.
 const ldpcSource=readFileSync(new URL('../node_modules/@sythos/js_barcode_universal/src/js/jabcode/ldpc.js',import.meta.url),'utf8');
-const originalBlock='    const matrixA = createMatrixA(wc, wr, gross);\\n    const { matrix, rank } = gaussJordan(matrixA, gross, false);'.replaceAll('\\n','\\n');
+const originalBlock=[
+ '    const matrixA = createMatrixA(wc, wr, gross);',
+ '    const { matrix, rank } = gaussJordan(matrixA, gross, false);'
+].join("\n");
 if(!ldpcSource.includes(originalBlock))throw Error('Sythos LDPC code changed; update the cache patch');
 const optimizedLDPC=ldpcSource
  .replace('function decodeBlock(data, offset, wc, wr, gross) {',
-          'const decodedMatrices = new Map();\\nfunction decodeBlock(data, offset, wc, wr, gross) {'.replaceAll('\\n','\\n'))
+    ['const decodedMatrices = new Map();','function decodeBlock(data, offset, wc, wr, gross) {'].join("\n"))
  .replace(originalBlock,[
    '    const key = wc+":"+wr+":"+gross;',
    '    let reduced = decodedMatrices.get(key);',
@@ -26,7 +29,7 @@ const optimizedLDPC=ldpcSource
    '      decodedMatrices.set(key, reduced);',
    '    }',
    '    const { matrix, rank } = reduced;'
- ].join('\\n'.replace('\\n','\\n')));
+ ].join("\n"));
 await build({
  entryPoints:[new URL('../node_modules/@sythos/js_barcode_universal/src/js/jabcode/index.js',import.meta.url).pathname],
  outfile:new URL('../vendor/jabcode.js',import.meta.url).pathname,
