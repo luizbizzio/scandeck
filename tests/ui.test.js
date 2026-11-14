@@ -488,7 +488,7 @@ test('all code previews open an in-page dialog headed with the barcode type',()=
 
 test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU use',()=>{
  const upload=script.slice(script.indexOf('async function detectImage('),script.indexOf('async function uploadImage('));
- assert.match(upload,/for\(const format of \['RMQRCode'\]\)/);
+ assert.match(upload,/for\(const format of \['DataBarExpStk','RMQRCode'\]\)/);
  assert.match(upload,/formats:\[format\],isPure:true/);
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
  assert.match(script,/slowDecodeBackoff=Math\.min\(320,Math\.max\(0,Math\.round\(\(elapsed-650\)\*\.18\)\)\)/);
