@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=65';
-import { gameDocument } from './runtime.js?v=65';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=66';
+import { gameDocument } from './runtime.js?v=66';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=65';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=66';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=65',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=66',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -273,7 +273,7 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',micropdf417:'MicroPDF417',ean13:'EAN13',microqr:'MicroQRCode',rmqr:'RMQRCode'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Standard QR, barcodes and matrix codes. Select specialty formats manually.',
+  auto:'Standard formats including PDF417, plus periodic ChromaQR and IRIS scans. Use format focus if needed.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
@@ -504,7 +504,8 @@ async function readFocused(lib,source,mode,frame){
     tryRotate:true,
     retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
     specialty:mode==='rmqr'||mode==='maxicode'?mode:null,
-    retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%3===2
+    specialtyPhase:frame,
+    retryRotated:mode==='code128'?frame%3===0:mode==='maxicode'&&frame%3===2
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
@@ -542,24 +543,32 @@ async function cameraLoop(token){
             const native=await detectNativeFocused(mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
           }
-          if(mode==='iris'){
-            // IRIS is color-sensitive and benefits from the centered square source.
+          const autoIris=mode==='auto'&&frame%9===4;
+          const autoChroma=mode==='auto'&&frame%9===7;
+          const autoPdf=mode==='auto'&&frame%9===5;
+          if(mode==='iris'||autoIris){
+            // Preserve RGB channels; expensive IRIS scans run periodically in auto.
             const crop=centeredIrisFrame(video,frame%3===2);
             try{
               const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
               if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
             }finally{crop.width=crop.height=1}
           }else{
-            const size=captureDimensions(video.videoWidth,video.videoHeight,mode);
+            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':mode;
+            const size=captureDimensions(video.videoWidth,video.videoHeight,captureMode);
             if(canvas.width!==size.width||canvas.height!==size.height){
               canvas.width=size.width;canvas.height=size.height;
             }
             ctx.drawImage(video,0,0,canvas.width,canvas.height);
-            if(mode==='auto'||focused){
+            if(mode==='chromaqr'||autoChroma){
+              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              const chroma=await readCameraChroma(pixels);
+              if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
+            }else if(mode==='auto'||focused){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
-              if(['rmqr','pdf417','micropdf417','code128'].includes(mode)){
-                result=await readFocused(lib,canvas,mode,frame);
+              if(autoPdf||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
+                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,frame);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
                 const formats=focused?[focused]:frame%3===0
@@ -571,10 +580,6 @@ async function cameraLoop(token){
               }
               const raw=result?.text||result?.rawValue;
               if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
-            }else if(mode==='chromaqr'){
-              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-              const chroma=await readCameraChroma(pixels);
-              if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
               // No software zoom: direct image pixels preserve tiny bars and dots.
               // Alternate a full frame with two centered crops; the latter

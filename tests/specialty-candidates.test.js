@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {readBarcodes} from 'zxing-wasm';
-import {findLightCard,specialtyCandidates} from '../src/specialty-candidates.js';
+import {findLightCard,specialtyCandidates,isolateDarkSymbol} from '../src/specialty-candidates.js';
 
 function photoOf(png){
   const width=1500,height=1050,data=new Uint8ClampedArray(width*height*4);
@@ -33,6 +33,8 @@ for(const [name,format,mode] of [['math-rmqr','RMQRCode','rmqr']]){
   assert.ok(card,'The white card must be located without knowing its code');
   assert.ok(card.width<photo.width*.9,'Card should not be mistaken for the whole dark frame');
   const candidates=specialtyCandidates(photo,mode);
+  const isolated=isolateDarkSymbol(candidates[0].image);
+  assert.ok(isolated,'A clean rMQR photo must have an isolated module rectangle');
   assert.equal(candidates.length,4);
   assert.ok(candidates[0].image.width<candidates[0].image.height*8);
   assert.ok(candidates[1].image.width*candidates[1].image.height<=1_600_000);

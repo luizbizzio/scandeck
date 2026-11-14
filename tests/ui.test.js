@@ -289,15 +289,18 @@ test('mobile and desktop scanner selectors contain every format exactly once and
   assert.match(script,/\$\('camera-mode'\)\.value=mode/);
   assert.match(script,/\$\('scan-mode'\)\.value=mode/);
 });
-test('camera preview starts before WASM initialization; expensive experimental formats require focus',()=>{
-  const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
-  assert.ok(open.indexOf("show('camera-panel',true)")>=0);
-  assert.doesNotMatch(open,/await getScanner\(\)/,'Do not initialize heavy WASM on the UI thread during camera opening');
-  assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
-  assert.match(script,/if\(mode==='iris'\)/);
-  assert.match(script,/if\(mode==='chromaqr'\)/);
-  assert.doesNotMatch(script,/mode==='auto'&&frame%5===4/);
-  assert.match(html,/Auto \(standard codes\)/);
+test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames',()=>{
+ const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
+ assert.ok(open.includes("show('camera-panel',true)"));
+ assert.doesNotMatch(open,/await getScanner\(\)/);
+ assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
+ assert.match(script,/const autoIris=mode==='auto'&&frame%9===4/);
+ assert.match(script,/const autoChroma=mode==='auto'&&frame%9===7/);
+ assert.match(script,/const autoPdf=mode==='auto'&&frame%9===5/);
+ assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
+ assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
+ assert.match(script,/autoPdf\?'pdf417':mode,frame/);
+ assert.match(html,/Auto \(all supported\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
   const item=script.slice(script.indexOf('async function readCatalogGame'),script.indexOf("$('try-catch')"));
@@ -309,8 +312,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=65/);
-  assert.match(html,/src\/style\.css\?v=65/);
+  assert.match(html,/src\/app\.js\?v=66/);
+  assert.match(html,/src\/style\.css\?v=66/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -453,14 +456,14 @@ test('exotic gallery pictures open the original PNG directly',()=>{
   }
   assert.doesNotMatch(html,/id="scan-ready-dialog"/);
 });
-test('auto excludes ChromaQR decoding and keeps focused ChromaQR selection',()=>{
-  assert.match(html,/Auto \(standard codes\)/);
-  assert.doesNotMatch(html,/Auto \(standard codes \+ ChromaQR\)/);
-  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
-  assert.doesNotMatch(script,/mode==='auto'&&frame%5===4/);
+test('Auto lists all supported formats and retains dedicated color scan controls',()=>{
+ assert.match(html,/Auto \(all supported\)/);
+ assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
+ assert.ok(html.includes('<option value="iris">IRIS</option>'));
+ assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
+ assert.match(script,/await readCameraChroma\(pixels\)/);
+ assert.match(script,/await readIrisPixels\(/);
 });
-
-
 test('all code previews open an in-page dialog headed with the barcode type',()=>{
   assert.match(html,/id="code-image-dialog"/);
   assert.match(html,/id="code-image-full"/);

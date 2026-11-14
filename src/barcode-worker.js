@@ -43,7 +43,7 @@ self.onmessage=async({data:task})=>{
       const {decodeChromaPixels}=await import('./chroma.js');
       result=await decodeChromaPixels(pixels,(image,opts)=>zxing.readBarcodes(image,opts))||'';
     }else if(mode==='standard'){
-      const {retryRotated=false,retryBinarizer=false,specialty=null,...readOptions}=options||{};
+      const {retryRotated=false,retryBinarizer=false,specialty=null,specialtyPhase=0,...readOptions}=options||{};
       let hits=await zxing.readBarcodes(pixels,readOptions);
       if(!hits.some(hit=>hit.text)&&retryBinarizer){
         const binarizer=readOptions.binarizer==='LocalAverage'?'GlobalHistogram':'LocalAverage';
@@ -58,7 +58,10 @@ self.onmessage=async({data:task})=>{
       }
       if(!hits.some(hit=>hit.text)&&(specialty==='maxicode'||specialty==='rmqr')){
         const {specialtyCandidates}=await getSpecialtyPreprocessor();
-        for(const candidate of specialtyCandidates(pixels,specialty)){
+        // Split expensive rMQR variants across frames to avoid camera timeouts.
+        const candidates=specialtyCandidates(pixels,specialty);
+        const start=specialtyPhase%2*2;
+        for(const candidate of candidates.slice(start,start+2)){
           const more=await zxing.readBarcodes(candidate.image,{
             ...readOptions,...candidate.options,
             tryDownscale:false,tryDenoise:false,tryRotate:specialty==='rmqr',

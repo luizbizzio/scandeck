@@ -86,6 +86,25 @@ export function withWhiteBorder(image,ratio=.1){
   for(let y=0;y<height;y++)out.set(data.subarray(y*width*4,(y+1)*width*4),((y+pad)*w+pad)*4);
   return {width:w,height:h,data:out};
 }
+// Crop tightly around the dark module area, preserving a fresh white quiet zone.
+export function isolateDarkSymbol(image){
+  const {width:w,height:h,data}=image;
+  if(w<75||h<55||data.length!==w*h*4)return null;
+  const margin=Math.max(2,Math.floor(Math.min(w,h)*.035));
+  let left=w,top=h,right=0,bottom=0;
+  for(let y=margin;y<h-margin;y+=2)for(let x=margin;x<w-margin;x+=2){
+    const i=(y*w+x)*4,r=data[i],g=data[i+1],b=data[i+2];
+    if(Math.max(r,g,b)<147){
+      if(x<left)left=x;if(x>right)right=x;
+      if(y<top)top=y;if(y>bottom)bottom=y;
+    }
+  }
+  if(right-left<60||bottom-top<24)return null;
+  const inset=Math.max(2,Math.round(Math.min(right-left,bottom-top)*.018));
+  const x=Math.max(0,left-inset),y=Math.max(0,top-inset);
+  const width=Math.min(w,right+inset+3)-x,height=Math.min(h,bottom+inset+3)-y;
+  return withWhiteBorder(cropRgba(image,{x,y,width,height}),.055);
+}
 export function specialtyCandidates(image,format){
   if(format!=='maxicode'&&format!=='rmqr')return [];
   const card=findLightCard(image);
@@ -93,12 +112,15 @@ export function specialtyCandidates(image,format){
   const crop=cropRgba(image,card);
   if(crop.width<75||crop.height<55||crop.width*crop.height>1_600_000)return [];
   const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
-  if(format==='rmqr')return [
-    {image:crop,options:{isPure:true,binarizer:'LocalAverage'}},
-    {image:thresholdRgba(crop),options:{isPure:true,binarizer:'FixedThreshold'}},
-    {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
-    {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
-  ];
+  if(format==='rmqr'){
+    const isolated=isolateDarkSymbol(crop);
+    return [
+      {image:crop,options:{isPure:true,binarizer:'LocalAverage'}},
+      {image:thresholdRgba(crop),options:{isPure:true,binarizer:'FixedThreshold'}},
+      {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
+      {image:isolated?thresholdRgba(isolated):thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
+    ];
+  }
   return [
     {image:padded,options:{isPure:true,binarizer:'LocalAverage'}},
     {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
