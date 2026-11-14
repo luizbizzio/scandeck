@@ -61,7 +61,7 @@ for(const g of games){
       assert.equal(decodeCodablockF(matrix)?.text,payload);
     }else{
       const grid=pngGrid(g.asset,5,10);
-      assert.ok(Math.max(grid.width,grid.height)<=130,'DotCode must not be taller or wider than the previous code');
+      assert.ok(Math.max(grid.width,grid.height)<=115,'DotCode must not be taller or wider than the previous code');
       assert.equal(decodeDotCode(grid)?.text,payload,'Exact DotCode PNG must decode in the deployed reader');
       const decoded=PNG.sync.read(png);
       assert.ok(decoded.width*decoded.height<1_000_000,'The DotCode PNG should fit a normal camera frame');

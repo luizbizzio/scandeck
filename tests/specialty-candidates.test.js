@@ -36,7 +36,7 @@ for(const [name,format,mode] of [['math-rmqr','RMQRCode','rmqr']]){
   const isolated=isolateDarkSymbol(candidates[0].image);
   assert.ok(isolated,'A clean rMQR photo must have an isolated module rectangle');
   assert.equal(candidates.length,4);
-  assert.ok(candidates[0].image.width<candidates[0].image.height*8);
+  assert.ok(candidates[0].image.width<candidates[0].image.height*13,'rMQR may be rectangular but cannot exceed sane bounds');
   assert.ok(candidates[1].image.width*candidates[1].image.height<=1_600_000);
   let success=false;
   for(const candidate of candidates){

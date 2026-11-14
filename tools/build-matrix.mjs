@@ -42,7 +42,30 @@ for (const game of matrixGames) {
         const otherArea=otherImage.readUInt32BE(16)*otherImage.readUInt32BE(20);
         console.log('rMQR candidates: original '+payload.length+' chars / '+area+' px², compressed '+packed.length+' chars / '+otherArea+' px²');
         if(match&&otherArea<area){selectedPayload=packed;result=other}
-      }
+        // Zint defaults to the smallest area, which can create an R13x139
+    // extremely thin symbol. A slightly taller code with fewer columns
+    // is easier to locate and keep in focus on a phone.
+    const basePng=Buffer.from(await result.image.arrayBuffer());
+    const baseArea=basePng.readUInt32BE(16)*basePng.readUInt32BE(20);
+    let bestScore=Infinity,bestResult=result,bestVersion='auto';
+    const options=[null,30,31,32,26,27,21,22];
+    for(const version of options){
+      try{
+        const candidate=version===null?result:await writeBarcode(selectedPayload,{...opts,options:'version='+version});
+        if(!candidate?.image)continue;
+        const png=Buffer.from(await candidate.image.arrayBuffer());
+        const w=png.readUInt32BE(16),h=png.readUInt32BE(20),area=w*h;
+        if(area>baseArea*1.13)continue;
+        const hits=await readBarcodes(candidate.image,{formats:['RMQRCode'],tryHarder:true,maxNumberOfSymbols:1});
+        if(!hits.some(x=>x.text===selectedPayload))continue;
+        const ratio=Math.max(w,h)/Math.min(w,h);
+        const score=area*(1+Math.max(0,ratio-5.5)*.1);
+        if(score<bestScore){bestScore=score;bestResult=candidate;bestVersion=version??'auto'}
+      }catch{}
+    }
+    result=bestResult;
+    console.log('rMQR chosen version '+bestVersion+' / '+result.symbol.width+'×'+result.symbol.height+' modules');
+  }
     }catch(error){console.log('rMQR compressed candidate unavailable: '+error.message)}
   }
   if (!result.svg||!result.image) throw new Error(game.format+' did not produce SVG and PNG: '+JSON.stringify({error:result.error,keys:Object.keys(result)}));

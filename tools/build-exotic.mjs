@@ -62,9 +62,10 @@ const games=[
       const candidates=[fallback];
       const area=fallback.width*fallback.height;
       // DotCode requires a correctly decodable alternating-dot layout.
-      // Explore near-square dimensions instead of forcing a tall narrow strip.
-      for(let width=115;width<=161;width+=4){
-        for(const extra of [0,4,8]){
+      // Try near-square layouts too. A narrow 44x113 code is harder to photograph
+      // than a 70x75 symbol with the same encoded information.
+      for(let width=49;width<=Math.min(125,fallback.height);width+=3){
+        for(const extra of [0,3,6,9]){
           let height=Math.ceil(area*1.08/width)+extra;
           if((width+height)%2===0)height++;
           if(height>fallback.height||width>fallback.height)continue;
