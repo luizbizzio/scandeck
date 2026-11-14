@@ -29,11 +29,11 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Brick Rush | PDF417 |
 | Perfect Timing | EAN-13 |
 | Pocket Reflex | Micro QR |
-| Codebreaker | JAB Code |
+| Codebreaker | GS1 DataBar Expanded Stacked |
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-JAB Code is the Codebreaker format. Its PNG contains the full JavaScript game, not a link. ScanDeck uses the experimental 8-color JAB implementation in Sythos Barcode Universal 1.6.8 and a color-aware camera reader. JAB decoding currently requires a visible, approximately front-facing square and white margins; perspective, glare and strong color shifts can still cause camera failures. The JAB profile has not been independently verified against the official reference implementation, so it should not yet be treated as universal ISO-compatible JAB. MicroPDF417 uses ZXing; DotCode, IRIS and ChromaQR also have experimental readers. **A successful image upload does not prove real-camera reliability.**
+Codebreaker uses **GS1 DataBar Expanded Stacked**, a distinct stacked linear barcode. It stores `91SDCB7`: GS1 company-internal AI (91), ScanDeck's `SDCB` instruction and the number of guesses (7). It is **Bytecode**, not embedded JavaScript. ScanDeck supplies the local game interpreter, with the original random secret, UP/DOWN hints, WIN and LOSE. PNG generation uses ZXing-C++ (with BWIPP as a fallback) and **must pass a ZXing image-decoding test** at build time. Camera scanning remains dependent on focus and real-world tests; successful upload or build checks do not prove a mobile camera will read it. Older JAB and rMQR reader files are kept only for backwards compatibility, not offered in the game library. MicroPDF417 uses ZXing; DotCode, IRIS and ChromaQR have experimental readers.
 
 ## Run locally
 
