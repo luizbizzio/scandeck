@@ -14,7 +14,7 @@ const entries=[
   'breakout-pdf417',
   'timing-ean13',
   'reflex-microqr',
-  'math-rmqr',
+  'codebreaker-jab',
   'iris-wire',
   'chromaqr-chroma'
 ];
