@@ -101,5 +101,6 @@ test('rMQR alignment recovers small camera rotation before pure sampling',async(
  assert.ok(aligned.width*aligned.height<w*h,'Deskew output must isolate the real symbol');
  const decoded=await readBarcodes(aligned,{formats:['RMQRCode'],isPure:true,tryHarder:false,tryDownscale:false});
  const expected=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8');
+ console.log('rmqr deskew diagnostics',JSON.stringify({angle:aligned.estimatedAngle,expected:angle,w,h,alignedWidth:aligned.width,alignedHeight:aligned.height,pureHits:decoded.map(x=>x.text?.length)}));
  assert.ok(decoded.some(hit=>hit.text===expected),'Deskewed symbol must decode independently');
 });

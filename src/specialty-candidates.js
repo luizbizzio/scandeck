@@ -131,7 +131,9 @@ export function deskewDarkSymbol(image){
     const src=(iy*w+ix)*4,dst=(y*w+x)*4;
     out[dst]=data[src];out[dst+1]=data[src+1];out[dst+2]=data[src+2];
   }
-  return isolateDarkSymbol({width:w,height:h,data:out});
+  const aligned=isolateDarkSymbol({width:w,height:h,data:out});
+  if(aligned)aligned.estimatedAngle=angle;
+  return aligned;
 }
 
 export function specialtyCandidates(image,format){
