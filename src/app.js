@@ -389,6 +389,7 @@ async function startCamera() {
   }
   resetDetected();
   cancelUploadDecode();
+  ++uploadGeneration;
   const token=++cameraToken;
   $('start-camera').disabled=true;
   status('Opening camera...');
@@ -651,9 +652,9 @@ $('start-camera').addEventListener('click',startCamera);
 $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopped.')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCamera()});
 addEventListener('pagehide',stopCamera);
-let activeUploadWorker=null,uploadSequence=0,uploadGeneration=0;
+let activeUploadWorker=null,activeUploadCancel=null,uploadSequence=0,uploadGeneration=0;
 function cancelUploadDecode(){
-  if(activeUploadWorker){activeUploadWorker.terminate();activeUploadWorker=null}
+  if(activeUploadCancel)activeUploadCancel();
 }
 function decodeImageInWorker(file){
   return new Promise((resolve,reject)=>{
@@ -665,7 +666,9 @@ function decodeImageInWorker(file){
       if(complete)return;
       complete=true;clearTimeout(timer);
       worker.terminate();
-      if(activeUploadWorker===worker)activeUploadWorker=null;
+      if(activeUploadWorker===worker){
+        activeUploadWorker=null;activeUploadCancel=null;
+      }
       if(error)reject(error);else resolve(result);
     };
     const timer=setTimeout(()=>finish(new Error('Image processing timed out. Try a smaller image or a clear crop.')),45000);
@@ -678,6 +681,7 @@ function decodeImageInWorker(file){
       if(data.error){finish(new Error(data.error));return}
       finish(null,data.result||null);
     };
+    activeUploadCancel=()=>finish(new Error('Image scan cancelled.'));
     worker.onerror=()=>finish(new Error('Image reader failed. Please try a different image.'));
     worker.onmessageerror=()=>finish(new Error('Could not transfer the uploaded image.'));
     try{worker.postMessage({id,file})}catch(error){finish(error)}
