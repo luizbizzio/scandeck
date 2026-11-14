@@ -874,8 +874,9 @@ function selectGenerator(format) {
   const tiny=format==='microqr';
   const ean=format==='ean13';
   const script=['bar','chromaqr','dotcode'].includes(format);
-  $('create-label').textContent=ean?'Timing level (12 digits)':tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
-  $('create-source').placeholder=ean?'299000124450':tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
+  const databar=format==='databar';
+  $('create-label').textContent=databar?'Codebreaker rules (bytecode)':ean?'Timing level (12 digits)':tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
+  $('create-source').placeholder=databar?'SDCB7':ean?'299000124450':tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and endless loop with a shorter timer for each point). A generic interpreter runs the instructions. Not standalone JavaScript.':
     format==='bar'?'The Tap Rush example uses 22 encoded characters. Its JavaScript counter is in the barcode; ScanDeck provides the five-second timer. Larger barcodes may be hard to scan on phones.':
     format==='micropdf417'?'MicroPDF417 stores a compact full HTML game. Keep all bars and both white margins sharp and inside the camera frame.':
@@ -904,6 +905,8 @@ $('use-example').addEventListener('click',async()=>{
     $('create-source').value="g=c.getContext('2d');p=s=z=0;o=-35;v=h=0;a=3.6;c.onclick=()=>z?(z=p=s=0,o=-35,a=3.6):p^=1;r=(k,x,y,w,h)=>{g.fillStyle=k;g.fillRect(x,y,w,h)};function f(t=0){d=h?Math.min(3,(t-h)/17):1;h=t;r('#122',0,0,240,360);if(!z){a+=.009*d;o+=a*d;if(o>360)o=-35,v=Math.random()*2|0,s++;if(o>288&&o<332&&v==p)z=1}r('#e67',35+v*120,o,45,32);r('#afa',40+p*120,300,35,35);g.fillStyle='#fff';g.font='19px system-ui';g.fillText(z?'CRASH - TAP TO RETRY':'DODGE '+s,10,23);requestAnimationFrame(f)}f()";
   }else if(generatorFormat==='ean13'){
     $('create-source').value='299000124450';
+  }else if(generatorFormat==='databar'){
+    $('create-source').value='SDCB7';
   }else if(!['bar','chromaqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
@@ -964,7 +967,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packMicroHtml(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='databar'?packCodebreakerDataBar(input):generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packMicroHtml(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='micropdf417'&&new TextEncoder().encode(payload).length>150)throw Error('MicroPDF417 is limited to 150 encoded bytes. Shorten the HTML game.');
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
@@ -980,20 +983,26 @@ $('generate').addEventListener('click',async()=>{
     } else if(generatorFormat==='chromaqr'){
       const factory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       svg=displaySvg(chromaSvg(encodeChroma(factory,payload)));
-    } else if(generatorFormat==='jab'){
-      const {encodeJABCode,toColorImageData}=await import('../vendor/jabcode.js');
-      const matrix=encodeJABCode(new TextEncoder().encode(payload));
-      const margin=4,scale=12,image=toColorImageData(matrix,{scale,margin});
-      const edge=margin*scale,side=matrix.width*scale;
-      for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
-        if(x>=edge&&x<edge+side&&y>=edge&&y<edge+side)continue;
-        const i=(y*image.width+x)*4;
-        image.data[i]=image.data[i+1]=image.data[i+2]=image.data[i+3]=255;
+    } else if(generatorFormat==='databar'){
+      const lib=await getMatrixEngine();
+      const readOpts={formats:['DataBarExpStk','DataBarExp'],tryHarder:true,
+        tryDownscale:false,tryRotate:true,maxNumberOfSymbols:1};
+      for(const raw of ['('+payload.slice(0,2)+')'+payload.slice(2),
+        '['+payload.slice(0,2)+']'+payload.slice(2),payload]){
+        if(png)break;
+        for(const cols of [2,4,6]){
+          try{
+            const result=await lib.writeBarcode(raw,{format:'DataBarExpStk',
+              scale:8,addHRT:false,options:'columns='+cols});
+            if(!result.image)continue;
+            const found=await lib.readBarcodes(result.image,readOpts);
+            if(found.some(hit=>decodeCodebreakerDataBar(hit.text)?.payload===payload)){
+              png=result.image;break;
+            }
+          }catch{/* Try the next valid GS1 representation. */}
+        }
       }
-      const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
-      const ctx=canvas.getContext('2d');ctx.putImageData(new ImageData(image.data,image.width,image.height),0,0);
-      png=await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('JAB PNG conversion failed')),'image/png'));
-      canvas.width=canvas.height=1;
+      if(!png)throw Error('The GS1 DataBar barcode could not pass its ZXing image test.');
     } else if(generatorFormat==='dotcode'){
       const {encodeDotCode,toPNG}=await import('../vendor/sythos-barcode.esm.js');
       const matrix=encodeDotCode(payload,{aspectRatio:1});
