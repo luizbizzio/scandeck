@@ -65,10 +65,10 @@ main{flex:1}.page{display:none}.page.active{display:block}
 .status{font-size:12px;color:#b7dba6;margin-top:11px;overflow-wrap:anywhere;line-height:1.55}
 .status:has(#status-text:empty){display:none}.status.error{color:var(--danger)}
 .manual-entry,.advanced-output{margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
-.manual-entry summary,.advanced-output summary,.detected-more summary{cursor:pointer;list-style:none;display:inline-block;color:var(--muted);font-size:12px}
-.manual-entry summary:hover,.advanced-output summary:hover,.detected-more summary:hover{color:var(--text)}
-.manual-entry summary::after,.advanced-output summary::after,.detected-more summary::after{content:' +';color:var(--accent)}
-.manual-entry[open] summary::after,.advanced-output[open] summary::after,.detected-more[open] summary::after{content:' −'}
+.manual-entry summary,.advanced-output summary{cursor:pointer;list-style:none;display:inline-block;color:var(--muted);font-size:12px}
+.manual-entry summary:hover,.advanced-output summary:hover{color:var(--text)}
+.manual-entry summary::after,.advanced-output summary::after{content:' +';color:var(--accent)}
+.manual-entry[open] summary::after,.advanced-output[open] summary::after{content:' −'}
 .manual-inner,.advanced-inner{padding-top:14px}.manual-inner .btn,.advanced-inner .btn{margin-top:11px}
 .manual-entry,.manual-entry[open] .manual-inner,.manual-entry textarea{min-width:0;max-width:100%}
 .manual-entry[open] .manual-inner{width:100%}
@@ -81,7 +81,7 @@ textarea:focus{border-color:var(--accent);outline:none}textarea::placeholder{col
 .inline-link:hover{text-decoration-color:var(--accent)}
 .detected{max-width:900px;margin-top:18px;padding:23px 25px;display:flex;align-items:center;justify-content:space-between;gap:24px}
 .small-label{font:11px var(--mono);letter-spacing:.06em;color:var(--accent)}.detected h2{font-size:23px;letter-spacing:-.035em;margin:5px 0 2px}.detected p{color:var(--muted);font-size:13px;margin:0}
-.detected-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.detected-more{position:relative}.detected-more button{display:block;margin-top:8px}
+.detected>div:first-child{min-width:0}.detected-actions{display:flex;flex:0 0 auto;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:nowrap}.detected-actions .btn{margin:0;white-space:nowrap}.detected-actions #inspect-detected{min-height:45px}
 .meta{display:flex;gap:8px;margin-top:8px;font-size:12px;color:var(--muted)}
 .game-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .game-group{min-width:0;display:flex;flex-direction:column}.group-title{font-size:15px;color:#b0bdb2;margin:0 0 12px;font-weight:650}
@@ -368,3 +368,6 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 #code-image-dialog.dotcode-viewer #code-image-full{width:100%;height:100%;max-width:100%;max-height:none;object-fit:contain}
 
 @media(max-width:700px){#code-image-dialog{padding:12px}#code-image-dialog .dialog-head{flex-wrap:wrap}#code-image-dialog .source-dialog-actions{width:100%;justify-content:space-between}}
+
+/* Keep game result actions on one line except on small screens. */
+@media(max-width:700px){.detected-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}.detected-actions .btn{flex:1 1 140px}}
