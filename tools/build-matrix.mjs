@@ -20,7 +20,7 @@ const matrixGames=[
 
 for (const game of matrixGames) {
   const originalSource=readFileSync(new URL(game.input,root),'utf8').trim();
-  const source=game.kind==='html'?await compactGameHtml(originalSource):originalSource;
+  const source=game.kind==='html'||(game.kind===undefined&&originalSource.startsWith('<'))?await compactGameHtml(originalSource):originalSource;
   const payload=game.kind==='script'?packScript(source):game.kind==='microhtml'?packMicroHtml(source):game.kind==='ean'?packEanLevel(source):game.kind==='tiny'?source:
     'SD1:'+base43Encode(bestDeflateRaw(source));
   const max=game.max??1400;
