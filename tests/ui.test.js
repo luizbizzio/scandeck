@@ -34,6 +34,14 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(html, /class="game-code-preview qr-code-preview"/);
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
   assert.match(html, /class="game-code-preview stacked-code-preview"/);
+  assert.match(html, /class="game-code-preview dotcode-code-preview"/);
+  assert.match(html, /class="game-code-preview microqr-code-preview"/);
+  assert.match(html, /class="game-group game-group--scan-wide game-group--barcode"/);
+  assert.match(html, /class="game-group game-group--scan-wide game-group--dotcode"/);
+  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:min\(100%,850px\)/);
+  assert.match(css, /\.dotcode-code-preview \.game-code-paper\{width:min\(100%,322px\);aspect-ratio:1/);
+  assert.match(css, /\.microqr-code-preview \.game-code-paper\{width:min\(100%,264px\);aspect-ratio:1/);
+  assert.match(css, /@media\(max-width:700px\)/);
   assert.match(css, /\.stacked-code-preview \.game-code-paper\{width:190px;height:190px/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playMatrixExample\('dice-streak-micropdf417','Dice Streak','MicroPDF417'\)/);
@@ -297,8 +305,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=54/);
-  assert.match(html,/src\/style\.css\?v=54/);
+  assert.match(html,/src\/app\.js\?v=55/);
+  assert.match(html,/src\/style\.css\?v=55/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
