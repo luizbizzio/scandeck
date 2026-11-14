@@ -17,14 +17,19 @@ Code generation and real-phone decoding are different problems. A perfect downlo
 | QR Code, Data Matrix, Aztec, Micro QR | Standard decoder support, but game size and camera quality still matter |
 | Code 128 | Very wide when it contains a full JavaScript game. Keep both side margins visible |
 | PDF417 | Fine stacked bars. Dedicated mode retains more capture detail and tries a centered crop |
-| rMQR | Narrow rectangle. Dedicated mode tries a broad centered crop as well as the full frame |
+| JAB Code | Eight-color square. Scan from a straight angle with the whole white margin visible. Current detector is experimental |
 | MaxiCode | Best upright, frontal and sharp. Reliable camera reading is not guaranteed |
 | Codablock F | Experimental reader; full stacked code and clean straight lines are required |
 | DotCode | Experimental reader; dot spacing and perspective can cause failure |
 | IRIS | Experimental ring/color detection. Use even light and a centered symbol |
 | ChromaQR | RGB planes are affected by screen brightness, camera white balance and blur |
 
-Standard Auto mode includes intermittent ChromaQR scans but not IRIS, Codablock F or DotCode. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
+Auto mode includes periodic JAB and ChromaQR attempts, plus occasional IRIS scans. Codablock F and DotCode require dedicated focus. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
+
+
+## JAB Code (Codebreaker)
+
+The Codebreaker game is now stored in a real 8-color JAB Code image. The build generates `assets/codebreaker-jab.png` and checks that reading its pixels returns the exact saved JavaScript payload. ScanDeck's experimental JAB decoder looks for a white code card, estimates the square module bounds and tries small legal symbol versions. It does not look up the game's name or payload from an image. Codebreaker fits a 25×25-module single symbol. Camera focus and color balance still matter; upload and simulated-photo tests do not prove reliable scanning on real phone cameras. The JAB library implements a limited default-mode profile, and third-party interoperability remains unverified.
 
 ## Test reports
 
@@ -34,7 +39,7 @@ See [QA_CHECKLIST.md](QA_CHECKLIST.md) for full test cases.
 
 ## Color code display
 
-IRIS and ChromaQR previews and downloads use PNG. If a vector preview scans and the PNG does not, compare the displayed sizes before changing the decoder. A vector source improves image sharpness but does not eliminate camera color calibration issues.
+JAB, IRIS and ChromaQR previews and downloads use PNG. If a vector preview scans and the PNG does not, compare the displayed sizes before changing the decoder. A vector source improves image sharpness but does not eliminate camera color calibration issues.
 
 ## DotCode interoperability
 
@@ -50,7 +55,7 @@ The Codablock F generator tries multiple row counts and chooses a balanced layou
 
 The latest samples store their original executable sources as DEFLATE plus Z85 text (`SDB` for standalone JavaScript and `SDC` for complete HTML). This reduces barcode density without converting the content into a URL or a server-side game lookup. ScanDeck also decodes older base64 (`SDZ`, `SDH`) and original (`SDS`, `SD1`) payloads.
 
-## rMQR and MaxiCode practical limits
+## Legacy rMQR and MaxiCode practical limits
 
 The rMQR writer compared raw JavaScript byte mode (147 characters) against an uppercase alphanumeric compressed representation (197 characters). Both generated the same pixel area (432432 square pixels at the configured scale), so the smaller text representation was retained. That is the actual symbol choice, not a claim that compression never works for other programs.
 
@@ -86,13 +91,13 @@ The experimental DotCode and Codablock F camera modes now retain nearly 2 MP of 
 
 ## Sustained camera performance and Auto mode
 
-Auto scans only standard formats. ChromaQR uses its explicit focus option. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
+Auto scans standard formats with periodic focused JAB, ChromaQR and IRIS passes. Color scans use dedicated workers rather than ZXing's grayscale reader. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
 
 ## Independent Codablock F interoperability audit
 
 The independent BWIPP encoder can generate a standards-based Codablock F with the full game if `columns` is at least 18, but the Sythos clean-raster decoder does not read even a small BWIPP reference. A 615-character payload exceeds BWIPP's default 10-column symbol capacity. This is a **real interoperability gap** and a same-library round-trip does not establish third-party scanner compatibility. The public first-party PNG continues using the Sythos writer and strict reader until a compatible third-party decoder is implemented, avoiding a broken on-site scan. `node tools/probe-codablock.mjs` is an optional diagnostic, not run on every deployment. The Snake source is also minimized separately, preserving swipe, arrow input, collision, scoring, food and restart.
 
-## MaxiCode and rMQR full-frame camera detection
+## Legacy MaxiCode and rMQR camera detection
 
 ZXing-C++ only partially supports reading MaxiCode and does not offer a general-purpose arbitrary-scene MaxiCode detector. The ZXing MaxiCode reader expects an almost pure, unrotated, flat code image. ScanDeck now uses a separate camera preprocessing pass to find a pale code card via connected-component analysis, crop the card without changing its module geometry, and try both original pixels and Otsu-binarized pixels. MaxiCode uses a pure-aligned read for the second pass; rMQR first uses normal locator-based reading and then tests a near-pure candidate. No fixed sample payload or known image hash is used. Preprocessing runs inside the worker and only after the normal focused decoder fails. Mobile camera tests remain required.
 
