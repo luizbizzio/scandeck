@@ -275,7 +275,7 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',micropdf417:'MicroPDF417',ean13:'EAN13',microqr:'MicroQRCode',rmqr:'RMQRCode',databar:'DataBarExpStk'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Standard formats, including GS1 DataBar, plus periodic ChromaQR and IRIS scans. Use format focus if needed.',
+  auto:'Prioritizes QR and standard codes, with periodic PDF417, ChromaQR and IRIS. For DotCode, select DotCode focus.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
