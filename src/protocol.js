@@ -1,4 +1,6 @@
 import {parseMicroProgram} from './microvm.js?v=26';
+import {decodeCodebreakerDataBar,packCodebreakerDataBar} from './databar.js';
+export {packCodebreakerDataBar};
 /** ScanDeck wire formats. No code execution happens in this module. */
 export const ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ$*+-./:';
 export const QR_LIMIT = 4296; // Version 40, level L, alphanumeric mode (theoretical maximum).
@@ -180,6 +182,10 @@ export async function decodeGame(raw) {
   const trimmed = raw.trim();
   const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') || trimmed.startsWith('SDM:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
+  const codebreaker=decodeCodebreakerDataBar(value);
+  if(codebreaker)return {title:'Codebreaker',type:'GS1 DATABAR EXPANDED STACKED / BYTECODE',
+    kind:'codebreaker',source:codebreaker.source,payload:codebreaker.payload,
+    size:codebreaker.payload.length,attempts:codebreaker.tries};
   if(/^299000[0-9]{7}$/.test(value)){
     const payload=packEanLevel(value);
     return {title:'Perfect Timing',type:'EAN-13 / TIMING LEVEL',kind:'eanlevel',source:payload,payload,size:payload.length};
