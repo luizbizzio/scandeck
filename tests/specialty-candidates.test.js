@@ -83,7 +83,7 @@ test('rMQR pure-code fallback works when a white page swallows the white card bo
 
 test('rMQR alignment recovers small camera rotation before pure sampling',async()=>{
  const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));
- const angle=8*Math.PI/180,w=png.width+120,h=png.height+120;
+ const angle=8*Math.PI/180,w=Math.ceil(png.width+Math.sin(angle)*png.height+140),h=Math.ceil(png.height+Math.sin(angle)*png.width+140);
  const out=new Uint8ClampedArray(w*h*4).fill(255);
  const cx=(w-1)/2,cy=(h-1)/2,ox=(png.width-1)/2,oy=(png.height-1)/2;
  // A front-on barcode photographed with a slightly rotated phone.
