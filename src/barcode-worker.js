@@ -68,7 +68,7 @@ self.onmessage=async({data:task})=>{
       if(!hits.some(hit=>hit.text)&&(specialty==='maxicode'||specialty==='rmqr')){
         const {specialtyCandidates}=await getSpecialtyPreprocessor();
         // Split expensive rMQR variants across frames to avoid camera timeouts.
-        const candidates=specialtyCandidates(pixels,specialty);
+        const candidates=specialtyCandidates(pixels,specialty,specialtyPhase);
         const start=specialtyPhase%2*2;
         for(const candidate of candidates.slice(start,start+2)){
           const more=await zxing.readBarcodes(candidate.image,{

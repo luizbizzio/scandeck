@@ -132,12 +132,10 @@ export function deskewDarkSymbol(image,angleOffset=0){
     const src=(iy*w+ix)*4,dst=(y*w+x)*4;
     out[dst]=data[src];out[dst+1]=data[src+1];out[dst+2]=data[src+2];
   }
-  const aligned=isolateDarkSymbol({width:w,height:h,data:out});
-  if(aligned)aligned.estimatedAngle=angle;
-  return aligned;
+  return isolateDarkSymbol({width:w,height:h,data:out});
 }
 
-export function specialtyCandidates(image,format){
+export function specialtyCandidates(image,format,phase=0){
   if(format!=='maxicode'&&format!=='rmqr')return [];
   let card=findLightCard(image);
   if(!card&&format==='rmqr'){
@@ -156,12 +154,16 @@ export function specialtyCandidates(image,format){
   const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
   if(format==='rmqr'){
     const isolated=isolateDarkSymbol(crop)||crop;
-    const straightened=deskewDarkSymbol(isolated);
+    // rMQR's finder sampler tolerates slight residual skew better than its
+    // pure sampler. Cycle a small angular correction across camera frames.
+    const offset=phase%4===1?-.012:phase%4===3?.012:0;
+    const straightened=deskewDarkSymbol(isolated,offset);
     return [
       {image:isolated,options:{isPure:true,binarizer:'LocalAverage'}},
       {image:thresholdRgba(isolated),options:{isPure:true,binarizer:'FixedThreshold'}},
       {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
-      {image:thresholdRgba(straightened||padded),options:{isPure:true,binarizer:'FixedThreshold'}}
+      straightened?{image:straightened,options:{isPure:false,binarizer:'LocalAverage'}}
+        :{image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
     ];
   }
   return [
