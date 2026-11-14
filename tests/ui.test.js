@@ -33,7 +33,7 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   }
   assert.match(html, /class="game-code-preview qr-code-preview square-code-preview"/);
   assert.match(html, /class="game-code-preview barcode-code-preview wide-code-preview"/);
-  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview"/);
+  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview tight-code-preview"/);
   assert.match(html, /class="game-code-preview dotcode-code-preview square-code-preview"/);
   assert.match(html, /class="game-code-preview microqr-code-preview square-code-preview"/);
   assert.match(css, /\.game-groups\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
@@ -47,7 +47,7 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   assert.match(css, /\.game-code-paper\{[^}]*max-height:190px;flex-shrink:0;/);
   assert.doesNotMatch(css, /\.game-code-preview\.(?:barcode|dotcode|microqr)-code-preview\{height:/);
   assert.match(css, /@media\(max-width:700px\)/);
-  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview"/);
+  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview tight-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playMatrixExample\('dice-streak-micropdf417','Dice Streak','MicroPDF417'\)/);
   assert.match(script, /playMatrixExample\('taprush-code128','Tap Rush','Code128'\)/);
