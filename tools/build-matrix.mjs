@@ -7,6 +7,7 @@ const root=new URL('../',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);
 mkdirSync(new URL('assets/',root),{recursive:true});
 mkdirSync(new URL('vendor/zxing-wasm/',root),{recursive:true});
+mkdirSync(new URL('vendor/rxing-wasm/',root),{recursive:true});
 
 const matrixGames=[
   {input:'examples/dice-streak-micropdf417.html',output:'dice-streak-micropdf417',format:'MicroPDF417',kind:'microhtml',max:150},
@@ -110,4 +111,10 @@ for(const game of [
 copyFileSync(new URL('node_modules/zxing-wasm/dist/iife/full/index.js',root),new URL('vendor/zxing-wasm/index.js',root));
 copyFileSync(new URL('node_modules/zxing-wasm/dist/full/zxing_full.wasm',root),new URL('vendor/zxing-wasm/zxing_full.wasm',root));
 copyFileSync(new URL('node_modules/qrcode-generator/dist/qrcode.js',root),new URL('vendor/qrcode-generator.js',root));
+for(const name of ['rxing_wasm.js','rxing_wasm_bg.js','rxing_wasm_bg.wasm']){
+ copyFileSync(new URL('node_modules/rxing-wasm/'+name,root),
+  new URL('vendor/rxing-wasm/'+name,root));
+}
+console.log('Rxing WASM rMQR fallback bundled locally');
+
 console.log('ZXing WASM and QR creator: local browser files prepared');
