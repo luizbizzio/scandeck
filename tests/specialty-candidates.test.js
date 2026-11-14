@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {readBarcodes} from 'zxing-wasm';
-import {findLightCard,specialtyCandidates,isolateDarkSymbol} from '../src/specialty-candidates.js';
+import {findLightCard,specialtyCandidates,isolateDarkSymbol,deskewDarkSymbol} from '../src/specialty-candidates.js';
 
 function photoOf(png){
   const width=1500,height=1050,data=new Uint8ClampedArray(width*height*4);
@@ -79,4 +79,27 @@ test('rMQR pure-code fallback works when a white page swallows the white card bo
  const expected=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8');
  const results=await readBarcodes(candidates[0].image,{formats:['RMQRCode'],isPure:true,tryHarder:false,tryRotate:true});
  assert.ok(results.some(x=>x.text===expected),'isolated code must be decoded from its camera-like white background');
+});
+
+test('rMQR alignment recovers small camera rotation before pure sampling',async()=>{
+ const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));
+ const angle=8*Math.PI/180,w=png.width+120,h=png.height+120;
+ const out=new Uint8ClampedArray(w*h*4).fill(255);
+ const cx=(w-1)/2,cy=(h-1)/2,ox=(png.width-1)/2,oy=(png.height-1)/2;
+ // A front-on barcode photographed with a slightly rotated phone.
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+  const dx=x-cx,dy=y-cy;
+  const sx=Math.round(ox+Math.cos(angle)*dx+Math.sin(angle)*dy);
+  const sy=Math.round(oy-Math.sin(angle)*dx+Math.cos(angle)*dy);
+  if(sx<0||sy<0||sx>=png.width||sy>=png.height)continue;
+  const from=(sy*png.width+sx)*4,to=(y*w+x)*4;
+  out[to]=png.data[from];out[to+1]=png.data[from+1];out[to+2]=png.data[from+2];
+ }
+ const rotated={width:w,height:h,data:out};
+ const aligned=deskewDarkSymbol(rotated);
+ assert.ok(aligned,'8-degree rotation must produce a deskew candidate');
+ assert.ok(aligned.width*aligned.height<w*h,'Deskew output must isolate the real symbol');
+ const decoded=await readBarcodes(aligned,{formats:['RMQRCode'],isPure:true,tryHarder:false,tryDownscale:false});
+ const expected=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8');
+ assert.ok(decoded.some(hit=>hit.text===expected),'Deskewed symbol must decode independently');
 });

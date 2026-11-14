@@ -105,6 +105,35 @@ export function isolateDarkSymbol(image){
   const width=Math.min(w,right+inset+3)-x,height=Math.min(h,bottom+inset+3)-y;
   return withWhiteBorder(cropRgba(image,{x,y,width,height}),.055);
 }
+// Recover small camera tilt before ZXing's pure rMQR sampler. Unlike tryRotate,
+// which handles quarter-turns, this corrects angles such as 6 or 10 degrees.
+export function deskewDarkSymbol(image){
+  const {width:w,height:h,data}=image;
+  if(w<90||h<60||w*h>1_600_000)return null;
+  let n=0,sx=0,sy=0,sxx=0,syy=0,sxy=0;
+  for(let y=0;y<h;y+=3)for(let x=0;x<w;x+=3){
+    const k=(y*w+x)*4;
+    if(Math.max(data[k],data[k+1],data[k+2])>=148)continue;
+    n++;sx+=x;sy+=y;sxx+=x*x;syy+=y*y;sxy+=x*y;
+  }
+  if(n<150)return null;
+  const mx=sx/n,my=sy/n;
+  let angle=.5*Math.atan2(2*(sxy/n-mx*my),sxx/n-mx*mx-(syy/n-my*my));
+  if(angle>Math.PI/4)angle-=Math.PI/2;
+  if(angle<-Math.PI/4)angle+=Math.PI/2;
+  if(Math.abs(angle)<.025||Math.abs(angle)>.30)return null;
+  const cosine=Math.cos(angle),sine=Math.sin(angle),cx=(w-1)/2,cy=(h-1)/2;
+  const out=new Uint8ClampedArray(data.length).fill(255);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    const dx=x-cx,dy=y-cy;
+    const ix=Math.round(cx+cosine*dx-sine*dy),iy=Math.round(cy+sine*dx+cosine*dy);
+    if(ix<0||iy<0||ix>=w||iy>=h)continue;
+    const src=(iy*w+ix)*4,dst=(y*w+x)*4;
+    out[dst]=data[src];out[dst+1]=data[src+1];out[dst+2]=data[src+2];
+  }
+  return isolateDarkSymbol({width:w,height:h,data:out});
+}
+
 export function specialtyCandidates(image,format){
   if(format!=='maxicode'&&format!=='rmqr')return [];
   let card=findLightCard(image);
@@ -124,11 +153,12 @@ export function specialtyCandidates(image,format){
   const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
   if(format==='rmqr'){
     const isolated=isolateDarkSymbol(crop)||crop;
+    const straightened=deskewDarkSymbol(isolated);
     return [
       {image:isolated,options:{isPure:true,binarizer:'LocalAverage'}},
       {image:thresholdRgba(isolated),options:{isPure:true,binarizer:'FixedThreshold'}},
       {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
-      {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
+      {image:thresholdRgba(straightened||padded),options:{isPure:true,binarizer:'FixedThreshold'}}
     ];
   }
   return [
