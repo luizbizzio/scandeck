@@ -4,7 +4,7 @@ The public site uses **https://scandeck.luizbizzio.com/**. GitHub Pages is publi
 
 ## Custom domain
 
-- `CNAME` contains `scandeck.luizbizzio.com` and is copied into the published Pages artifact.
+- The custom domain `scandeck.luizbizzio.com` is configured in repository Pages settings and DNS; it is not currently a versioned `CNAME` file.
 - Keep the custom domain set in the GitHub repository Pages settings.
 - Make sure DNS points the subdomain to the correct GitHub Pages host. DNS, HTTPS activation and external redirects are configured outside this repository.
 
