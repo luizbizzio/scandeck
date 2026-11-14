@@ -795,10 +795,11 @@ document.addEventListener('click',event=>{
   const aboutFormat=anchor.closest('.about-code-card')?.querySelector('.about-code-heading h3')?.textContent?.trim()||'';
   $('code-image-heading').textContent=(groupFormat||aboutFormat||'Code preview').replace(/ barcode$/i,'');
   codeImageDialog.classList.toggle('dotcode-viewer',groupFormat==='DotCode'||aboutFormat==='DotCode');
+  codeImageDialog.classList.toggle('jab-code-viewer',groupFormat==='JAB Code'||aboutFormat==='JAB Code');
   if(!codeImageDialog.open)codeImageDialog.showModal();
 });
 $('close-code-image').addEventListener('click',()=>codeImageDialog.close());
-codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src');codeImageDialog.classList.remove('dotcode-viewer')});
+codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src');codeImageDialog.classList.remove('dotcode-viewer','jab-code-viewer')});
 codeImageDialog.addEventListener('click',event=>{if(event.target===codeImageDialog)codeImageDialog.close()});
 
 const catalogPromises=new Map();
