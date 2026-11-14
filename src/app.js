@@ -204,15 +204,22 @@ async function loadExternal(url, globalName) {
     document.head.append(script);
   });
 }
+let matrixEnginePromise=null;
 async function getMatrixEngine() {
-  const lib=await loadExternal(WASM_SCRIPT,'ZXingWASM');
-  if (!lib.readBarcodes || !lib.writeBarcode) throw new Error('The matrix code engine is unavailable.');
-  if (!lib.__scandeckReady) {
-    lib.prepareZXingModule({overrides:{locateFile:(path,prefix)=>
-      path.endsWith('.wasm')?new URL('vendor/zxing-wasm/'+path,document.baseURI).href:prefix+path}});
-    lib.__scandeckReady=true;
-  }
-  return lib;
+  // Concurrent upload/create actions must not inject two ZXing scripts or
+  // initialize separate WASM modules on the UI thread.
+  if(!matrixEnginePromise)matrixEnginePromise=(async()=>{
+    const lib=await loadExternal(WASM_SCRIPT,'ZXingWASM');
+    if(!lib.readBarcodes||!lib.writeBarcode)
+      throw new Error('The matrix code engine is unavailable.');
+    if(!lib.__scandeckReady){
+      lib.prepareZXingModule({overrides:{locateFile:(path,prefix)=>
+        path.endsWith('.wasm')?new URL('vendor/zxing-wasm/'+path,document.baseURI).href:prefix+path}});
+      lib.__scandeckReady=true;
+    }
+    return lib;
+  })().catch(error=>{matrixEnginePromise=null;throw error});
+  return matrixEnginePromise;
 }
 // The color IRIS decoder runs in a module worker to avoid blocking camera preview.
 let irisWorker=null,irisSeq=0,irisReads=0;
