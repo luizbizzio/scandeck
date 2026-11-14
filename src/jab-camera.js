@@ -10,7 +10,9 @@ function boxOfInk(image){
  // Detect the opaque square ink area on a white card, preserving dark & white modules.
  let left=w,right=-1,top=h,bottom=-1,n=0;
  const step=Math.max(1,Math.floor(Math.min(w,h)/700));
- for(let y=0;y<h;y+=step)for(let x=0;x<w;x+=step){
+ // Ignore the camera background just beyond a cropped white code card.
+ const inset=Math.max(1,Math.floor(Math.min(w,h)*.025));
+ for(let y=inset;y<h-inset;y+=step)for(let x=inset;x<w-inset;x+=step){
   const i=(y*w+x)*4;
   if(isWhite(data[i],data[i+1],data[i+2]))continue;
   left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);n++;
@@ -55,7 +57,7 @@ export function decodeJabPixels(lib,image,{phase=0}={}){
  if(card&&card.width>95&&card.height>95&&card.width*card.height<width*height*.96)
   regions.push(cropRgba(image,card));
  regions.push(image);
- const versions=[1,2,3,4,5,6,7,8];
+ const versions=[2,1,3,4,5,6,7,8];
  // Image geometry is determined by actual colored modules, not a stored game identifier.
  for(const region of regions){
   const ink=boxOfInk(region);
