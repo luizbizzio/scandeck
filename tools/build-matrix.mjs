@@ -98,7 +98,7 @@ for(const cols of databarLayouts){
         addHRT:false,options:'columns='+cols});
       if(!result.image)continue;
       const found=await readBarcodes(result.image,databarReadOpts);
-      if(!found.some(x=>decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
+      if(!found.some(x=>x.format==='DataBarExpStk'&&decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
       databarResult=result;databarPng=Buffer.from(await result.image.arrayBuffer());
       databarSymbology=found[0].format;
     }catch(error){console.log('ZXing DataBar '+cols+' columns: '+error.message)}
@@ -116,7 +116,7 @@ if(!databarPng){
           scale:4,height:12,segments,includetext:false});
         const image=new Blob([png],{type:'image/png'});
         const found=await readBarcodes(image,databarReadOpts);
-        if(!found.some(x=>decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
+        if(!found.some(x=>x.format==='DataBarExpStk'&&decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
         databarPng=png;databarSymbology=found[0].format;
         break;
       }catch(error){console.log('BWIPP DataBar '+segments+' segments: '+error.message)}
