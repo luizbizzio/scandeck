@@ -831,7 +831,7 @@ async function openCatalogGame(name,title){
     status('Could not open '+title+': '+(error.message||String(error)),true);
   }
 }
-$('try-ironpass').addEventListener('click',()=>openCatalogGame('ironpass-micro-v3','Ironpass Micro'));
+$('try-ironpass').addEventListener('click',()=>openCatalogGame('ironpass-micro-v3','Ironpass'));
 async function playMatrixExample(name,title,format){
   // The format remains part of the caller contract; this is a fast library preview.
   // Actual barcode scanning uses detectImage or cameraLoop, not this shortcut.

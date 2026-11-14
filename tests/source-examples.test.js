@@ -9,7 +9,7 @@ const app=readFileSync(new URL('src/app.js',root),'utf8');
 const css=readFileSync(new URL('src/style.css',root),'utf8');
 
 const examples=[
-  ['QR Code','ironpass-micro-v3-qr','Ironpass Micro'],
+  ['QR Code','ironpass-micro-v3-qr','Ironpass'],
   ['Code 128','taprush-code128','Tap Rush'],
   ['MicroPDF417','dice-streak-micropdf417','Dice Streak'],
   ['DotCode','neon-dodge-dotcode','Neon Dodge'],

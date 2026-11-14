@@ -20,7 +20,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 
 | Game | Format |
 | --- | --- |
-| Ironpass Micro | QR Code |
+| Ironpass | QR Code |
 | Tap Rush | Code 128 |
 | Dice Streak | MicroPDF417 |
 | Neon Dodge | DotCode |

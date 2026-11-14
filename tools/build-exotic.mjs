@@ -1,5 +1,5 @@
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
-import {deflateRawSync} from 'node:zlib';
+import {bestDeflateRaw} from './optimize-encoding.mjs';
 import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
 import {base85Encode,decodeGame} from '../src/protocol.js';
 
@@ -10,17 +10,8 @@ const asset=n=>new URL('assets/'+n,root);
 mkdirSync(asset(''),{recursive:true});
 mkdirSync(new URL('vendor/',root),{recursive:true});
 const generatedShapes={};
-function compact(source,prefix){
-  // Choose the smallest standards-compatible raw DEFLATE stream without
-  // requiring a new decompressor or a network-hosted dictionary.
-  const input=Buffer.from(source);
-  let best=null;
-  for(const windowBits of [9,10,11,12,13,14,15]){
-    const candidate=base85Encode(deflateRawSync(input,{level:9,windowBits,memLevel:9}));
-    if(best===null||candidate.length<best.length)best=candidate;
-  }
-  return prefix+best;
-}
+function compact(source,prefix){return prefix+base85Encode(bestDeflateRaw(source))}
+
 const games=[
   {
     name:'snake-codablockf',

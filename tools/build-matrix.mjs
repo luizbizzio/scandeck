@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
-import { deflateRawSync } from 'node:zlib';
+import {bestDeflateRaw} from './optimize-encoding.mjs';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
-import { base43Encode, packScript, packEanLevel, packMicroHtml } from '../src/protocol.js';
+import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame } from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);
@@ -21,7 +21,7 @@ const matrixGames=[
 for (const game of matrixGames) {
   const source=readFileSync(new URL(game.input,root),'utf8').trim();
   const payload=game.kind==='script'?packScript(source):game.kind==='microhtml'?packMicroHtml(source):game.kind==='ean'?packEanLevel(source):game.kind==='tiny'?source:
-    'SD1:'+base43Encode(deflateRawSync(Buffer.from(source)));
+    'SD1:'+base43Encode(bestDeflateRaw(source));
   const max=game.max??1400;
   if (payload.length>max) throw new Error(game.format+' game is too large ('+payload.length+' > '+max+').');
   const opts={format:game.format,scale:game.format==='PDF417'||game.format==='MicroPDF417'?10:game.format==='RMQRCode'?12:game.format==='EAN13'?12:8};
@@ -29,7 +29,7 @@ for (const game of matrixGames) {
   let selectedPayload=payload;
   if(game.format==='RMQRCode'){
     // Prefer a smaller symbol without losing the original JavaScript.
-    const packed='SDY:'+base43Encode(deflateRawSync(Buffer.from(source)));
+    const packed='SDY:'+base43Encode(bestDeflateRaw(source));
     try{
       const other=await writeBarcode(packed,opts);
       if(other.image&&other.svg){
@@ -71,6 +71,21 @@ for (const game of matrixGames) {
   writeFileSync(asset(game.output+'.txt'),selectedPayload);
   console.log(game.format+' | '+source.length+' source characters | '+selectedPayload.length+' code characters | barcode verified');
 }
+
+
+// Generate Ironpass from its complete HTML on every build. The writer selects
+// the smallest QR version fitting the whole program, rather than forcing v40.
+const ironpassSource=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();
+const ironpassPayload='IP3:'+base43Encode(bestDeflateRaw(ironpassSource));
+if(ironpassPayload.length>4296)throw Error('Ironpass exceeds QR-L capacity');
+if((await decodeGame(ironpassPayload)).source!==ironpassSource)throw Error('Ironpass lost game content');
+const ironpassQR=await writeBarcode(ironpassPayload,{format:'QRCode',scale:7,options:'ecLevel=1'});
+if(!ironpassQR.image)throw Error('Ironpass QR generation failed: '+JSON.stringify(ironpassQR.error));
+const ironpassResults=await readBarcodes(ironpassQR.image,{formats:['QRCode'],tryHarder:true});
+if(!ironpassResults.some(x=>x.text===ironpassPayload))throw Error('Ironpass QR does not read back the game');
+writeFileSync(asset('ironpass-micro-v3-qr.png'),Buffer.from(await ironpassQR.image.arrayBuffer()));
+writeFileSync(asset('ironpass-micro-v3.txt'),ironpassPayload);
+console.log('Ironpass | '+ironpassSource.length+' HTML characters | '+ironpassPayload.length+' QR characters | '+ironpassQR.symbol.width+'×'+ironpassQR.symbol.height+' modules');
 
 // Preserve the full self-contained Snake in a 2D QR so it can be scanned.
 const snake=packScript(readFileSync(new URL('examples/snake-standalone.js',root),'utf8').trim());

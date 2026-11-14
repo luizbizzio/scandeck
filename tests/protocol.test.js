@@ -22,7 +22,7 @@ test('original Ironpass V3 decodes into the real game', async()=>{
   const payload=readFileSync(new URL('../assets/ironpass-micro-v3.txt',import.meta.url),'utf8');
   assert.ok(payload.length<=QR_LIMIT);
   const game=await decodeGame(payload);
-  assert.equal(game.title,'Ironpass Micro');
+  assert.equal(game.title,'Ironpass');
   assert.equal(game.kind,'html');
   assert.ok(game.source.includes('IRONPASS'));
   assert.ok(game.source.includes('requestAnimationFrame'));
@@ -280,4 +280,16 @@ test('older DotCode and rMQR programs still use their original game markup',asyn
  assert.equal((oldRMQR.match(/<input id=a>/g)||[]).length,1,'Legacy rMQR must not duplicate input');
  const newer=gameDocument({kind:'standalone',title:'Codebreaker',source:'n=2;b.onclick=()=>0'});
  assert.ok(newer.includes('<input id=a><button id=b>GO</button>'));
+});
+
+test('Ironpass preserves its tower-defense mechanics without opening filler text',async()=>{
+ const html=readFileSync(new URL('../examples/ironpass-micro-v3.html',import.meta.url),'utf8').trim();
+ const payload=readFileSync(new URL('../assets/ironpass-micro-v3.txt',import.meta.url),'utf8').trim();
+ const game=await decodeGame(payload);
+ assert.equal(game.source,html);
+ assert.equal(game.title,'Ironpass');
+ assert.ok(!html.includes('TAP TO PLAY')&&!html.includes('IRONPASS MICRO'));
+ for(const rule of ['function map()','function hit(t,e)','function step(dt)','function draw()','c.onpointerdown','requestAnimationFrame(frame)'])
+  assert.ok(html.includes(rule),'Game mechanic missing: '+rule);
+ assert.ok(html.includes("'IRONPASS'"));
 });

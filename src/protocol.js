@@ -251,7 +251,7 @@ export async function decodeGame(raw) {
     const html = await inflateRaw(base43Decode(value.slice(4)));
     if (!/<(?:script|canvas|body|html|svg|div)\b/i.test(html)) throw new Error('The package does not look like a game.');
     const heading=html.match(/<h[1-3][^>]*>([^<]{1,60})<\/h[1-3]>/i);
-    const title=legacy?'Ironpass Micro':heading?heading[1].trim():'Custom game';
+    const title=legacy?'Ironpass':heading?heading[1].trim():'Custom game';
     return { title, type: legacy ? 'IP3 / QR' : 'SD1 / 2D', kind: 'html', source: html, payload: value, size: new TextEncoder().encode(html).length };
   }
   if (value.startsWith('SDS:')) {

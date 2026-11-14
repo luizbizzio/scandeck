@@ -1,5 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { deflateRawSync, deflateSync } from 'node:zlib';
+import { deflateSync } from 'node:zlib';
+import {bestDeflateRaw} from './optimize-encoding.mjs';
 import { encodeColor, renderColorSVG, renderColorRaster, decodeColor } from '../vendor/iris/color.js';
 import { base43Encode, base85Encode, packScript, decodeGame } from '../src/protocol.js';
 
@@ -34,8 +35,8 @@ function encodePng(grid){
 }
 for(const game of games){
   const source=readFileSync(new URL(game.input,root),'utf8').trim();
-  const plain=game.kind==='html'?'SD1:'+base43Encode(deflateRawSync(Buffer.from(source))):packScript(source);
-  const packed='SDB:'+base85Encode(deflateRawSync(Buffer.from(source),{level:9}));
+  const plain=game.kind==='html'?'SD1:'+base43Encode(bestDeflateRaw(source)):packScript(source);
+  const packed='SDB:'+base85Encode(bestDeflateRaw(source));
   const payload=game.kind==='script'&&packed.length<plain.length?packed:plain;
   if((await decodeGame(payload)).source!==source)throw Error('IRIS game payload must be complete');
   const symbol=encodeColor(payload,{markers:true});
