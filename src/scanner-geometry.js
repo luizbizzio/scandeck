@@ -7,7 +7,7 @@ export function captureDimensions(width,height,mode='auto'){
   // Dedicated 1D/rMQR/Maxi readers need full detail to resolve thin modules.
   const highDetail=['code128','rmqr','maxicode','pdf417','micropdf417'].includes(mode);
   const maxEdge=mode==='code128'?2300:mode==='codablockf'?1920:highDetail?1900:dense?1500:mode==='auto'?960:mode==='iris'||mode==='chromaqr'?1200:1440;
-  const maxPixels=mode==='code128'?2_200_000:mode==='codablockf'?1_950_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
+  const maxPixels=mode==='code128'?2_200_000:mode==='rmqr'?2_200_000:mode==='codablockf'?1_950_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }
@@ -20,11 +20,12 @@ export function focusedCrop(width,height,mode,phase=0){
     roiWidth=roiHeight=Math.min(width,height)*fraction;
     maxWidth=1150;scale=1.55;
   }else if(mode==='rmqr'){
-    // Most frames are processed whole; narrow crops can remove rMQR locators.
-    const horizontal=phase%4===1;
-    roiWidth=width*(horizontal?.96:.75);
-    roiHeight=height*(horizontal?.75:.96);
-    maxWidth=1850;scale=1.25;
+    // Keep the full view regularly; alternate wide and tall centered crops.
+    // The symbol is often much wider than its height, but phone orientation varies.
+    const wide=phase%3===1;
+    roiWidth=width*(wide?.96:.78);
+    roiHeight=height*(wide?.68:.92);
+    maxWidth=1900;scale=1.35;
   }else if(mode==='pdf417'||mode==='micropdf417'){
     roiWidth=width*.96;roiHeight=height*.76;
     maxWidth=1700;scale=1.1;
