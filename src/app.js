@@ -542,13 +542,13 @@ async function cameraLoop(token){
         try{
           const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
           const decodeStarted=performance.now();
+          const autoIris=mode==='auto'&&frame%12===7;
+          const autoChroma=mode==='auto'&&frame%6===4;
+          const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
           if(frame%2===0){
             const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
           }
-          const autoIris=mode==='auto'&&frame%12===7;
-          const autoChroma=mode==='auto'&&frame%6===4;
-          const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
           if(mode==='iris'||autoIris){
             // Preserve RGB channels; expensive IRIS scans run periodically in auto.
             const crop=centeredIrisFrame(video,frame%3===2);
