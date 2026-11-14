@@ -173,7 +173,7 @@ test('Codebreaker checks only GO and spells both directions completely',()=>{
  const fail={a:{value:'0'},b:{innerText:'GO'},Date:function(){return {valueOf:()=>80}},document:{write(){}}};
  vm.runInNewContext(src,fail,{timeout:500});for(let i=0;i<7;i++)fail.b.onclick();
  assert.equal(fail.b.innerText,'LOSE');
- assert.ok(src.length<=110,'rMQR needs a small source');
+ assert.ok(src.length<=110,'Codebreaker keeps the original small JavaScript source');
  assert.doesNotMatch(src,/document\.write/,'Codebreaker controls are supplied by the player');
 });
 test('Brick Rush has faster ball, three lives and pointer/keyboard control',()=>{
