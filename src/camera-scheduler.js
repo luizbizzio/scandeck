@@ -3,7 +3,7 @@
 const QUICK_FORMATS=[
   ['QRCode','DataMatrix','Aztec','Code128','EAN13'],
   ['QRCode','DataMatrix','DataBarExpStk'],
-  ['QRCode','MicroQRCode'],
+  ['QRCode','MicroQRCode','MicroPDF417'],
   ['QRCode','Code128','EAN13'],
   ['QRCode','DataMatrix','Aztec']
 ];
