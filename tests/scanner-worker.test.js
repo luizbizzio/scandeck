@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=69"/);
- assert.match(html,/src="src\/app\.js\?v=69"/);
+ assert.match(html,/href="src\/style\.css\?v=70"/);
+ assert.match(html,/src="src\/app\.js\?v=70"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -81,4 +81,12 @@ test('camera DotCode transfers a disposable frame and limits blocking time',()=>
  assert.match(app,/readExoticPixels\(pixels,mode,false,frame%5,true\)/);
  assert.match(app,/transferPixels\?data:new Uint8ClampedArray\(data\)/);
  assert.match(app,/setTimeout\(resetExoticWorker,exact\?9000:4000\)/);
+});
+
+test('rMQR switches to an independent local WASM detector before falling back to ZXing',()=>{
+ assert.match(worker,/readAnyDRMQRFrame\(pixels,options\.specialtyPhase\|\|0\)/);
+ assert.ok(worker.indexOf('readAnyDRMQRFrame(pixels')<worker.indexOf('const zxing=await getDecoder()'));
+ assert.match(app,/options\.specialty==='rmqr'\?7500/);
+ assert.match(flow,/vendor\/anyd\.wasm vendor\/anyd\.LICENSE dist\/vendor\//);
+ assert.ok(sw.includes('"src/rmqr-anyd.js"')&&sw.includes('"vendor/anyd.wasm"'));
 });

@@ -37,8 +37,15 @@ self.onmessage=async({data:task})=>{
        width<1||height<1||width*height>3_000_000||
        !(buffer instanceof ArrayBuffer)||buffer.byteLength!==width*height*4)
       throw Error('Invalid camera frame');
-    const zxing=await getDecoder();
     const pixels={width,height,data:new Uint8ClampedArray(buffer)};
+    if(mode==='standard'&&options?.specialty==='rmqr'){
+      try{
+        const {readAnyDRMQRFrame}=await import('./rmqr-anyd.js');
+        const alternative=await readAnyDRMQRFrame(pixels,options.specialtyPhase||0);
+        if(alternative.length){self.postMessage({id,result:alternative});return}
+      }catch{/* Independent rMQR reader unavailable: continue with ZXing. */}
+    }
+    const zxing=await getDecoder();
     if(mode==='chroma'){
       const {decodeChromaPixels}=await import('./chroma.js');
       const readQr=(image,opts)=>zxing.readBarcodes(image,opts);

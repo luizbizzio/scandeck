@@ -33,6 +33,9 @@ jobs:
           node --check src/app.js
           node --check src/scanner-geometry.js
           node --check src/barcode-worker.js
+          node --check src/rmqr-anyd.js
+          node --check tools/fetch-anyd.mjs
+          node --check tools/optimize-encoding.mjs
           node --check src/protocol.js
           node --check src/runtime.js
           node --check src/microvm.js
@@ -55,7 +58,7 @@ jobs:
           cp vendor/iris/*.js vendor/iris/LICENSE dist/vendor/iris/
           cp assets/*.svg assets/*.png assets/*.txt assets/*.json dist/assets/
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
-          cp vendor/qrcode-generator.js vendor/sythos-barcode.esm.js vendor/sythos.LICENSE dist/vendor/
+          cp vendor/qrcode-generator.js vendor/sythos-barcode.esm.js vendor/sythos.LICENSE vendor/anyd.wasm vendor/anyd.LICENSE dist/vendor/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
