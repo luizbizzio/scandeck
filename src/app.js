@@ -88,7 +88,7 @@ async function acceptPayload(raw, mode='manual', format='') {
   try {
     const game = await decodeGame(raw);
     if(format==='MicroPDF417'&&game.kind==='html'&&game.source.startsWith('<button onclick="r=Math.random()*6|0;'))game.title='Dice Streak';
-    if((format==='JABCode'||format==='RMQRCode'||format==='rmqr')&&game.kind==='standalone')game.title='Codebreaker';
+    if((format==='JABCode'||format==='RMQRCode'||format==='rmqr')&&game.kind==='standalone'&&game.source.startsWith('n=new Date%99;t=7;'))game.title='Codebreaker';
     if(['QRCode','qr_code','CodablockF'].includes(format)&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
     if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('n=0;onclick=_=>n++'))game.title='Tap Rush';
     if(format==='DotCode'&&game.kind==='standalone'&&(game.source.startsWith('p=s=z=0;y=-32;')||game.source.startsWith("g=c.getContext('2d')")))game.title='Neon Dodge';
