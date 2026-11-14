@@ -21,7 +21,7 @@ test('games are clearly split by code type', () => {
   assert.match(html, /id="bar-games-heading"/);
   assert.match(html, /id="dm-games-heading"/);
   assert.match(html, /id="aztec-games-heading"/);
-  for(const id of ['pdf-games-heading','ean-games-heading','micro-games-heading','jab-games-heading'])assert.ok(html.includes('id="'+id+'"'));
+  for(const id of ['pdf-games-heading','ean-games-heading','micro-games-heading','databar-games-heading'])assert.ok(html.includes('id="'+id+'"'));
   assert.match(html, /Download QR/);
   assert.match(html, /Download PNG/);
 });
@@ -66,7 +66,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','micropdf417','ean13','microqr','jab','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','micropdf417','ean13','microqr','databar','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -81,7 +81,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-taprush','try-dice-streak','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-jab']) {
+  for (const id of ['scan-games','try-taprush','try-dice-streak','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-databar']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -129,7 +129,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/tryDenoise:true/);
   assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
   assert.match(script,/FOCUS_FORMATS/);
-  for(const name of ['pdf417','micropdf417','ean13','jab','code128','iris','chromaqr'])
+  for(const name of ['pdf417','micropdf417','ean13','databar','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
 });
 
@@ -216,12 +216,12 @@ test('mobile camera fills the viewport with a safe close button and scan format 
   assert.match(script,/classList\.remove\('camera-open'\)/);
   assert.match(script,/\$\('camera-mode'\)\.addEventListener\('change'/);
 });
-test('JAB uses an independent color reader',()=>{
+test('GS1 DataBar uses the existing focused ZXing reader',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
   assert.match(script,/isPure:monochrome/);
-  assert.match(script,/jab:'Keep the complete colored square/);
+  assert.match(script,/databar:'Keep all stacked bars sharp/);
 });
 test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
   assert.ok(html.includes('id="try-taprush"'));
@@ -277,7 +277,7 @@ test('Scan header uses a compact, optional list instead of overflowing twelve fo
   assert.match(css, /\.scanner-heading\{position:relative/);
 });
 test('mobile and desktop scanner selectors contain every format exactly once and remain synchronized',()=>{
-  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','ean13','microqr','jab','iris','chromaqr','micropdf417','dotcode'];
+  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','ean13','microqr','databar','iris','chromaqr','micropdf417','dotcode'];
   for(const id of ['scan-mode','camera-mode']){
     const fragment=html.slice(html.indexOf('id="'+id+'"'));
     const select=fragment.slice(0,fragment.indexOf('</select>'));
@@ -362,7 +362,7 @@ test('About explains origin and use of all 12 formats with history source links'
   assert.match(about,/Meet the 12 code formats/);
   const cards=[...about.matchAll(/<article class="about-code-card">([\s\S]*?)<\/article>/g)];
   assert.equal(cards.length,12);
-  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','EAN-13','Micro QR','JAB Code','IRIS','ChromaQR']){
+  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','EAN-13','Micro QR','GS1 DataBar Expanded Stacked','IRIS','ChromaQR']){
     assert.ok(cards.some(([,card])=>card.includes('<h3>'+format+'</h3>')),format+' must have a history card');
   }
   for(const [,card] of cards){
@@ -394,9 +394,9 @@ test('footer has the centered creator credit and keeps version 1.0.0',()=>{
   assert.match(css,/\.footer-credit\{justify-self:center/);
 });
 test('About correctly explains Full, Partial and Bytecode without changing the game count',()=>{
-  assert.match(html,/Six games contain a full HTML game/);
-  assert.match(html,/Four contain JavaScript/);
-  assert.match(html,/Two are Bytecode/);
+  assert.match(html,/Six games contain complete HTML/);
+  assert.match(html,/Three store JavaScript/);
+  assert.match(html,/Three use Bytecode/);
   assert.match(html,/legend-bytecode/);
 });
 
@@ -460,7 +460,7 @@ test('Auto lists all supported formats and retains dedicated color scan controls
  assert.match(html,/Auto \(all supported\)/);
  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
  assert.ok(html.includes('<option value="iris">IRIS</option>'));
- assert.match(script,/captureMode=mode==='jab'\|\|autoJab\?'jab':autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
+ assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
  assert.match(script,/await readCameraChroma\(pixels\)/);
  assert.match(script,/await readIrisPixels\(/);
 });
@@ -497,9 +497,9 @@ test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU u
 
 test('all library shapes fit their actual codes while preview heights remain identical',()=>{
  const square=['ironpass-micro-v3-qr','neon-dodge-dotcode','catch-datamatrix',
-  'memory-aztec','reflex-microqr','codebreaker-jab','iris-wire','chromaqr-chroma'];
+  'memory-aztec','reflex-microqr','iris-wire','chromaqr-chroma'];
  const wide=['taprush-code128','dice-streak-micropdf417','breakout-pdf417',
-  'timing-ean13'];
+  'timing-ean13','codebreaker-databar'];
  for(const [shape,ids] of [['square',square],['wide',wide]]){
   for(const id of ids){
    const marker='href="assets/'+id+'.png"';
@@ -517,7 +517,7 @@ test('all library shapes fit their actual codes while preview heights remain ide
 });
 
 test('stacked and horizontal 2D codes trim only their preview paper, not their scanner margins',()=>{
- const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417'];
+ const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417','codebreaker-databar'];
  for(const id of assets){
    const position=html.indexOf('href="assets/'+id+'.png"');
    assert.ok(position>0,id+' is not in the gallery');
@@ -573,23 +573,23 @@ test('legacy rMQR fallback keeps its independent decoders',()=>{
  assert.match(worker,/readAnyDRMQRFrame/);
 });
 
-test('JAB replaces rMQR in the public game cards and focus controls',()=>{
- assert.match(html,/id="jab-games-heading">JAB Code/);
- assert.match(html,/data-code-asset="codebreaker-jab"/);
- assert.match(html,/data-format="jab"/);
- assert.match(html,/option value="jab">JAB Code/);
- assert.doesNotMatch(html,/id="try-rmqr"/);
- assert.doesNotMatch(html,/option value="rmqr"/);
- assert.match(script,/mode==='jab'\|\|autoJab/);
- assert.match(script,/requestBarcodeWorker\(jabPixels,'jab'/);
- assert.match(script,/generatorFormat==='jab'/);
+test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
+ assert.match(html,/id="databar-games-heading">GS1 DataBar Expanded Stacked/);
+ assert.match(html,/data-code-asset="codebreaker-databar"/);
+ assert.match(html,/data-format="databar"/);
+ assert.match(html,/option value="databar">GS1 DataBar Expanded Stacked/);
+ assert.doesNotMatch(html,/id="try-jab"/);
+ assert.doesNotMatch(html,/option value="jab"/);
+ assert.match(script,/databar:'DataBarExpStk'/);
+ assert.match(script,/generatorFormat==='databar'/);
+ assert.match(script,/decodeCodebreakerDataBar/);
+ assert.match(script,/DataBarExpStk:'GS1 DataBar Expanded Stacked'/);
 });
 
-test('JAB previews use a larger square and expand in the in-page image viewer',()=>{
- const card=html.slice(html.indexOf('id="jab-games-heading"'),html.indexOf('id="iris-games-heading"'));
- assert.match(card,/square-code-preview jab-code-preview/);
- assert.doesNotMatch(card,/tight-code-preview/);
- assert.match(css,/\.jab-code-preview \.game-code-paper\{width:min\(100%,204px\);height:204px/);
- assert.match(script,/classList\.toggle\('jab-code-viewer'/);
- assert.match(css,/#code-image-dialog\.jab-code-viewer #code-image-full/);
+test('DataBar displays a stacked code, not a square JAB preview',()=>{
+ const card=html.slice(html.indexOf('id="databar-games-heading"'),html.indexOf('id="iris-games-heading"'));
+ assert.match(card,/stacked-code-preview wide-code-preview tight-code-preview/);
+ assert.doesNotMatch(card,/jab-code-preview/);
+ assert.match(card,/code-embedding-bytecode/);
+ assert.match(card,/>Bytecode<\/span>/);
 });
