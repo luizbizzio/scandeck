@@ -295,8 +295,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=52/);
-  assert.match(html,/src\/style\.css\?v=52/);
+  assert.match(html,/src\/app\.js\?v=53/);
+  assert.match(html,/src\/style\.css\?v=53/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -345,7 +345,7 @@ test('About explains origin and use of all 12 formats with history source links'
   assert.match(about,/Meet the 12 code formats/);
   const cards=[...about.matchAll(/<article class="about-code-card">([\s\S]*?)<\/article>/g)];
   assert.equal(cards.length,12);
-  for(const format of ['QR Code','Code 128','Codablock F','DotCode','Data Matrix','Aztec Code','PDF417','MaxiCode','Micro QR','rMQR','IRIS','ChromaQR']){
+  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','MaxiCode','Micro QR','rMQR','IRIS','ChromaQR']){
     assert.ok(cards.some(([,card])=>card.includes('<h3>'+format+'</h3>')),format+' must have a history card');
   }
   for(const [,card] of cards){
@@ -428,11 +428,11 @@ test('experimental upload processes full-resolution photos without discarding 2M
 test('dense experimental camera uses direct full and cropped sensor pixels, not stretched images',()=>{
  assert.match(script,/exoticCaptureRegion\(canvas\.width,canvas\.height,frame\)/);
  assert.match(script,/ctx\.getImageData\(roi\.left,roi\.top,roi\.width,roi\.height\)/);
- assert.match(script,/Use the full-size PNG, not the small gallery preview/);
+ assert.match(script,/micropdf417:'Keep every bar and both white margins visible/);
 });
 
 test('exotic gallery pictures open the original PNG directly',()=>{
-  for(const name of ['snake-codablockf','neon-dodge-dotcode']){
+  for(const name of ['dice-streak-micropdf417','neon-dodge-dotcode']){
     assert.ok(html.includes('href="assets/'+name+'.png"'));
     assert.doesNotMatch(html,new RegExp('href="assets/'+name+'\\.png" target="_blank"'));
     assert.ok(!html.includes('data-scan-ready="'+name+'"'));

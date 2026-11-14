@@ -16,3 +16,16 @@ test('published MaxiCode and rMQR PNGs decode as RGBA pixel frames with the requ
     name+' must decode from raw camera-style RGBA pixels, not only from its PNG Blob');
  }
 });
+
+test('MicroPDF417 Dice Streak decodes from camera-style RGBA pixels without a custom decoder',async()=>{
+ const name='dice-streak-micropdf417';
+ const png=PNG.sync.read(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)));
+ const input={width:png.width,height:png.height,data:new Uint8ClampedArray(png.data)};
+ const payload=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
+ const hits=await readBarcodes(input,{
+  formats:['MicroPDF417'],tryHarder:true,tryRotate:true,tryDownscale:false,maxNumberOfSymbols:1
+ });
+ assert.ok(hits.some(hit=>hit.text===payload),'MicroPDF417 reader must recover every game byte');
+ assert.ok(payload.startsWith('SDS:'),'The entire JavaScript game must be in the code, not a URL');
+ assert.ok(payload.length<=150,'Keep bars readable by limiting MicroPDF417 payload size');
+});

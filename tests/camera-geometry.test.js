@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import {captureDimensions,focusedCrop,scanPause,exoticCaptureRegion} from '../src/scanner-geometry.js';
 test('dense scanning keeps more camera pixels than auto without passing worker limits',()=>{
   const auto=captureDimensions(1920,1080,'auto');
-  for(const mode of ['code128','pdf417','rmqr','codablockf','dotcode']){
+  for(const mode of ['code128','pdf417','micropdf417','rmqr','codablockf','dotcode']){
     const size=captureDimensions(1920,1080,mode);
     assert.ok(size.width>auto.width,mode);
-    assert.ok(size.width*size.height<=(mode==='code128'?2_800_000:mode==='pdf417'||mode==='rmqr'?2_400_000:2_000_000),mode);
+    assert.ok(size.width*size.height<=(mode==='code128'?2_800_000:mode==='pdf417'||mode==='micropdf417'||mode==='rmqr'?2_400_000:2_000_000),mode);
   }
   assert.deepEqual(captureDimensions(0,1080,'auto'),{width:1,height:1});
 });
@@ -17,7 +17,7 @@ test('capture respects 2MP limits even on large mobile photos',()=>{
   }
 });
 test('focused crops remain centered, bounded and large enough for a code',()=>{
-  for(const mode of ['pdf417','rmqr','maxicode']){
+  for(const mode of ['pdf417','micropdf417','rmqr','maxicode']){
     for(const [w,h] of [[1920,1080],[1080,1920]]){
       const c=focusedCrop(w,h,mode);
       assert.ok(c.left>=0&&c.top>=0&&c.left+c.width<=w&&c.top+c.height<=h,mode);

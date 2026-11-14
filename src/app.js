@@ -829,7 +829,7 @@ function selectGenerator(format) {
   $('create-label').textContent=tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and endless loop with a shorter timer for each point). A generic interpreter runs the instructions. Not standalone JavaScript.':
-    format==='bar'?'The Tap Rush example uses 65 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
+    format==='bar'?'The Tap Rush example uses 63 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
     format==='micropdf417'?'MicroPDF417 holds a short JavaScript game. Keep the entire barcode sharp and inside the camera frame.':
     format==='dotcode'?'DotCode stores a complete compressed HTML game. ScanDeck uses an experimental strict DotCode reader.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':

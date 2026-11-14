@@ -1,11 +1,11 @@
 // Small, testable camera heuristics. Avoid allocating full-resolution pixels on every scan.
-const DENSE=new Set(['code128','pdf417','rmqr','codablockf','dotcode']);
+const DENSE=new Set(['code128','pdf417','micropdf417','rmqr','codablockf','dotcode']);
 export function captureDimensions(width,height,mode='auto'){
   if(!Number.isFinite(width)||!Number.isFinite(height)||width<1||height<1)
     return {width:1,height:1};
   const dense=DENSE.has(mode);
   // Dedicated 1D/rMQR/Maxi readers need full detail to resolve thin modules.
-  const highDetail=['code128','rmqr','maxicode','pdf417'].includes(mode);
+  const highDetail=['code128','rmqr','maxicode','pdf417','micropdf417'].includes(mode);
   const maxEdge=mode==='code128'?2560:highDetail?2200:dense?1920:mode==='auto'?1120:mode==='iris'||mode==='chromaqr'?1680:1440;
   const maxPixels=mode==='code128'?2_800_000:highDetail?2_400_000:dense?1_950_000:mode==='chromaqr'||mode==='iris'?1_200_000:750_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
@@ -25,7 +25,7 @@ export function focusedCrop(width,height,mode,phase=0){
     roiWidth=width*(horizontal?.96:.75);
     roiHeight=height*(horizontal?.75:.96);
     maxWidth=1850;scale=1.25;
-  }else if(mode==='pdf417'){
+  }else if(mode==='pdf417'||mode==='micropdf417'){
     roiWidth=width*.96;roiHeight=height*.76;
     maxWidth=1700;scale=1.1;
   }else{
