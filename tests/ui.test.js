@@ -21,7 +21,7 @@ test('games are clearly split by code type', () => {
   assert.match(html, /id="bar-games-heading"/);
   assert.match(html, /id="dm-games-heading"/);
   assert.match(html, /id="aztec-games-heading"/);
-  for(const id of ['pdf-games-heading','ean-games-heading','micro-games-heading','rmqr-games-heading'])assert.ok(html.includes('id="'+id+'"'));
+  for(const id of ['pdf-games-heading','ean-games-heading','micro-games-heading','jab-games-heading'])assert.ok(html.includes('id="'+id+'"'));
   assert.match(html, /Download QR/);
   assert.match(html, /Download PNG/);
 });
@@ -66,7 +66,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','micropdf417','ean13','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','micropdf417','ean13','microqr','jab','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -81,7 +81,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-taprush','try-dice-streak','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
+  for (const id of ['scan-games','try-taprush','try-dice-streak','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-jab']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -129,7 +129,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/tryDenoise:true/);
   assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
   assert.match(script,/FOCUS_FORMATS/);
-  for(const name of ['pdf417','micropdf417','ean13','rmqr','code128','iris','chromaqr'])
+  for(const name of ['pdf417','micropdf417','ean13','jab','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
 });
 
@@ -216,12 +216,12 @@ test('mobile camera fills the viewport with a safe close button and scan format 
   assert.match(script,/classList\.remove\('camera-open'\)/);
   assert.match(script,/\$\('camera-mode'\)\.addEventListener\('change'/);
 });
-test('focused rMQR uses additional camera preprocessing',()=>{
+test('JAB uses an independent color reader',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
   assert.match(script,/isPure:monochrome/);
-  assert.match(script,/rmqr:'Uses an independent rMQR detector/);
+  assert.match(script,/jab:'Keep the complete colored square/);
 });
 test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
   assert.ok(html.includes('id="try-taprush"'));
@@ -277,7 +277,7 @@ test('Scan header uses a compact, optional list instead of overflowing twelve fo
   assert.match(css, /\.scanner-heading\{position:relative/);
 });
 test('mobile and desktop scanner selectors contain every format exactly once and remain synchronized',()=>{
-  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','ean13','microqr','rmqr','iris','chromaqr','micropdf417','dotcode'];
+  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','ean13','microqr','jab','iris','chromaqr','micropdf417','dotcode'];
   for(const id of ['scan-mode','camera-mode']){
     const fragment=html.slice(html.indexOf('id="'+id+'"'));
     const select=fragment.slice(0,fragment.indexOf('</select>'));
@@ -299,7 +299,7 @@ test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames'
  assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
- assert.match(script,/autoPdf\?'pdf417':autoRmqr\?'rmqr':mode,autoPdf\?autoPdfPass\+\+:frame/);
+ assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:canvas\)/);
  assert.match(html,/Auto \(all supported\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
@@ -362,7 +362,7 @@ test('About explains origin and use of all 12 formats with history source links'
   assert.match(about,/Meet the 12 code formats/);
   const cards=[...about.matchAll(/<article class="about-code-card">([\s\S]*?)<\/article>/g)];
   assert.equal(cards.length,12);
-  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','EAN-13','Micro QR','rMQR','IRIS','ChromaQR']){
+  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','EAN-13','Micro QR','JAB Code','IRIS','ChromaQR']){
     assert.ok(cards.some(([,card])=>card.includes('<h3>'+format+'</h3>')),format+' must have a history card');
   }
   for(const [,card] of cards){
@@ -460,7 +460,7 @@ test('Auto lists all supported formats and retains dedicated color scan controls
  assert.match(html,/Auto \(all supported\)/);
  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
  assert.ok(html.includes('<option value="iris">IRIS</option>'));
- assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':autoRmqr\?'rmqr':mode/);
+ assert.match(script,/captureMode=mode==='jab'\|\|autoJab\?'jab':autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
  assert.match(script,/await readCameraChroma\(pixels\)/);
  assert.match(script,/await readIrisPixels\(/);
 });
@@ -497,9 +497,9 @@ test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU u
 
 test('all library shapes fit their actual codes while preview heights remain identical',()=>{
  const square=['ironpass-micro-v3-qr','neon-dodge-dotcode','catch-datamatrix',
-  'memory-aztec','reflex-microqr','iris-wire','chromaqr-chroma'];
+  'memory-aztec','reflex-microqr','codebreaker-jab','iris-wire','chromaqr-chroma'];
  const wide=['taprush-code128','dice-streak-micropdf417','breakout-pdf417',
-  'timing-ean13','math-rmqr'];
+  'timing-ean13','codebreaker-jab'];
  for(const [shape,ids] of [['square',square],['wide',wide]]){
   for(const id of ids){
    const marker='href="assets/'+id+'.png"';
@@ -517,7 +517,7 @@ test('all library shapes fit their actual codes while preview heights remain ide
 });
 
 test('stacked and horizontal 2D codes trim only their preview paper, not their scanner margins',()=>{
- const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417','math-rmqr'];
+ const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417'];
  for(const id of assets){
    const position=html.indexOf('href="assets/'+id+'.png"');
    assert.ok(position>0,id+' is not in the gallery');
@@ -547,7 +547,7 @@ test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML contr
 
 test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=>{
  assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
- assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':autoRmqr\?'rmqr':mode,autoPdf\?autoPdfPass\+\+:frame,captureMode==='rmqr'\?video:canvas\)/);
+ assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:canvas\)/);
  assert.match(script,/detectNativeFocused\(autoPdf\?'pdf417':mode,video\)/);
  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
  assert.match(runtime,/const codeMarkup=game.title==='Codebreaker'/);
@@ -561,14 +561,26 @@ test('detected game exposes Play and View source as aligned direct buttons',()=>
  assert.doesNotMatch(result,/<details class="detected-more"/);
  assert.match(css,/\.detected-actions\{display:flex;flex:0 0 auto;align-items:center/);
 });
-test('rMQR camera uses native video for crop sampling and cycles independent decoders',()=>{
+test('legacy rMQR fallback keeps its independent decoders',()=>{
  const geom=readFileSync(new URL('../src/scanner-geometry.js',import.meta.url),'utf8');
  const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
  assert.match(script,/const w=image.videoWidth\|\|image.width,h=image.videoHeight\|\|image.height/);
  assert.match(script,/mode==='rmqr'\?frame%3!==0/);
- assert.match(script,/captureMode==='rmqr'\?video:canvas/);
+ assert.match(script,/mode==='rmqr'\?video:canvas/);
  assert.match(geom,/mode==='rmqr'\?2_200_000/);
  assert.match(worker,/phase%3===1/);
  assert.match(worker,/readRxingRMQRFrame/);
  assert.match(worker,/readAnyDRMQRFrame/);
+});
+
+test('JAB replaces rMQR in the public game cards and focus controls',()=>{
+ assert.match(html,/id="jab-games-heading">JAB Code/);
+ assert.match(html,/data-code-asset="codebreaker-jab"/);
+ assert.match(html,/data-format="jab"/);
+ assert.match(html,/option value="jab">JAB Code/);
+ assert.doesNotMatch(html,/id="try-rmqr"/);
+ assert.doesNotMatch(html,/option value="rmqr"/);
+ assert.match(script,/mode==='jab'\|\|autoJab/);
+ assert.match(script,/requestBarcodeWorker\(jabPixels,'jab'/);
+ assert.match(script,/generatorFormat==='jab'/);
 });
