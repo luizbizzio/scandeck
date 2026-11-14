@@ -28,28 +28,25 @@ for (const game of matrixGames) {
   let result=await writeBarcode(payload,opts);
   let selectedPayload=payload;
   if(game.format==='RMQRCode'){
-    // An alphanumeric compressed encoding can fit a smaller rMQR version than
-    // the byte-mode JavaScript. Select it only if the written symbol is smaller
-    // and the actual PNG independently decodes to the full compressed payload.
+    // Prefer a smaller symbol without losing the original JavaScript.
     const packed='SDY:'+base43Encode(deflateRawSync(Buffer.from(source)));
     try{
       const other=await writeBarcode(packed,opts);
       if(other.image&&other.svg){
-        const match=(await readBarcodes(other.image,{formats:[game.format],tryHarder:true,maxNumberOfSymbols:1})).some(x=>x.text===packed);
-        const rawImage=Buffer.from(await result.image.arrayBuffer());
-        const otherImage=Buffer.from(await other.image.arrayBuffer());
-        const area=rawImage.readUInt32BE(16)*rawImage.readUInt32BE(20);
-        const otherArea=otherImage.readUInt32BE(16)*otherImage.readUInt32BE(20);
-        console.log('rMQR candidates: original '+payload.length+' chars / '+area+' px², compressed '+packed.length+' chars / '+otherArea+' px²');
-        if(match&&otherArea<area){selectedPayload=packed;result=other}
-        // Zint defaults to the smallest area, which can create an R13x139
-    // extremely thin symbol. A slightly taller code with fewer columns
-    // is easier to locate and keep in focus on a phone.
+        const match=(await readBarcodes(other.image,{formats:['RMQRCode'],tryHarder:true,maxNumberOfSymbols:1})).some(x=>x.text===packed);
+        const oldPng=Buffer.from(await result.image.arrayBuffer());
+        const newPng=Buffer.from(await other.image.arrayBuffer());
+        const oldArea=oldPng.readUInt32BE(16)*oldPng.readUInt32BE(20);
+        const newArea=newPng.readUInt32BE(16)*newPng.readUInt32BE(20);
+        if(match&&newArea<oldArea){selectedPayload=packed;result=other}
+      }
+    }catch(error){console.log('rMQR compressed option unavailable: '+error.message)}
+    // Prefer a shape that is not excessively flat. All variants must
+    // independently decode before being eligible for publication.
     const basePng=Buffer.from(await result.image.arrayBuffer());
     const baseArea=basePng.readUInt32BE(16)*basePng.readUInt32BE(20);
     let bestScore=Infinity,bestResult=result,bestVersion='auto';
-    const options=[null,30,31,32,26,27,21,22];
-    for(const version of options){
+    for(const version of [null,30,31,32,26,27,21,22]){
       try{
         const candidate=version===null?result:await writeBarcode(selectedPayload,{...opts,options:'version='+version});
         if(!candidate?.image)continue;
@@ -65,8 +62,6 @@ for (const game of matrixGames) {
     }
     result=bestResult;
     console.log('rMQR chosen version '+bestVersion+' / '+result.symbol.width+'×'+result.symbol.height+' modules');
-  }
-    }catch(error){console.log('rMQR compressed candidate unavailable: '+error.message)}
   }
   if (!result.svg||!result.image) throw new Error(game.format+' did not produce SVG and PNG: '+JSON.stringify({error:result.error,keys:Object.keys(result)}));
   // The barcode must be decoded from its actual pixels, not from copied payload metadata.
