@@ -1,7 +1,9 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import {bestDeflateRaw,compactGameHtml} from './optimize-encoding.mjs';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
-import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame } from '../src/protocol.js';
+import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame, packCodebreakerDataBar } from '../src/protocol.js';
+import bwipjs from 'bwip-js';
+import {decodeCodebreakerDataBar} from '../src/databar.js';
 
 const root=new URL('../',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);
@@ -76,6 +78,56 @@ for (const game of matrixGames) {
   writeFileSync(asset(game.output+'.txt'),selectedPayload);
   console.log(game.format+' | '+source.length+' source characters | '+selectedPayload.length+' code characters | barcode verified');
 }
+
+
+
+// Codebreaker uses GS1 DataBar Expanded Stacked. The GS1 AI (91) is reserved
+// for company-internal information and carries a five-character VM instruction.
+// Never publish a code until ZXing reads its actual PNG and recovers the bytecode.
+const databarPayload=packCodebreakerDataBar('SDCB7');
+const databarCandidates=['(91)SDCB7','[91]SDCB7',databarPayload];
+const databarLayouts=[2,4,6];
+let databarResult=null,databarPng=null,databarSymbology=null;
+const databarReadOpts={formats:['DataBarExpStk','DataBarExp'],tryHarder:true,
+  tryRotate:true,tryDownscale:false,maxNumberOfSymbols:1};
+for(const cols of databarLayouts){
+  for(const input of databarCandidates){
+    if(databarPng)break;
+    try{
+      const result=await writeBarcode(input,{format:'DataBarExpStk',scale:8,
+        addHRT:false,options:'columns='+cols});
+      if(!result.image)continue;
+      const found=await readBarcodes(result.image,databarReadOpts);
+      if(!found.some(x=>decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
+      databarResult=result;databarPng=Buffer.from(await result.image.arrayBuffer());
+      databarSymbology=found[0].format;
+    }catch(error){console.log('ZXing DataBar '+cols+' columns: '+error.message)}
+  }
+  if(databarPng)break;
+}
+// The independent BWIPP writer is a fallback. It must still pass the ZXing
+// pixel round-trip; a pretty PNG with no working scanner is not acceptable.
+if(!databarPng){
+  for(const input of databarCandidates){
+    if(databarPng)break;
+    for(const segments of [4,6,2]){
+      try{
+        const png=await bwipjs.toBuffer({bcid:'databarexpandedstacked',text:input,
+          scale:4,height:12,segments,includetext:false});
+        const image=new Blob([png],{type:'image/png'});
+        const found=await readBarcodes(image,databarReadOpts);
+        if(!found.some(x=>decodeCodebreakerDataBar(x.text)?.payload===databarPayload))continue;
+        databarPng=png;databarSymbology=found[0].format;
+        break;
+      }catch(error){console.log('BWIPP DataBar '+segments+' segments: '+error.message)}
+    }
+  }
+}
+if(!databarPng)throw Error('GS1 DataBar Expanded Stacked cannot be decoded from the generated PNG. Publication blocked.');
+if((await decodeGame(databarPayload)).kind!=='codebreaker')throw Error('Codebreaker bytecode decoder disagrees with GS1 encoder.');
+writeFileSync(asset('codebreaker-databar.png'),databarPng);
+writeFileSync(asset('codebreaker-databar.txt'),databarPayload);
+console.log('GS1 DataBar Expanded Stacked | '+databarPayload+' | '+databarSymbology+' | '+databarPng.length+' PNG bytes | ZXing pixel round-trip verified');
 
 
 // Generate Ironpass from its complete HTML on every build. The writer selects
