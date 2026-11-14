@@ -466,7 +466,8 @@ function readExoticPixels(image,format,exact=false,phase=0,transferPixels=false)
 // An alternate centered crop helps dense PDF417/rMQR and frontal MaxiCode.
 // The full frame is always tried too, so cropped quiet zones cannot block scanning.
 function makeFocusedPixels(image,mode,monochrome=false,phase=0){
-  const w=image.width,h=image.height;
+  // Use native video pixels for focused rMQR crops, before the preview canvas downsamples them.
+  const w=image.videoWidth||image.width,h=image.videoHeight||image.height;
   const roi=focusedCrop(w,h,mode,phase);
   const canvas=document.createElement('canvas');
   canvas.width=roi.outputWidth;canvas.height=roi.outputHeight;
@@ -490,12 +491,12 @@ function makeFocusedPixels(image,mode,monochrome=false,phase=0){
   canvas.width=canvas.height=1;
   return pixels;
 }
-async function readFocused(lib,source,mode,frame){
+async function readFocused(lib,source,mode,frame,cropSource=source){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3===1:(mode==='pdf417'||mode==='micropdf417')&&frame%3===1;
+  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3!==0:(mode==='pdf417'||mode==='micropdf417')&&frame%3===1;
   const monochrome=mode==='maxicode'&&useCrop&&frame%4===2;
-  const pix=useCrop?makeFocusedPixels(source,mode,monochrome,frame):
+  const pix=useCrop?makeFocusedPixels(cropSource,mode,monochrome,frame):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
     ...wasmOptions,formats:[format],
@@ -573,7 +574,7 @@ async function cameraLoop(token){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
               if(autoPdf||autoRmqr||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
-                result=await readFocused(lib,canvas,autoPdf?'pdf417':autoRmqr?'rmqr':mode,autoPdf?autoPdfPass++:frame);
+                result=await readFocused(lib,canvas,autoPdf?'pdf417':autoRmqr?'rmqr':mode,autoPdf?autoPdfPass++:frame,captureMode==='rmqr'?video:canvas);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
                 const formats=focused?[focused]:frame%4===0
