@@ -3,7 +3,7 @@
 import { decodeColor } from '../vendor/iris/color.js';
 import { decodeColorMarkers } from '../vendor/iris/markers.js';
 import { decodeColorRobust } from '../vendor/iris/robust.js';
-import {cropIrisCard} from './iris-camera.js';
+import {cropIrisCard,cropIrisDisk} from './iris-camera.js';
 
 self.onmessage=({data:job})=>{
   const {id,width,height,buffer}=job;
@@ -22,6 +22,15 @@ self.onmessage=({data:job})=>{
       if(!text){try{text=decodeColorRobust(card,{budgetMs:650})?.text||''}catch{}}
       if(!text&&Math.abs(card.width-card.height)<Math.max(card.width,card.height)*.08){
         try{text=decodeColor(card)?.text||''}catch{}
+      }
+    }
+    // Partially cropped white margins cannot provide all three RGB calibration
+    // markers. Recover the saturated disk and use pupil/ring geometry instead.
+    if(!text){
+      const disk=cropIrisDisk(grid);
+      if(disk){
+        try{text=decodeColorRobust(disk,{budgetMs:850})?.text||''}catch{}
+        if(!text){try{text=decodeColorMarkers(disk)?.text||''}catch{}}
       }
     }
     // Fallback for full-white backgrounds where the white-card locator cannot

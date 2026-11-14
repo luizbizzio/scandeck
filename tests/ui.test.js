@@ -296,7 +296,7 @@ test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames'
  assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
  assert.match(script,/const autoIris=mode==='auto'&&frame%12===7/);
  assert.match(script,/const autoChroma=mode==='auto'&&frame%6===4/);
- assert.match(script,/const autoPdf=mode==='auto'&&frame%6===2/);
+ assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
  assert.match(script,/autoPdf\?'pdf417':mode,frame/);
@@ -541,7 +541,7 @@ test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML contr
  assert.doesNotMatch(source,/document\.write/);
  assert.match(source,/n<5/);
  assert.match(runtime,/const wireMarkup=game\.title==='Wire Crisis'/);
- assert.match(runtime,/wireMarkup\+'<script>'\+game\.source/);
+ assert.match(runtime,/wireMarkup\+codeMarkup\+'<script>'\+game\.source/);
  assert.match(script,/game\.source\.startsWith\('n=0;f=\(\)=>'\)/);
 });
 

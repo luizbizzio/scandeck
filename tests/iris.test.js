@@ -4,6 +4,8 @@ import {readFileSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
 import {encodeColor,renderColorRaster,decodeColor} from '../vendor/iris/color.js';
 import {decodeColorMarkers} from '../vendor/iris/markers.js';
+import {decodeColorRobust} from '../vendor/iris/robust.js';
+import {cropIrisDisk} from '../src/iris-camera.js';
 
 function readRgbPng(name){
   const file=readFileSync(new URL('../assets/'+name+'.png',import.meta.url));
@@ -69,4 +71,20 @@ test('IRIS camera worker prioritizes RGB markers and isolated card over costly f
  assert.ok(worker.indexOf('decodeColorMarkers(card)')<worker.indexOf('decodeColorRobust(card,'));
  assert.match(worker,/budgetMs:650/);
  assert.match(worker,/budgetMs:600/);
+});
+
+test('IRIS accepts a disk with part of the white quiet zone outside the image',()=>{
+ const png=readRgbPng('iris-wire'),trim=Math.floor(png.width*.075);
+ const side=png.width-trim*2,target=880,data=new Uint8Array(target*target*3);
+ for(let y=0;y<target;y++)for(let x=0;x<target;x++){
+  const sx=trim+Math.floor((x+.5)*side/target),sy=trim+Math.floor((y+.5)*side/target);
+  const from=(sy*png.width+sx)*3,to=(y*target+x)*3;
+  data[to]=png.data[from];data[to+1]=png.data[from+1];data[to+2]=png.data[from+2];
+ }
+ const candidate=cropIrisDisk({width:target,height:target,data});
+ assert.ok(candidate,'The disk must be localized even without the whole white card');
+ assert.ok(candidate.width*candidate.height<1_600_000);
+ const expected=readFileSync(new URL('../assets/iris-wire.txt',import.meta.url),'utf8');
+ const result=decodeColorRobust(candidate,{budgetMs:1700});
+ assert.equal(result?.text,expected);
 });
