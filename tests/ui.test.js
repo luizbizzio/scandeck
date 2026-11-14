@@ -312,8 +312,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=77/);
-  assert.match(html,/src\/style\.css\?v=77/);
+  assert.match(html,/src\/app\.js\?v=78/);
+  assert.match(html,/src\/style\.css\?v=78/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -395,8 +395,8 @@ test('footer has the centered creator credit and keeps version 1.0.0',()=>{
 });
 test('About correctly explains Full, Partial and Bytecode without changing the game count',()=>{
   assert.match(html,/Six games contain complete HTML/);
-  assert.match(html,/Four are Partial/);
-  assert.match(html,/Two use Bytecode/);
+  assert.match(html,/Three are Partial/);
+  assert.match(html,/Three are Bytecode/);
   assert.match(html,/legend-bytecode/);
 });
 
@@ -583,7 +583,7 @@ test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
  assert.match(script,/databar:'DataBarExpStk'/);
  assert.match(script,/generatorFormat==='databar'/);
  assert.match(script,/decodeCodebreakerDataBar/);
- assert.match(script,/game.kind==='codebreaker'\)return \{status:'partial',label:'Partial'/);
+ assert.match(script,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
  assert.match(script,/DataBarExpStk:'GS1 DataBar Expanded Stacked'/);
 });
 
@@ -591,8 +591,8 @@ test('DataBar displays a stacked code, not a square JAB preview',()=>{
  const card=html.slice(html.indexOf('id="databar-games-heading"'),html.indexOf('id="iris-games-heading"'));
  assert.match(card,/stacked-code-preview wide-code-preview tight-code-preview/);
  assert.doesNotMatch(card,/jab-code-preview/);
- assert.match(card,/code-embedding-partial/);
- assert.match(card,/>Partial<\/span>/);
+ assert.match(card,/code-embedding-bytecode/);
+ assert.match(card,/>Bytecode<\/span>/);
 });
 
 test('all 12 library formats are unique and DataBar bytecode is playable',()=>{
