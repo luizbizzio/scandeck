@@ -431,10 +431,11 @@ function isGamePayload(text){
   return !!decodeCodebreakerDataBar(text) || /^(?:299000[0-9]{7}$|V1|LO:|SDM:|SD1:|SDC:|SDB:|SDH:|SDY:|SDZ:|SDS:|SDJ:|IP3:|MQ:|s=\[)/.test(text||'');
 }
 // Experimental decoders run off-thread; no image data is sent to a server.
-let exoticWorker=null,exoticSeq=0;
+let exoticWorker=null,exoticSeq=0,exoticReads=0;
 const exoticWaiting=new Map();
 function resetExoticWorker(){
   if(exoticWorker){exoticWorker.terminate();exoticWorker=null}
+  exoticReads=0;
   for(const pending of exoticWaiting.values()){
     clearTimeout(pending.timer);pending.resolve('');
   }
@@ -448,6 +449,10 @@ function getExoticWorker(){
       if(!pending)return;
       clearTimeout(pending.timer);
       exoticWaiting.delete(data.id);
+      if(++exoticReads>=48&&exoticWaiting.size===0){
+        // Long-running DotCode sessions should not retain a growing WASM heap.
+        exoticWorker.terminate();exoticWorker=null;exoticReads=0;
+      }
       pending.resolve(typeof data.text==='string'?data.text:'');
     };
     exoticWorker.onerror=resetExoticWorker;
@@ -531,9 +536,15 @@ async function detectNativeFocused(mode,video){
   if(!nativeFocusPromise)nativeFocusPromise=(async()=>{
     try{
       const supported=await BarcodeDetector.getSupportedFormats();
-      const map=new Map(supported.map(name=>[name,new BarcodeDetector({formats:[name]})]));
+      const map=new Map();
+      for(const name of ['code_128','ean_13','pdf417','rmqr','gs1_databar_expanded']){
+        if(!supported.includes(name))continue;
+        try{map.set(name,new BarcodeDetector({formats:[name]}))}catch{}
+      }
       const autoFormats=['qr_code','data_matrix','aztec','code_128','ean_13','pdf417','micro_qr'].filter(name=>supported.includes(name));
-      if(autoFormats.length)map.set('auto',new BarcodeDetector({formats:autoFormats}));
+      if(autoFormats.length){
+        try{map.set('auto',new BarcodeDetector({formats:autoFormats}))}catch{}
+      }
       return map;
     }catch{return new Map()}
   })();
