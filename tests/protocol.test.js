@@ -76,19 +76,19 @@ test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
   const payload=readFileSync(new URL('../assets/taprush-code128.txt',import.meta.url),'utf8');
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
   assert.equal(payload,'SDS:'+source);
-  assert.equal(payload.length,63,'The complete five-second game must remain compact');
+  assert.equal(payload.length,53,'The five-second game must remain compact');
   const game=await decodeGame(payload);
   assert.equal(game.kind,'standalone');
   assert.equal(game.source,source);
   assert.match(game.source,/onclick/);
   assert.match(game.source,/setTimeout/);
-  assert.match(game.source,/alert\(n,onclick=0\)/);
-  assert.match(game.source,/onclick=0/);
+  assert.match(game.source,/alert\(n\)/);
+  assert.doesNotMatch(game.source,/onclick=0/);
   assert.match(gameDocument(game),/setTimeout/);
   const png=readFileSync(new URL('../assets/taprush-code128.png',import.meta.url));
   assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 });
-test('Tap Rush scores every click for exactly five seconds without an external game engine',()=>{
+test('Tap Rush scores every click for exactly five seconds using encoded JavaScript',()=>{
   const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();
   const timers=[],scores=[];
   const context={
@@ -104,7 +104,8 @@ test('Tap Rush scores every click for exactly five seconds without an external g
   assert.deepEqual(scores,[],'The result is not shown early');
   timers[0].fn();
   assert.deepEqual(scores,[37],'The final result is the tap count');
-  assert.equal(context.onclick,0,'Further clicks are disabled after five seconds');
+  assert.equal(typeof context.onclick,'function','The runtime disables input after receiving the final score');
+  assert.match(gameDocument({kind:'standalone',title:'Tap Rush',source}),/window\.__sdRushDone=true;window\.onclick=0;/);
 });
 
 test('Snake runs alone with keyboard and mobile swipe controls',()=>{

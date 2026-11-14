@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=53';
-import { gameDocument } from './runtime.js?v=53';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=54';
+import { gameDocument } from './runtime.js?v=54';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=53';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=54';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=53',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=54',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -829,7 +829,7 @@ function selectGenerator(format) {
   $('create-label').textContent=tiny?'Micro VM program (13 characters)':format==='bar'?'Game code (JavaScript or LO: level)':script?'Game code (JavaScript)':'Game code (HTML)';
   $('create-source').placeholder=tiny?'V1R4T3DIC+L0X':script?'Paste standalone JavaScript here':'Paste a complete HTML game here';
   $('create-help').textContent=tiny?'Micro QR stores the full 13-character VM program (random number, display, timer, input, scoring and endless loop with a shorter timer for each point). A generic interpreter runs the instructions. Not standalone JavaScript.':
-    format==='bar'?'The Tap Rush example uses 63 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
+    format==='bar'?'The Tap Rush example uses 53 encoded characters. All game rules are inside the Code 128. Larger barcodes may be hard to scan on phones.':
     format==='micropdf417'?'MicroPDF417 holds a short JavaScript game. Keep the entire barcode sharp and inside the camera frame.':
     format==='dotcode'?'DotCode stores a complete compressed HTML game. ScanDeck uses an experimental strict DotCode reader.':
     format==='maxi'?'MaxiCode holds only a very small standalone JavaScript program.':
@@ -849,7 +849,7 @@ $('use-example').addEventListener('click',async()=>{
   if(generatorFormat==='microqr'){
     $('create-source').value='V1R4T3DIC+L5X';
   }else if(generatorFormat==='bar'){
-    $('create-source').value='n=0;onclick=()=>n++||setTimeout(()=>{alert(n);onclick=0},5e3)';
+    $('create-source').value='n=0;onclick=()=>n++||setTimeout(()=>alert(n),5e3)';
   }else if(generatorFormat==='micropdf417'){
     $('create-source').value="s=0;document.write('<button id=b>ROLL</button><p id=p>0');b.onclick=()=>{r=Math.random()*6|0;s=r?s+r+1:0;p.textContent=s?'SCORE '+s:'BUST'}";
   }else if(!['bar','maxi','rmqr','chromaqr'].includes(generatorFormat)){

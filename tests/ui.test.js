@@ -33,6 +33,8 @@ test('games show their actual QR and Code 128 images with full-size links', () =
   }
   assert.match(html, /class="game-code-preview qr-code-preview"/);
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
+  assert.match(html, /class="game-code-preview stacked-code-preview"/);
+  assert.match(css, /\.stacked-code-preview \.game-code-paper\{width:190px;height:190px/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playMatrixExample\('dice-streak-micropdf417','Dice Streak','MicroPDF417'\)/);
   assert.match(script, /playMatrixExample\('taprush-code128','Tap Rush','Code128'\)/);
@@ -295,8 +297,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=53/);
-  assert.match(html,/src\/style\.css\?v=53/);
+  assert.match(html,/src\/app\.js\?v=54/);
+  assert.match(html,/src\/style\.css\?v=54/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
