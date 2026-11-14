@@ -39,7 +39,7 @@ test('published GS1 DataBar PNG decodes its real pixels with ZXing',async()=>{
   formats:['DataBarExpStk','DataBarExp'],tryHarder:true,tryRotate:true,
   tryDownscale:false,maxNumberOfSymbols:1
  });
- assert.ok(found.some(hit=>decodeCodebreakerDataBar(hit.text)?.payload===payload),
+ assert.ok(found.some(hit=>hit.format==='DataBarExpStk'&&decodeCodebreakerDataBar(hit.text)?.payload===payload),
   'ZXing failed to recognize the published DataBar PNG and its GS1 bytecode');
 });
 
