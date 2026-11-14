@@ -36,7 +36,7 @@ await build({
  platform:'neutral',format:'esm',target:'es2022',bundle:true,minify:true,logLevel:'warning',
  legalComments:'eof',
  plugins:[{name:'jab-ldpc-matrix-cache',setup(api){
-   api.onLoad({filter:/[/\\\\]jabcode[/\\\\]ldpc\\.js$/},()=>({contents:optimizedLDPC,loader:'js'}));
+   api.onLoad({filter:/ldpc[.]js$/},()=>({contents:optimizedLDPC,loader:'js'}));
  }}]
 });
 const {encodeJABCode,decodeJABCode,toColorImageData}=await import('../vendor/jabcode.js');
