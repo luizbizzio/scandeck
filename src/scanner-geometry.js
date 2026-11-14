@@ -6,8 +6,8 @@ export function captureDimensions(width,height,mode='auto'){
   const dense=DENSE.has(mode);
   // Dedicated 1D/rMQR/Maxi readers need full detail to resolve thin modules.
   const highDetail=['code128','rmqr','maxicode','pdf417','micropdf417'].includes(mode);
-  const maxEdge=mode==='code128'?2300:highDetail?1900:dense?1500:mode==='auto'?960:mode==='iris'||mode==='chromaqr'?1200:1440;
-  const maxPixels=mode==='code128'?2_200_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
+  const maxEdge=mode==='code128'?2300:mode==='codablockf'?1920:highDetail?1900:dense?1500:mode==='auto'?960:mode==='iris'||mode==='chromaqr'?1200:1440;
+  const maxPixels=mode==='code128'?2_200_000:mode==='codablockf'?1_950_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }

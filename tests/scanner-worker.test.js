@@ -39,7 +39,7 @@ test('legacy Codablock F and current DotCode payloads reach the experimental rea
 });
 
 test('continuous scanner recycles worker memory without affecting camera streams',()=>{
-  assert.match(app,/\+\+barcodeReads>=40/);
+  assert.match(app,/\+\+barcodeReads>=90/);
   assert.match(app,/\+\+irisReads>=32/);
   assert.match(app,/mode==='chroma'\?6800:options\.formats\?\.length===1\?3000:2200/);
 });
