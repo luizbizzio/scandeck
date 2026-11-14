@@ -61,7 +61,7 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] PDF417: move the paddle and clear all bricks in Breakout Mini.
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
-- [ ] rMQR: solve the math puzzle using the input field.
+- [ ] JAB Code: solve the math puzzle using the input field.
 - [ ] IRIS Wire Crisis: the complete game decodes from the image pixels, with no fallback payload lookup.
 - [ ] ChromaQR Chroma Rush: all three RGB QR channels decode and reconstruct the complete game, with no fallback payload lookup.
 - [ ] IRIS and ChromaQR: independently validate camera framing, focus, lighting and perspective on real mobile devices.
@@ -93,10 +93,10 @@ Record: device model, OS version, browser version, code format, display or print
 
 ## PNG and focused camera regression
 
-- [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, MaxiCode, rMQR, IRIS and ChromaQR.
+- [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, JAB Code, IRIS and ChromaQR.
 - [ ] Create outputs PNG files, without exposing SVG downloads.
 - [ ] Tap Rush: the Code 128 holds the full 61-character JavaScript, not level bytecode.
-- [ ] Test focused PDF417, MaxiCode and rMQR scanning from a second screen with a real mobile phone.
+- [ ] Test focused PDF417, MaxiCode and JAB Code scanning from a second screen with a real mobile phone.
 - [ ] Test the compact 16-ring IRIS Wire Crisis and the RGB ChromaQR Chroma Rush under bright and dim lighting.
 - [ ] Compare default All formats with individual focused scanning; verify the camera runs without freezing.
 
@@ -105,8 +105,8 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Mobile Open camera covers the entire viewport and shows the full, uncropped video frame.
 - [ ] Close remains visible and reachable on phones with a notch, safe-area padding or small screens.
 - [ ] Scan format selection is accessible while the full-screen camera is running, with no horizontal overflow.
-- [ ] Switching rMQR or MaxiCode inside the camera immediately changes the focused decoding path.
-- [ ] rMQR: test centered cropped and full-frame scans at multiple sizes and orientations.
+- [ ] Switching JAB Code or MaxiCode inside the camera immediately changes the focused decoding path.
+- [ ] JAB Code: test centered cropped and full-frame scans at multiple sizes and orientations.
 - [ ] MaxiCode: test pure monochrome upright capture and straight-on image upload; do not promise arbitrary angle support.
 - [ ] Tap Rush: count unrestricted taps for five seconds; the first tap starts the timer and the final result shows the number of taps.
 - [ ] Confirm Esc and Close stop the camera tracks and restore page scrolling.
