@@ -18,7 +18,7 @@ export function bestDeflateRaw(input){
 // Minify JavaScript syntax only, without changing UI elements, game rules or
 // the JavaScript scope visible to inline browser handlers. Keep original files
 // human-readable in examples/ and encode the semantically equivalent program.
-export async function compactGameHtml(source){
+export async function compactGameHtml(source,{minifyGlobals=false}={}){
  const {minify}=await import('terser');
  const matches=[...source.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)];
  let result=source;
@@ -26,7 +26,7 @@ export async function compactGameHtml(source){
   const m=matches[i],script=m[2];
   if(!script.trim())continue;
   const optimized=await minify(script,{
-   ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:false},
+   ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:minifyGlobals},
    format:{comments:false}
   });
   if(!optimized.code||optimized.code.length>=script.length)continue;

@@ -77,7 +77,7 @@ for (const game of matrixGames) {
 // Generate Ironpass from its complete HTML on every build. The writer selects
 // the smallest QR version fitting the whole program, rather than forcing v40.
 const ironpassOriginal=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();
-const ironpassSource=await compactGameHtml(ironpassOriginal);
+const ironpassSource=await compactGameHtml(ironpassOriginal,{minifyGlobals:true});
 const ironpassPayload='IP3:'+base43Encode(bestDeflateRaw(ironpassSource));
 if(ironpassPayload.length>4296)throw Error('Ironpass exceeds QR-L capacity');
 if((await decodeGame(ironpassPayload)).source!==ironpassSource)throw Error('Ironpass lost game content');
