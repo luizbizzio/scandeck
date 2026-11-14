@@ -55,5 +55,5 @@ export function exoticCaptureRegion(width,height,frame){
 export function scanPause(mode){
   if(mode==='iris'||mode==='chromaqr')return 720;
   if(mode==='codablockf'||mode==='dotcode')return 650;
-  return mode==='auto'?290:370;
+  return mode==='auto'?240:370;
 }
