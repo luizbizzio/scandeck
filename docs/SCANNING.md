@@ -17,19 +17,19 @@ Code generation and real-phone decoding are different problems. A perfect downlo
 | QR Code, Data Matrix, Aztec, Micro QR | Standard decoder support, but game size and camera quality still matter |
 | Code 128 | Very wide when it contains a full JavaScript game. Keep both side margins visible |
 | PDF417 | Fine stacked bars. Dedicated mode retains more capture detail and tries a centered crop |
-| JAB Code | Eight-color square. Scan from a straight angle with the whole white margin visible. Current detector is experimental |
+| GS1 DataBar Expanded Stacked | Stacked horizontal barcode with a dedicated ZXing focus. Keep every row and both side edges visible |
 | MaxiCode | Best upright, frontal and sharp. Reliable camera reading is not guaranteed |
 | Codablock F | Experimental reader; full stacked code and clean straight lines are required |
 | DotCode | Experimental reader; dot spacing and perspective can cause failure |
 | IRIS | Experimental ring/color detection. Use even light and a centered symbol |
 | ChromaQR | RGB planes are affected by screen brightness, camera white balance and blur |
 
-Auto mode includes periodic JAB and ChromaQR attempts, plus occasional IRIS scans. Codablock F and DotCode require dedicated focus. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
+Auto includes GS1 DataBar in ZXing scans and periodic ChromaQR and IRIS attempts. Codablock F and DotCode require dedicated focus. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
 
 
-## JAB Code (Codebreaker)
+## GS1 DataBar Expanded Stacked (Codebreaker)
 
-The Codebreaker game is now stored in a real 8-color JAB Code image. The build generates `assets/codebreaker-jab.png` and checks that reading its pixels returns the exact saved JavaScript payload. ScanDeck's experimental JAB decoder looks for a white code card, estimates the square module bounds and tries small legal symbol versions. It does not look up the game's name or payload from an image. Codebreaker fits a 25×25-module single symbol. Camera focus and color balance still matter; upload and simulated-photo tests do not prove reliable scanning on real phone cameras. The JAB library implements a limited default-mode profile, and third-party interoperability remains unverified.
+The published Codebreaker barcode stores `91SDCB7`, an internal GS1 AI (91) data field with ScanDeck's short `SDCB7` instruction. The integer configures the seven guesses. ScanDeck supplies the Codebreaker interpreter with the random number, UP/DOWN hints, WIN and LOSE, as it does with other Bytecode games. No JavaScript or URL is stored inside this DataBar. At build time the ZXing-C++ writer and, if needed, BWIPP generator are tried; the build fails closed unless the resulting actual PNG can be decoded with ZXing. Dedicated camera focus is `DataBarExpStk` and Auto periodically includes it. Reading a clean PNG is not proof that phone-camera scans will work at different angles and distances.
 
 ## Test reports
 
@@ -39,7 +39,7 @@ See [QA_CHECKLIST.md](QA_CHECKLIST.md) for full test cases.
 
 ## Color code display
 
-JAB, IRIS and ChromaQR previews and downloads use PNG. If a vector preview scans and the PNG does not, compare the displayed sizes before changing the decoder. A vector source improves image sharpness but does not eliminate camera color calibration issues.
+GS1 DataBar, IRIS and ChromaQR previews and downloads use PNG. If a vector preview scans and the PNG does not, compare the displayed sizes before changing the decoder. A vector source improves image sharpness but does not eliminate camera color calibration issues.
 
 ## DotCode interoperability
 
@@ -91,7 +91,7 @@ The experimental DotCode and Codablock F camera modes now retain nearly 2 MP of 
 
 ## Sustained camera performance and Auto mode
 
-Auto scans standard formats with periodic focused JAB, ChromaQR and IRIS passes. Color scans use dedicated workers rather than ZXing's grayscale reader. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
+Auto scans standard formats including DataBar, with periodic ChromaQR and IRIS passes. Color scans use dedicated workers rather than ZXing's grayscale reader. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
 
 ## Independent Codablock F interoperability audit
 
