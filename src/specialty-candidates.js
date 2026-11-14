@@ -107,7 +107,7 @@ export function isolateDarkSymbol(image){
 }
 // Recover small camera tilt before ZXing's pure rMQR sampler. Unlike tryRotate,
 // which handles quarter-turns, this corrects angles such as 6 or 10 degrees.
-export function deskewDarkSymbol(image){
+export function deskewDarkSymbol(image,angleOffset=0){
   const {width:w,height:h,data}=image;
   if(w<90||h<60||w*h>1_600_000)return null;
   let n=0,sx=0,sy=0,sxx=0,syy=0,sxy=0;
@@ -122,6 +122,7 @@ export function deskewDarkSymbol(image){
   if(angle>Math.PI/4)angle-=Math.PI/2;
   if(angle<-Math.PI/4)angle+=Math.PI/2;
   if(Math.abs(angle)<.025||Math.abs(angle)>.30)return null;
+  angle+=angleOffset;
   const cosine=Math.cos(angle),sine=Math.sin(angle),cx=(w-1)/2,cy=(h-1)/2;
   const out=new Uint8ClampedArray(data.length).fill(255);
   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
