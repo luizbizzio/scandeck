@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=58';
-import { gameDocument } from './runtime.js?v=58';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=59';
+import { gameDocument } from './runtime.js?v=59';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=58';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=59';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=58',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=59',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -728,10 +728,11 @@ document.addEventListener('click',event=>{
   const groupFormat=anchor.closest('.game-group')?.querySelector('.group-title')?.textContent?.trim()||'';
   const aboutFormat=anchor.closest('.about-code-card')?.querySelector('.about-code-heading h3')?.textContent?.trim()||'';
   $('code-image-heading').textContent=(groupFormat||aboutFormat||'Code preview').replace(/ barcode$/i,'');
+  codeImageDialog.classList.toggle('dotcode-viewer',groupFormat==='DotCode'||aboutFormat==='DotCode');
   if(!codeImageDialog.open)codeImageDialog.showModal();
 });
 $('close-code-image').addEventListener('click',()=>codeImageDialog.close());
-codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src')});
+codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src');codeImageDialog.classList.remove('dotcode-viewer')});
 codeImageDialog.addEventListener('click',event=>{if(event.target===codeImageDialog)codeImageDialog.close()});
 
 const catalogPromises=new Map();
