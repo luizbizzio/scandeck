@@ -91,7 +91,7 @@ async function acceptPayload(raw, mode='manual', format='') {
     if(format==='RMQRCode'&&game.kind==='standalone')game.title='Codebreaker';
     if(['QRCode','qr_code','CodablockF'].includes(format)&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
     if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('n=0;onclick=_=>n++'))game.title='Tap Rush';
-    if(format==='DotCode'&&game.kind==='standalone'&&game.source.startsWith("g=c.getContext('2d')"))game.title='Neon Dodge';
+    if(format==='DotCode'&&game.kind==='standalone'&&game.source.startsWith('p=s=z=0;y=-32;'))game.title='Neon Dodge';
     if(format==='IRIS'&&game.kind==='standalone'&&game.source.startsWith('n=0;f=()=>'))game.title='Wire Crisis';
     if(format==='ChromaQR'&&game.kind==='html'&&game.source.includes('CHROMA RUSH'))game.title='Chroma Rush';
     selectedGame = game;
@@ -531,7 +531,7 @@ async function detectNativeFocused(mode,video){
   catch{return null}
 }
 async function cameraLoop(token){
-  let frame=0,slowDecodeBackoff=0;
+  let frame=0,slowDecodeBackoff=0,autoPdfPass=0;
   // Reuse the capture surface. Native BarcodeDetector can work directly on video.
   const canvas=document.createElement('canvas');
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -543,12 +543,12 @@ async function cameraLoop(token){
           const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
           const decodeStarted=performance.now();
           if(frame%2===0){
-            const native=await detectNativeFocused(mode,video);
+            const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
           }
           const autoIris=mode==='auto'&&frame%12===7;
           const autoChroma=mode==='auto'&&frame%6===4;
-          const autoPdf=mode==='auto'&&frame%6===2;
+          const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
           if(mode==='iris'||autoIris){
             // Preserve RGB channels; expensive IRIS scans run periodically in auto.
             const crop=centeredIrisFrame(video,frame%3===2);
@@ -571,7 +571,7 @@ async function cameraLoop(token){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
               if(autoPdf||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
-                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,frame);
+                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,autoPdf?autoPdfPass++:frame);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
                 const formats=focused?[focused]:frame%4===0

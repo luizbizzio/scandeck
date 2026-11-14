@@ -48,20 +48,24 @@ test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
  assert.equal(state.a,3.6,'Retry must reset acceleration to the start speed');
 });
 
-test('published DotCode JavaScript advances at the same rate across frame rates and resets speed',()=>{
+test('compact DotCode game still moves, accelerates and resets on retry',()=>{
  const js=readFileSync(new URL('../examples/neon-dodge-dotcode.js',import.meta.url),'utf8').trim();
  function play(fps){
-   const pen={fillRect(){},fillText(){},set fillStyle(v){},set font(v){}};
-   const c={getContext:()=>pen};
-   const state={c,Math,requestAnimationFrame(fn){state.next=fn}};
+   const c={onclick:null},state={c,Math};
    vm.runInNewContext(js,state,{timeout:500});
-   for(let k=1;k<=fps;k++)state.next(k*1000/fps);
+   let previous=0;
+   for(let k=1;k<=fps;k++){
+     const elapsed=k*1000/fps;
+     state.tick(Math.min(3,(elapsed-previous)/17||1));
+     previous=elapsed;
+   }
    return state;
  }
  const slow=play(30),fast=play(60);
- assert.ok(Math.abs(slow.o-fast.o)<12,'Speed should be independent of display refresh rate');
- assert.ok(slow.a>4&&fast.a>4,'Obstacle speed must increase within the first second');
+ assert.ok(Math.abs(slow.y-fast.y)<14,'Obstacle movement follows elapsed time');
+ assert.ok(slow.a>4&&fast.a>4,'Obstacle speed increases');
  slow.z=1;slow.c.onclick();
- assert.equal(slow.a,4,'Retry must reset acceleration');
- assert.equal(slow.s,0,'Retry must reset score');
+ assert.equal(slow.a,4,'Retry resets speed');
+ assert.equal(slow.s,0,'Retry resets score');
+ assert.equal(slow.z,0,'Retry starts a new round');
 });

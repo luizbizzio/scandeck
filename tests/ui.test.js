@@ -544,3 +544,11 @@ test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML contr
  assert.match(runtime,/wireMarkup\+'<script>'\+game\.source/);
  assert.match(script,/game\.source\.startsWith\('n=0;f=\(\)=>'\)/);
 });
+
+test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=>{
+ assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
+ assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame\)/);
+ assert.match(script,/detectNativeFocused\(autoPdf\?'pdf417':mode,video\)/);
+ const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+ assert.match(runtime,/const codeMarkup=game.title==='Codebreaker'/);
+});
