@@ -7,6 +7,15 @@ const CSP = `<meta http-equiv="Content-Security-Policy" content="default-src 'no
 const shell = (body,attrs='',headExtra='') => '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' + CSP + headExtra + '</head><body'+attrs+'>' + body + '</body></html>';
 const escapeAttr=x=>String(x||'').slice(0,180).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
 export function gameDocument(game) {
+  if(game.kind==='eanlevel'){
+    const data=String(game.source||'');
+    if(!/^299000[0-9]{7}$/.test(data))throw Error('Invalid EAN-13 timing data.');
+    const target=Number(data.slice(6,10));
+    if(target<800||target>2999)throw Error('Invalid EAN-13 timing target.');
+    // EAN-13 stores a numeric challenge. ScanDeck supplies the reusable game program.
+    return gameDocument({...game,kind:'standalone',title:'Perfect Timing',
+      source:'n='+target+';t=0;onclick=()=>t?alert(+new Date-t-n):t=+new Date'});
+  }
   if (game.kind === 'html') {
     // The policy and optional presentation rules precede the self-contained game.
     const brick=game.title==='Brick Rush'?

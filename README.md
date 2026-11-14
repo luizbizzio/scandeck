@@ -27,7 +27,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Catch 10 | Data Matrix |
 | Pattern Memory | Aztec |
 | Brick Rush | PDF417 |
-| Perfect Timing | MaxiCode |
+| Perfect Timing | EAN-13 |
 | Pocket Reflex | Micro QR |
 | Codebreaker | rMQR |
 | Wire Crisis | IRIS |

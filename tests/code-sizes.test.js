@@ -43,9 +43,11 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
     else assert.fail(id+' has unknown completeness');
   }
   assert.equal(complete,6);
-  assert.equal(partial,5);
-  assert.equal(bytecode,1);
+  assert.equal(partial,4);
+  assert.equal(bytecode,2);
   assert.equal(manifest['reflex-microqr'].completeness,'bytecode');
+  assert.equal(manifest['timing-ean13'].completeness,'bytecode');
+  assert.equal(manifest['timing-ean13'].payloadBytes,13);
   assert.equal(manifest['taprush-code128'].completeness,'partial');
   assert.equal(manifest['chromaqr-chroma'].completeness,'full');
   assert.equal(manifest['reflex-microqr'].payloadBytes,13);

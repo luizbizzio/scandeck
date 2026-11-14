@@ -16,7 +16,7 @@ const examples=[
   ['Data Matrix','catch-datamatrix','Catch 10'],
   ['Aztec Code','memory-aztec','Pattern Memory'],
   ['PDF417','breakout-pdf417','Brick Rush'],
-  ['MaxiCode','tap-maxicode','Perfect Timing'],
+  ['EAN-13','timing-ean13','Perfect Timing'],
   ['Micro QR','reflex-microqr','Pocket Reflex'],
   ['rMQR','math-rmqr','Codebreaker'],
   ['IRIS','iris-wire','Wire Crisis'],
@@ -85,7 +85,9 @@ test('each gallery example decodes into readable source and Micro QR is identifi
     const decoded=await decodeGame(payload);
     assert.equal(typeof decoded.source,'string',game+' source is not text');
     assert.ok(decoded.source.length>0,game+' source is empty');
-    if(id==='reflex-microqr'){
+    if(id==='timing-ean13'){
+      assert.equal(decoded.kind,'eanlevel');
+    }else if(id==='reflex-microqr'){
       assert.equal(decoded.kind,'microvm');
       assert.equal(decoded.source,'V1R4T3DIC+L0X');
     }else{

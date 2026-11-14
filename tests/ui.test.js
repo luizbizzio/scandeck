@@ -21,7 +21,7 @@ test('games are clearly split by code type', () => {
   assert.match(html, /id="bar-games-heading"/);
   assert.match(html, /id="dm-games-heading"/);
   assert.match(html, /id="aztec-games-heading"/);
-  for(const id of ['pdf-games-heading','maxi-games-heading','micro-games-heading','rmqr-games-heading'])assert.ok(html.includes('id="'+id+'"'));
+  for(const id of ['pdf-games-heading','ean-games-heading','micro-games-heading','rmqr-games-heading'])assert.ok(html.includes('id="'+id+'"'));
   assert.match(html, /Download QR/);
   assert.match(html, /Download PNG/);
 });
@@ -65,7 +65,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','micropdf417','maxi','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','micropdf417','ean13','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -128,7 +128,7 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/tryDenoise:true/);
   assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
   assert.match(script,/FOCUS_FORMATS/);
-  for(const name of ['pdf417','micropdf417','maxicode','rmqr','code128','iris','chromaqr'])
+  for(const name of ['pdf417','micropdf417','ean13','rmqr','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
 });
 
@@ -215,12 +215,11 @@ test('mobile camera fills the viewport with a safe close button and scan format 
   assert.match(script,/classList\.remove\('camera-open'\)/);
   assert.match(script,/\$\('camera-mode'\)\.addEventListener\('change'/);
 });
-test('focused rMQR and MaxiCode use additional camera preprocessing',()=>{
+test('focused rMQR uses additional camera preprocessing',()=>{
   assert.match(script,/makeFocusedPixels\(/);
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
   assert.match(script,/isPure:monochrome/);
-  assert.match(script,/maxicode:'MaxiCode must be flat/);
   assert.match(script,/rmqr:'Turn your phone sideways/);
 });
 test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
@@ -277,7 +276,7 @@ test('Scan header uses a compact, optional list instead of overflowing twelve fo
   assert.match(css, /\.scanner-heading\{position:relative/);
 });
 test('mobile and desktop scanner selectors contain every format exactly once and remain synchronized',()=>{
-  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','maxicode','microqr','rmqr','iris','chromaqr','micropdf417','dotcode'];
+  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','ean13','microqr','rmqr','iris','chromaqr','micropdf417','dotcode'];
   for(const id of ['scan-mode','camera-mode']){
     const fragment=html.slice(html.indexOf('id="'+id+'"'));
     const select=fragment.slice(0,fragment.indexOf('</select>'));
@@ -359,7 +358,7 @@ test('About explains origin and use of all 12 formats with history source links'
   assert.match(about,/Meet the 12 code formats/);
   const cards=[...about.matchAll(/<article class="about-code-card">([\s\S]*?)<\/article>/g)];
   assert.equal(cards.length,12);
-  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','MaxiCode','Micro QR','rMQR','IRIS','ChromaQR']){
+  for(const format of ['QR Code','Code 128','MicroPDF417','DotCode','Data Matrix','Aztec Code','PDF417','EAN-13','Micro QR','rMQR','IRIS','ChromaQR']){
     assert.ok(cards.some(([,card])=>card.includes('<h3>'+format+'</h3>')),format+' must have a history card');
   }
   for(const [,card] of cards){
@@ -392,8 +391,8 @@ test('footer has the centered creator credit and keeps version 1.0.0',()=>{
 });
 test('About correctly explains Full, Partial and Bytecode without changing the game count',()=>{
   assert.match(html,/Six games contain a full HTML game/);
-  assert.match(html,/Five contain complete JavaScript/);
-  assert.match(html,/Pocket Reflex is Bytecode/);
+  assert.match(html,/Four contain JavaScript/);
+  assert.match(html,/Two are Bytecode/);
   assert.match(html,/legend-bytecode/);
 });
 
@@ -483,9 +482,9 @@ test('all code previews open an in-page dialog headed with the barcode type',()=
   assert.equal((html.match(/class="about-code-example"/g)||[]).length,12);
 });
 
-test('MaxiCode/rMQR uploads get a pure-image pass and the camera dynamically limits CPU use',()=>{
+test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU use',()=>{
  const upload=script.slice(script.indexOf('async function detectImage('),script.indexOf('async function uploadImage('));
- assert.match(upload,/for\(const format of \['MaxiCode','RMQRCode'\]\)/);
+ assert.match(upload,/for\(const format of \['RMQRCode'\]\)/);
  assert.match(upload,/formats:\[format\],isPure:true/);
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
  assert.match(script,/slowDecodeBackoff=elapsed>750/);

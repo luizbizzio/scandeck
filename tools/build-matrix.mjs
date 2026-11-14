@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import { deflateRawSync } from 'node:zlib';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
-import { base43Encode, packScript } from '../src/protocol.js';
+import { base43Encode, packScript, packEanLevel } from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);
@@ -11,7 +11,7 @@ mkdirSync(new URL('vendor/zxing-wasm/',root),{recursive:true});
 const matrixGames=[
   {input:'examples/dice-streak-micropdf417.js',output:'dice-streak-micropdf417',format:'MicroPDF417',kind:'script',max:150},
   {input:'examples/breakout-pdf417.html',output:'breakout-pdf417',format:'PDF417',kind:'html',max:1700},
-  {input:'examples/tap-maxicode.js',output:'tap-maxicode',format:'MaxiCode',kind:'script',max:95},
+  {input:'examples/perfect-timing-ean13.txt',output:'timing-ean13',format:'EAN13',kind:'ean',max:13},
   {input:'examples/reflex-microqr.txt',output:'reflex-microqr',format:'MicroQRCode',kind:'tiny',max:15},
   {input:'examples/math-rmqr.js',output:'math-rmqr',format:'RMQRCode',kind:'script',max:160},
   {input:'examples/catch-datamatrix.html',output:'catch-datamatrix',format:'DataMatrix'},
@@ -20,11 +20,11 @@ const matrixGames=[
 
 for (const game of matrixGames) {
   const source=readFileSync(new URL(game.input,root),'utf8').trim();
-  const payload=game.kind==='script'?packScript(source):game.kind==='tiny'?source:
+  const payload=game.kind==='script'?packScript(source):game.kind==='ean'?packEanLevel(source):game.kind==='tiny'?source:
     'SD1:'+base43Encode(deflateRawSync(Buffer.from(source)));
   const max=game.max??1400;
   if (payload.length>max) throw new Error(game.format+' game is too large ('+payload.length+' > '+max+').');
-  const opts={format:game.format,scale:game.format==='PDF417'||game.format==='MicroPDF417'?10:game.format==='RMQRCode'?12:game.format==='MaxiCode'?12:8};
+  const opts={format:game.format,scale:game.format==='PDF417'||game.format==='MicroPDF417'?10:game.format==='RMQRCode'?12:game.format==='EAN13'?12:8};
   let result=await writeBarcode(payload,opts);
   let selectedPayload=payload;
   if(game.format==='RMQRCode'){

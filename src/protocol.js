@@ -154,10 +154,24 @@ export function packMicroQuiz(text) {
     throw new Error('The maze must keep its entrance and exit open.');
   return value;
 }
+export function packEanLevel(input){
+ const raw=String(input||'').trim();
+ if(!/^299000[0-9]{6}(?:[0-9])?$/.test(raw))throw Error('EAN-13 needs a 12-digit timing level starting with 299000.');
+ const stem=raw.slice(0,12),target=Number(stem.slice(6,10)),step=Number(stem.slice(10,12));
+ if(target<800||target>2999||step<1)throw Error('EAN-13 target must be 0800-2999 ms and step 01-99.');
+ let sum=0;for(let i=0;i<12;i++)sum+=Number(stem[i])*(i%2?3:1);
+ const code=stem+((10-sum%10)%10);
+ if(raw.length===13&&raw!==code)throw Error('Invalid EAN-13 check digit.');
+ return code;
+}
 export async function decodeGame(raw) {
   const trimmed = raw.trim();
   const value = trimmed.startsWith('SDJ:') || trimmed.startsWith('SDS:') ? trimmed : trimmed.replace(/\s+/g, '');
   if (!value) throw new Error('No game code was provided.');
+  if(/^299000[0-9]{7}$/.test(value)){
+    const payload=packEanLevel(value);
+    return {title:'Perfect Timing',type:'EAN-13 / TIMING LEVEL',kind:'eanlevel',source:payload,payload,size:payload.length};
+  }
   if(value.startsWith('LO:')){
     if(!/^LO:[0-9A-F]{4}$/.test(value)||value==='LO:0000')
       throw new Error('Invalid Lights Out level. Use LO: followed by four uppercase hex digits.');
