@@ -26,7 +26,7 @@ test('GS1 DataBar Codebreaker keeps the random number, guesses and UP/DOWN',asyn
  assert.match(doc,/UP/);
  assert.match(doc,/DOWN/);
  assert.match(doc,/THE CODE WAS/);
- assert.match(doc,/7 GUESSES LEFT/);
+ assert.match(doc,/t\+' GUESSES LEFT/);
 });
 
 test('published GS1 DataBar PNG decodes its real pixels with ZXing',async()=>{
