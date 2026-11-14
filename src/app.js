@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=70';
-import { gameDocument } from './runtime.js?v=70';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=71';
+import { gameDocument } from './runtime.js?v=71';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=70';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=71';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=70',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=71',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -545,6 +545,8 @@ async function cameraLoop(token){
           const autoIris=mode==='auto'&&frame%12===7;
           const autoChroma=mode==='auto'&&frame%6===4;
           const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
+          // Give rMQR its independent AnyDCode path in Auto, not just ZXing's generic sweep.
+          const autoRmqr=mode==='auto'&&frame%8===3&&!autoPdf;
           if(frame%2===0){
             const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
@@ -557,7 +559,7 @@ async function cameraLoop(token){
               if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
             }finally{crop.width=crop.height=1}
           }else{
-            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':mode;
+            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':autoRmqr?'rmqr':mode;
             const size=captureDimensions(video.videoWidth,video.videoHeight,captureMode);
             if(canvas.width!==size.width||canvas.height!==size.height){
               canvas.width=size.width;canvas.height=size.height;
@@ -570,8 +572,8 @@ async function cameraLoop(token){
             }else if(mode==='auto'||focused){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
-              if(autoPdf||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
-                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,autoPdf?autoPdfPass++:frame);
+              if(autoPdf||autoRmqr||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
+                result=await readFocused(lib,canvas,autoPdf?'pdf417':autoRmqr?'rmqr':mode,autoPdf?autoPdfPass++:frame);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
                 const formats=focused?[focused]:frame%4===0
