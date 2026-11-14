@@ -57,7 +57,10 @@ export function decodeJabPixels(lib,image,{phase=0}={}){
  if(card&&card.width>95&&card.height>95&&card.width*card.height<width*height*.96)
   regions.push(cropRgba(image,card));
  regions.push(image);
- const versions=[2,1,3,4,5,6,7,8];
+ // One JAB version per frame on the first attempt. The Codebreaker is v2.
+ // Wrong versions trigger a costly LDPC reduction on cold start, so distribute
+ // the others across following frames rather than timing out before v2 is tried.
+ const versions=phase%4===0?[2]:phase%4===1?[2,1,3]:phase%4===2?[2,4,5]:[2,6,7,8];
  // Image geometry is determined by actual colored modules, not a stored game identifier.
  for(const region of regions){
   const ink=boxOfInk(region);
