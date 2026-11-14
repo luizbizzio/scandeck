@@ -221,7 +221,7 @@ test('focused rMQR uses additional camera preprocessing',()=>{
   assert.match(script,/readFocused\(/);
   assert.match(script,/binarizer:useCrop\?'GlobalHistogram'/);
   assert.match(script,/isPure:monochrome/);
-  assert.match(script,/rmqr:'Turn your phone sideways/);
+  assert.match(script,/rmqr:'Uses an independent rMQR detector/);
 });
 test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
   assert.ok(html.includes('id="try-taprush"'));
