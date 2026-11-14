@@ -82,7 +82,7 @@ test('Code 128 contains the complete standalone Tap Rush JavaScript',async()=>{
   assert.equal(game.source,source);
   assert.match(game.source,/onclick/);
   assert.match(game.source,/setTimeout/);
-  assert.match(game.source,/alert\(n\)/);
+  assert.match(game.source,/alert\(n,onclick=0\)/);
   assert.match(game.source,/onclick=0/);
   assert.match(gameDocument(game),/setTimeout/);
   const png=readFileSync(new URL('../assets/taprush-code128.png',import.meta.url));

@@ -49,7 +49,7 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
   assert.equal(manifest['taprush-code128'].completeness,'partial');
   assert.equal(manifest['chromaqr-chroma'].completeness,'full');
   assert.equal(manifest['reflex-microqr'].payloadBytes,13);
-  assert.equal(manifest['taprush-code128'].payloadBytes,61);
+  assert.equal(manifest['taprush-code128'].payloadBytes,63);
 });
 
 test('one lightweight metadata request updates all sizes without decoding any images',()=>{
