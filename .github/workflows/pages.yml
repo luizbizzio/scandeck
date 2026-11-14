@@ -33,6 +33,8 @@ jobs:
           node --check src/app.js
           node --check src/scanner-geometry.js
           node --check src/barcode-worker.js
+          node --check src/jab-camera.js
+          node --check tools/build-jab.mjs
           node --check src/rmqr-anyd.js
           node --check src/rmqr-rxing.js
           node --check tools/fetch-anyd.mjs
@@ -61,7 +63,7 @@ jobs:
           cp vendor/zxing-wasm/index.js vendor/zxing-wasm/zxing_full.wasm dist/vendor/zxing-wasm/
           cp vendor/rxing-wasm/*.js vendor/rxing-wasm/*.wasm dist/vendor/rxing-wasm/
           cp vendor/rxing.LICENSE dist/vendor/
-          cp vendor/qrcode-generator.js vendor/sythos-barcode.esm.js vendor/sythos.LICENSE vendor/anyd.wasm vendor/anyd.LICENSE dist/vendor/
+          cp vendor/qrcode-generator.js vendor/jabcode.js vendor/sythos-barcode.esm.js vendor/sythos.LICENSE vendor/anyd.wasm vendor/anyd.LICENSE dist/vendor/
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
