@@ -357,7 +357,7 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
     const {width,height,data}=pixels;
     if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
     const id=++barcodeSequence;
-    const timeout=options.specialty==='rmqr'?7500:mode==='chroma'?6800:options.formats?.length===1?3000:2200;
+    const timeout=options.specialty==='rmqr'?7500:mode==='chroma'?7800:barcodeReads===0?6500:options.formats?.length===1?4200:3200;
     const timer=setTimeout(stopBarcodeWorker,timeout);
     barcodePending.set(id,{resolve,timer,mode});
     try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
@@ -392,6 +392,9 @@ async function startCamera() {
     });
     if(token!==cameraToken){stream.getTracks().forEach(t=>t.stop());return}
     scanStream=stream;
+    for(const track of stream.getVideoTracks())track.addEventListener('ended',()=>{
+      if(token===cameraToken&&live){stopCamera();status('Camera disconnected. Reopen the camera.',true)}
+    },{once:true});
     // Request continuous hardware autofocus on devices that advertise it.
     // Unsupported constraints must never prevent the camera from opening.
     try{
@@ -524,7 +527,7 @@ let nativeFocusPromise=null;
 async function detectNativeFocused(mode,video){
   const names={code128:'code_128',ean13:'ean_13',pdf417:'pdf417',rmqr:'rmqr',databar:'gs1_databar_expanded'};
   const format=names[mode];
-  if(!format||!('BarcodeDetector' in globalThis))return null;
+  if((!format&&mode!=='auto')||!('BarcodeDetector' in globalThis))return null;
   if(!nativeFocusPromise)nativeFocusPromise=(async()=>{
     try{
       const supported=await BarcodeDetector.getSupportedFormats();
@@ -540,81 +543,90 @@ async function detectNativeFocused(mode,video){
   catch{return null}
 }
 async function cameraLoop(token){
-  let frame=0,slowDecodeBackoff=0,autoPdfPass=0;
-  // Reuse the capture surface. Native BarcodeDetector can work directly on video.
-  const canvas=document.createElement('canvas');
+  let frame=0,quickPass=0,slowDecodeBackoff=0,autoPdfPass=0;
+  const scheduler=createAutoScanScheduler(performance.now());
+  // Keep separate reusable capture surfaces. Switching Auto between 500 Kpx
+  // QR scans and 1.6 MP PDF417 frames used to realloc the same canvas repeatedly.
+  const canvas=document.createElement('canvas'),detailCanvas=document.createElement('canvas');
+  const irisCanvas=document.createElement('canvas'),focusCanvas=document.createElement('canvas');
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  const detailCtx=detailCanvas.getContext('2d',{willReadFrequently:true});
+  const irisCtx=irisCanvas.getContext('2d',{willReadFrequently:true});
   try{
     while(live&&cameraToken===token&&!document.hidden){
-      const video=$('camera');
+      const video=$('camera'),mode=scanFocus();
       if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
+        const decodeStarted=performance.now();
+        const plan=mode==='auto'?scheduler.next(decodeStarted):null;
+        const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417';
         try{
-          const mode=scanFocus(),focused=FOCUS_FORMATS[mode];
-          const decodeStarted=performance.now();
-          const autoIris=mode==='auto'&&frame%12===7;
-          const autoChroma=mode==='auto'&&frame%6===4;
-          const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
-          if(frame%2===0){
+          if(frame%3===0&&!autoIris&&!autoChroma){
+            // Native BarcodeDetector, when available, can recognize common
+            // formats directly from video without copying pixels or loading WASM.
             const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
-            if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
+            if(live&&token===cameraToken&&mode===scanFocus()&&native&&
+              await acceptPayload(native.rawValue,'camera',native.format))return;
           }
           if(mode==='iris'||autoIris){
-            // Preserve RGB channels; expensive IRIS scans run periodically in auto.
-            const crop=centeredIrisFrame(video,frame%3===2);
-            try{
-              const iris=await readIrisPixels(crop.getContext('2d',{willReadFrequently:true}).getImageData(0,0,crop.width,crop.height));
-              if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
-            }finally{crop.width=crop.height=1}
+            const crop=centeredIrisFrame(video,frame%3===2,irisCanvas);
+            const iris=await readIrisPixels(irisCtx.getImageData(0,0,crop.width,crop.height),true);
+            if(live&&token===cameraToken&&mode===scanFocus()&&iris&&
+              await acceptPayload(iris,'camera','IRIS'))return;
           }else{
             const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':mode;
+            const dedicated=mode==='auto'&&(autoChroma||autoPdf);
+            const target=dedicated?detailCanvas:canvas,draw=dedicated?detailCtx:ctx;
             const size=captureDimensions(video.videoWidth,video.videoHeight,captureMode);
-            if(canvas.width!==size.width||canvas.height!==size.height){
-              canvas.width=size.width;canvas.height=size.height;
-            }
-            ctx.drawImage(video,0,0,canvas.width,canvas.height);
+            if(target.width!==size.width)target.width=size.width;
+            if(target.height!==size.height)target.height=size.height;
+            draw.drawImage(video,0,0,target.width,target.height);
             if(mode==='chromaqr'||autoChroma){
-              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              const pixels=draw.getImageData(0,0,target.width,target.height);
               const chroma=await readCameraChroma(pixels);
-              if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
-            }else if(mode==='auto'||focused){
+              if(live&&token===cameraToken&&mode===scanFocus()&&chroma&&
+                await acceptPayload(chroma,'camera','ChromaQR'))return;
+            }else if(mode==='auto'||FOCUS_FORMATS[mode]){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
               if(autoPdf||['rmqr','pdf417','micropdf417','code128','databar'].includes(mode)){
-                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,autoPdf?autoPdfPass++:frame,mode==='rmqr'?video:canvas);
+                result=await readFocused(lib,target,autoPdf?'pdf417':mode,
+                  autoPdf?autoPdfPass++:frame,mode==='rmqr'?video:target,focusCanvas);
               }else{
-                const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
-                const formats=focused?[focused]:frame%4===0
-                  ?['QRCode','DataMatrix','Aztec','Code128','EAN13']
-                  :frame%4===1?['PDF417','MicroPDF417']
-                  :frame%4===2?['MicroQRCode']:['QRCode','DataMatrix','EAN13','DataBarExpStk'];
+                const pixels=draw.getImageData(0,0,target.width,target.height);
+                const formats=FOCUS_FORMATS[mode]?[FOCUS_FORMATS[mode]]:autoQuickFormats(quickPass++);
                 result=(await lib.readBarcodes(pixels,{
                   ...wasmOptions,formats,tryHarder:false,tryDenoise:false,tryRotate:true
                 })).find(x=>isGamePayload(x.text));
               }
               const raw=result?.text||result?.rawValue;
-              if(live&&token===cameraToken&&raw&&await acceptPayload(raw,'camera',result.format))return;
+              if(live&&token===cameraToken&&mode===scanFocus()&&raw&&
+                await acceptPayload(raw,'camera',result.format))return;
             }else if(mode==='codablockf'||mode==='dotcode'){
-              // No software zoom: direct image pixels preserve tiny bars and dots.
-              // Alternate a full frame with two centered crops; the latter
-              // reject background noise without interpolating the barcode.
-              const roi=exoticCaptureRegion(canvas.width,canvas.height,frame);
-              const pixels=ctx.getImageData(roi.left,roi.top,roi.width,roi.height);
+              // Transfer pixels rather than copying large buffers on every frame.
+              const roi=exoticCaptureRegion(target.width,target.height,frame);
+              const pixels=draw.getImageData(roi.left,roi.top,roi.width,roi.height);
               const experimental=await readExoticPixels(pixels,mode,false,frame%5,true);
-              if(live&&token===cameraToken&&experimental&&await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
+              if(live&&token===cameraToken&&mode===scanFocus()&&experimental&&
+                await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }
-          const elapsed=performance.now()-decodeStarted;
-          // Derive backoff from the most recent decode. Accumulating it across
-          // slow color scans made the scanner progressively slower over time.
-          slowDecodeBackoff=Math.min(320,Math.max(0,Math.round((elapsed-650)*.18)));
         }catch(error){
           if(live&&token===cameraToken&&frame%20===0)status('Scanner error: '+error.message,true);
         }
-        frame++; // Keep Auto's format schedule moving even when a decoder fails.
+        const elapsed=performance.now()-decodeStarted;
+        if(mode==='auto')scheduler.report(plan,performance.now(),elapsed);
+        // Back off only after slow standard frames. Auto color cooldowns are
+        // managed by the scheduler and must not delay the next QR pass as well.
+        slowDecodeBackoff=mode==='auto'&&plan!=='standard'?0:
+          Math.min(200,Math.max(0,Math.round((elapsed-800)*.14)));
+        frame++;
       }
       if(live&&token===cameraToken)await delay(scanPause(scanFocus())+slowDecodeBackoff);
     }
-  }finally{canvas.width=canvas.height=1}
+  }finally{
+    for(const surface of [canvas,detailCanvas,irisCanvas,focusCanvas])
+      surface.width=surface.height=1;
+  }
 }
 $('start-camera').addEventListener('click',startCamera);
 $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopped.')});
