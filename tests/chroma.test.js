@@ -53,7 +53,7 @@ test('ChromaQR camera tries a fast pass before expensive QR recovery',()=>{
  const source=readFileSync(new URL('../src/chroma.js',import.meta.url),'utf8');
  assert.match(source,/tryHarder:pivot!==thresholds\[0\]/);
  const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
- assert.match(app,/mode==='chroma'\?6800/);
+ assert.match(app,/mode==='chroma'\?7800/);
 });
 
 test('camera-style ChromaQR white card can be isolated from the dark page',async()=>{
