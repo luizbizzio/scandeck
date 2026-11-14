@@ -1,0 +1,29 @@
+name: Pre-release audit checks (no deployment)
+on:
+  push:
+    branches:
+      - 'audit/**'
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Build all barcode assets
+        run: npm run build
+      - name: Verify JavaScript syntax
+        run: |
+          for file in src/*.js tools/*.mjs; do node --check "$file"; done
+      - name: Run full test suite
+        run: npm test
+      - name: Verify static deployment assets
+        run: node tools/prepare-cloudflare.mjs
