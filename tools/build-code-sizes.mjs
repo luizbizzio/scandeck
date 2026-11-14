@@ -7,7 +7,7 @@ const root=new URL('../assets/',import.meta.url);
 const entries=[
   'ironpass-micro-v3-qr',
   'taprush-code128',
-  'snake-codablockf',
+  'dice-streak-micropdf417',
   'neon-dodge-dotcode',
   'catch-datamatrix',
   'memory-aztec',

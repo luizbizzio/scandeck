@@ -11,7 +11,7 @@ const css=readFileSync(new URL('src/style.css',root),'utf8');
 const examples=[
   ['QR Code','ironpass-micro-v3-qr','Ironpass Micro'],
   ['Code 128','taprush-code128','Tap Rush'],
-  ['Codablock F','snake-codablockf','Snake'],
+  ['MicroPDF417','dice-streak-micropdf417','Dice Streak'],
   ['DotCode','neon-dodge-dotcode','Neon Dodge'],
   ['Data Matrix','catch-datamatrix','Catch 10'],
   ['Aztec Code','memory-aztec','Pattern Memory'],

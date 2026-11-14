@@ -30,8 +30,8 @@
   }
   </script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="src/style.css?v=52">
-  <script type="module" src="src/app.js?v=52"></script>
+  <link rel="stylesheet" href="src/style.css?v=53">
+  <script type="module" src="src/app.js?v=53"></script>
 </head>
 <body>
 <div class="shell">
@@ -52,7 +52,7 @@
         <section class="surface scanner" aria-label="Game scanner">
           <div class="scanner-heading">
             <h2>Scan a game</h2>
-            <details class="scan-formats-details"><summary>12 code formats</summary><div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>Codablock F</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div></details>
+            <details class="scan-formats-details"><summary>12 code formats</summary><div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>MaxiCode</span><span>Micro QR</span><span>rMQR</span><span>MicroPDF417</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div></details>
           </div>
           <div class="scan-workspace">
             <div class="scan-viewport" id="scan-viewport">
@@ -72,7 +72,7 @@
                   <div class="camera-bottom">
                     <label for="camera-mode">Scan format</label>
                     <select id="camera-mode" aria-label="Camera scan format">
-                      <option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="codablockf">Codablock F</option><option value="dotcode">DotCode</option></select>
+                      <option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="micropdf417">MicroPDF417</option><option value="dotcode">DotCode</option></select>
                     <p id="camera-tip">Keep the entire symbol inside the frame.</p>
                   </div>
                 </div>
@@ -80,7 +80,7 @@
             </div>
             <div class="scan-controls">
               <div class="scan-guide"><h3>Ready to play?</h3><p>Use your camera or upload an image of a ScanDeck game code.</p></div>
-              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="codablockf">Codablock F</option><option value="dotcode">DotCode</option></select></div>
+              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">Auto (standard codes)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="maxicode">MaxiCode</option><option value="microqr">Micro QR</option><option value="rmqr">rMQR</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="micropdf417">MicroPDF417</option><option value="dotcode">DotCode</option></select></div>
               <div class="scan-actions">
                 <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
                 <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
@@ -124,15 +124,15 @@
             </div><div class="game-actions"><button class="btn btn-primary" id="try-taprush">Play</button><a class="btn" href="assets/taprush-code128.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="taprush-code128" data-source-title="Tap Rush" aria-label="View source for Tap Rush">View source</button></div></div>
           </article>
         </section>
-        <section class="game-group" aria-labelledby="codablock-games-heading">
-          <h2 class="group-title" id="codablock-games-heading">Codablock F</h2>
+        <section class="game-group" aria-labelledby="micropdf-games-heading">
+          <h2 class="group-title" id="micropdf-games-heading">MicroPDF417</h2>
           <article class="surface game-card">
-            <a class="game-code-preview qr-code-preview" href="assets/snake-codablockf.png" aria-label="View full Snake Codablock F symbol"><span class="game-code-paper"><img src="assets/snake-codablockf.png" alt="Codablock F containing the complete Snake JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
-            <div class="game-body"><h3>Snake</h3><p>Eat the food, grow longer and avoid crashing into the walls or your tail.</p><div class="code-metadata" data-code-asset="snake-codablockf" aria-label="Code embedding and file sizes">
+            <a class="game-code-preview barcode-code-preview" href="assets/dice-streak-micropdf417.png" aria-label="Preview Dice Streak MicroPDF417 barcode"><span class="game-code-paper"><img src="assets/dice-streak-micropdf417.png" alt="MicroPDF417 containing the Dice Streak JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Dice Streak</h3><p>Roll the dice, build your streak and avoid a 1 that resets your score.</p><div class="code-metadata" data-code-asset="dice-streak-micropdf417" aria-label="Code embedding and file sizes">
               <span class="code-embedding code-embedding-partial" title="Complete JavaScript game, with the HTML interface supplied by ScanDeck"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
               <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
               <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
-            </div><div class="game-actions"><button class="btn btn-primary" id="try-codablock-snake">Play</button><a class="btn" href="assets/snake-codablockf.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="snake-codablockf" data-source-title="Snake" aria-label="View source for Snake">View source</button></div></div>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-dice-streak">Play</button><a class="btn" href="assets/dice-streak-micropdf417.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="dice-streak-micropdf417" data-source-title="Dice Streak" aria-label="View source for Dice Streak">View source</button></div></div>
           </article>
         </section>
         <section class="game-group" aria-labelledby="dotcode-games-heading">
@@ -253,7 +253,7 @@
             <button class="format-option" data-format="rmqr" aria-pressed="false"><strong>rMQR</strong><span>For short JavaScript games</span></button>
             <button class="format-option" data-format="iris" aria-pressed="false"><strong>IRIS color</strong><span>For full HTML games</span></button>
             <button class="format-option" data-format="chromaqr" aria-pressed="false"><strong>ChromaQR</strong><span>For JavaScript games across RGB layers</span></button>
-            <button class="format-option" data-format="codablockf" aria-pressed="false"><strong>Codablock F</strong><span>Complete standalone JavaScript in stacked bars</span></button>
+            <button class="format-option" data-format="micropdf417" aria-pressed="false"><strong>MicroPDF417</strong><span>Short JavaScript games in stacked bars</span></button>
             <button class="format-option" data-format="dotcode" aria-pressed="false"><strong>DotCode</strong><span>Compact complete HTML games in dots</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
@@ -299,13 +299,13 @@
             <a href="https://www.keyence.com/ss/products/auto_id/codereader/basic/code128.jsp" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at KEYENCE <span aria-hidden="true">↗</span></a>
           </article>
           <article class="about-code-card">
-            <div class="about-code-heading"><h3>Codablock F</h3><span>1989 · Germany</span></div>
-            <p>Identcode Systeme developed Codablock to place long data on labels with limited width. Codablock F stacks several Code 128 rows above each other. It has been used in electronics and healthcare, where a normal linear barcode can be too long.</p>
-            <a class="about-code-example" href="assets/snake-codablockf.png" aria-label="View full-size Codablock F example containing Snake">
-              <span class="about-example-preview"><img src="assets/snake-codablockf.png" alt="Codablock F example containing Snake" loading="lazy" decoding="async"></span>
-              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Snake</strong></span><span class="about-example-open">View PNG</span></span>
+            <div class="about-code-heading"><h3>MicroPDF417</h3><span>1990s · United States</span></div>
+            <p>MicroPDF417 is a compact stacked barcode designed for smaller labels and short messages. It uses multiple rows and built-in error correction. ScanDeck stores the Dice Streak JavaScript game inside the code. Keep every bar sharp and the full symbol visible when scanning.</p>
+            <a class="about-code-example" href="assets/dice-streak-micropdf417.png" aria-label="Preview MicroPDF417 example containing Dice Streak">
+              <span class="about-example-preview"><img src="assets/dice-streak-micropdf417.png" alt="MicroPDF417 example containing Dice Streak" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Dice Streak</strong></span><span class="about-example-open">View PNG</span></span>
             </a>
-            <a href="https://barcodeguide.seagullscientific.com/Content/Symbologies/Codablock_F.htm" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at Seagull Scientific <span aria-hidden="true">↗</span></a>
+            <a href="https://www.iso.org/standard/38838.html" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at ISO <span aria-hidden="true">↗</span></a>
           </article>
           <article class="about-code-card">
             <div class="about-code-heading"><h3>DotCode</h3><span>2009 · AIM standard</span></div>

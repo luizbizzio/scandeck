@@ -27,14 +27,14 @@ test('games are clearly split by code type', () => {
 });
 
 test('games show their actual QR and Code 128 images with full-size links', () => {
-  for (const name of ['ironpass-micro-v3-qr.png','taprush-code128.png','snake-codablockf.png','neon-dodge-dotcode.png']) {
+  for (const name of ['ironpass-micro-v3-qr.png','taprush-code128.png','dice-streak-micropdf417.png','neon-dodge-dotcode.png']) {
     assert.match(html, new RegExp('href="assets/' + name.replace('.', '\\.') + '"'));
     assert.match(html, new RegExp('src="assets/' + name.replace('.', '\\.') + '"'));
   }
   assert.match(html, /class="game-code-preview qr-code-preview"/);
   assert.match(html, /class="game-code-preview barcode-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
-  assert.match(script, /playExoticExample\('snake-codablockf','Snake','codablockf'\)/);
+  assert.match(script, /playMatrixExample\('dice-streak-micropdf417','Dice Streak','MicroPDF417'\)/);
   assert.match(script, /playMatrixExample\('taprush-code128','Tap Rush','Code128'\)/);
   assert.match(script, /fetch\('assets\/'\+name\+'\.txt'/);
   assert.match(script, /catalogPromises=new Map\(\)/);
@@ -51,7 +51,7 @@ test('create page shows a clear workflow and hides result until used', () => {
   assert.match(html, /data-format="bar"/);
   assert.match(html, /data-format="data-matrix"/);
   assert.match(html, /data-format="aztec"/);
-  for(const code of ['pdf','maxi','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
+  for(const code of ['pdf','micropdf417','maxi','microqr','rmqr','iris','chromaqr'])assert.ok(html.includes('data-format="'+code+'"'));
   assert.match(html, /ScanDeck · 1\.0\.0/);
   assert.doesNotMatch(script, /https:\/\/cdnjs\.cloudflare\.com/);
   assert.match(html, /id="create-error"/);
@@ -66,7 +66,7 @@ test('about explains the difference and does not use developer protocol jargon',
 });
 
 test('all visible actions still have handlers', () => {
-  for (const id of ['scan-games','try-taprush','try-codablock-snake','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
+  for (const id of ['scan-games','try-taprush','try-dice-streak','try-dotcode-dodge','try-ironpass','create-source','generate','use-example','download-code','test-code','copy-code','about-create','start-camera','stop-camera','image-input','play-detected','try-catch','try-memory','try-breakout','try-tap','try-micro','try-rmqr']) {
     assert.ok(html.includes(`id="${id}"`), `${id} control is present`);
     assert.ok(script.includes(`$('${id}')`), `${id} has a JS handler`);
   }
@@ -114,14 +114,14 @@ test('camera keeps detail and enables focused scanning for dense symbols',()=>{
   assert.match(script,/tryDenoise:true/);
   assert.match(script,/centeredIrisFrame\(video,frame%3===2\)/);
   assert.match(script,/FOCUS_FORMATS/);
-  for(const name of ['pdf417','maxicode','rmqr','code128','iris','chromaqr'])
+  for(const name of ['pdf417','micropdf417','maxicode','rmqr','code128','iris','chromaqr'])
     assert.ok(html.includes('option value="'+name+'"'),name+' focused scanner option is available');
 });
 
 test('every displayed and downloadable game code uses PNG',()=>{
   const gallery=html.split('id="library"')[1].split('id="create"')[0];
   assert.ok(gallery.includes('assets/taprush-code128.png'));
-  assert.ok(gallery.includes('assets/snake-codablockf.png'));
+  assert.ok(gallery.includes('assets/dice-streak-micropdf417.png'));
   assert.ok(gallery.includes('assets/neon-dodge-dotcode.png'));
   assert.match(gallery,/assets\/iris-wire\.png/);
   assert.match(gallery,/assets\/chromaqr-chroma\.png/);
@@ -217,15 +217,16 @@ test('Code 128 gallery contains the full Tap Rush JavaScript game',()=>{
   assert.match(script,/taprush-code128/);
 });
 
-test('Codablock F and DotCode have scan focus, download PNG and real reader',()=>{
-  for(const [format,id,asset] of [['codablockf','try-codablock-snake','snake-codablockf'],['dotcode','try-dotcode-dodge','neon-dodge-dotcode']]){
+test('MicroPDF417 and DotCode have scan focus, download PNG and real reader',()=>{
+  for(const [format,id,asset] of [['micropdf417','try-dice-streak','dice-streak-micropdf417'],['dotcode','try-dotcode-dodge','neon-dodge-dotcode']]){
     assert.ok(html.includes('id="'+id+'"'));
     assert.ok(html.includes('assets/'+asset+'.png'));
     assert.ok(html.includes('data-format="'+format+'"'));
     assert.ok(html.includes('<option value="'+format+'">'));
     assert.ok(script.includes("$('"+id+"')"));
     assert.ok(script.includes("readExoticPixels("));
-    assert.ok(script.includes("format==='codablockf'")||script.includes("format==='dotcode'"));
+    assert.ok(script.includes("format==='dotcode'"));
+    assert.ok(script.includes("MicroPDF417"));
   }
   assert.match(script,/exotic-worker\.js/);
   assert.doesNotMatch(html,/assets\/snake-qr\.png/);
@@ -262,7 +263,7 @@ test('Scan header uses a compact, optional list instead of overflowing twelve fo
   assert.match(css, /\.scanner-heading\{position:relative/);
 });
 test('mobile and desktop scanner selectors contain every format exactly once and remain synchronized',()=>{
-  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','maxicode','microqr','rmqr','iris','chromaqr','codablockf','dotcode'];
+  const modes=['auto','qr','code128','datamatrix','aztec','pdf417','maxicode','microqr','rmqr','iris','chromaqr','micropdf417','dotcode'];
   for(const id of ['scan-mode','camera-mode']){
     const fragment=html.slice(html.indexOf('id="'+id+'"'));
     const select=fragment.slice(0,fragment.indexOf('</select>'));
