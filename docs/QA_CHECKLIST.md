@@ -61,7 +61,7 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] PDF417: move the paddle and clear all bricks in Breakout Mini.
 - [ ] MaxiCode: count ten taps and confirm the WIN message is shown.
 - [ ] Micro QR: scan an MQ arithmetic bytecode symbol, confirm the interpreter displays the exact problem and accepts its answer.
-- [ ] JAB Code: solve the math puzzle using the input field.
+- [ ] GS1 DataBar Expanded Stacked: scan the actual stacked barcode, then solve Codebreaker with seven guesses.
 - [ ] IRIS Wire Crisis: the complete game decodes from the image pixels, with no fallback payload lookup.
 - [ ] ChromaQR Chroma Rush: all three RGB QR channels decode and reconstruct the complete game, with no fallback payload lookup.
 - [ ] IRIS and ChromaQR: independently validate camera framing, focus, lighting and perspective on real mobile devices.
@@ -93,10 +93,10 @@ Record: device model, OS version, browser version, code format, display or print
 
 ## PNG and focused camera regression
 
-- [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, JAB Code, IRIS and ChromaQR.
+- [ ] Every game card previews and downloads a PNG, including Code 128, PDF417, GS1 DataBar Expanded Stacked, IRIS and ChromaQR.
 - [ ] Create outputs PNG files, without exposing SVG downloads.
 - [ ] Tap Rush: the Code 128 holds the full 61-character JavaScript, not level bytecode.
-- [ ] Test focused PDF417, MaxiCode and JAB Code scanning from a second screen with a real mobile phone.
+- [ ] Test focused PDF417, MaxiCode and GS1 DataBar Expanded Stacked scanning from a second screen with a real mobile phone.
 - [ ] Test the compact 16-ring IRIS Wire Crisis and the RGB ChromaQR Chroma Rush under bright and dim lighting.
 - [ ] Compare default All formats with individual focused scanning; verify the camera runs without freezing.
 
@@ -105,8 +105,8 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] Mobile Open camera covers the entire viewport and shows the full, uncropped video frame.
 - [ ] Close remains visible and reachable on phones with a notch, safe-area padding or small screens.
 - [ ] Scan format selection is accessible while the full-screen camera is running, with no horizontal overflow.
-- [ ] Switching JAB Code or MaxiCode inside the camera immediately changes the focused decoding path.
-- [ ] JAB Code: test centered cropped and full-frame scans at multiple sizes and orientations.
+- [ ] Switching GS1 DataBar Expanded Stacked or MaxiCode inside the camera immediately changes the focused decoding path.
+- [ ] GS1 DataBar Expanded Stacked: test clean-PNG upload, centered and off-center phone-camera scans at multiple sizes and orientations.
 - [ ] MaxiCode: test pure monochrome upright capture and straight-on image upload; do not promise arbitrary angle support.
 - [ ] Tap Rush: count unrestricted taps for five seconds; the first tap starts the timer and the final result shows the number of taps.
 - [ ] Confirm Esc and Close stop the camera tracks and restore page scrolling.
@@ -151,7 +151,7 @@ Record: device model, OS version, browser version, code format, display or print
 - [ ] All 12 library game cards display **Code** size and **PNG** size below the game description.
 - [ ] **Code** counts exact UTF-8 bytes in the encoded payload; **PNG** counts the actual file bytes, formatted as B or KB.
 - [ ] The 11 standalone HTML/JavaScript cards have green checks and **Full** labels.
-- [ ] Pocket Reflex has a blue check and **Partial** label, because its 13-byte VM program requires the ScanDeck interpreter.
+- [ ] Pocket Reflex and Codebreaker both use a yellow **Bytecode** label, because their game rules run in ScanDeck's interpreter.
 - [ ] On mobile and desktop, status and sizes wrap within the card, with no horizontal overflow.
 - [ ] Test loading the Games tab directly via `#library` and by clicking the Games tab; one metadata request fills all cards.
 - [ ] Check offline reload after service-worker activation and verify generated PNGs match the metadata manifest.
@@ -176,7 +176,7 @@ Record: device model, OS version, browser version, code format, display or print
 ## Embedding classification and creator footer
 
 - [ ] Six HTML game cards display a green Full check.
-- [ ] Five JavaScript-only game cards display a blue Partial check. The JS is complete, but the HTML interface is outside the code.
+- [ ] Three JavaScript-only game cards display a blue Partial check. The JS is complete, but the HTML interface is outside the code.
 - [ ] Pocket Reflex displays a yellow Bytecode marker, not a blue Partial check, because it needs the Micro VM.
 - [ ] The View source dialog displays matching Full, Partial or Bytecode markers and an accurate explanation of what runs externally.
 - [ ] Metadata generated from payload headers (IP3/SD1, SDS/SDJ, V1) matches the labels on all 12 cards.
