@@ -14,3 +14,24 @@ export function bestDeflateRaw(input){
  if(!best||!inflateRawSync(best).equals(bytes))throw Error('Lossless game compression failed');
  return best;
 }
+
+// Minify JavaScript syntax only, without changing UI elements, game rules or
+// the JavaScript scope visible to inline browser handlers. Keep original files
+// human-readable in examples/ and encode the semantically equivalent program.
+export async function compactGameHtml(source){
+ const {minify}=await import('terser');
+ const matches=[...source.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)];
+ let result=source;
+ for(let i=matches.length-1;i>=0;i--){
+  const m=matches[i],script=m[2];
+  if(!script.trim())continue;
+  const optimized=await minify(script,{
+   ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:false},
+   format:{comments:false}
+  });
+  if(!optimized.code||optimized.code.length>=script.length)continue;
+  const head=m.index+('<script'+m[1]+'>').length;
+  result=result.slice(0,head)+optimized.code+result.slice(head+script.length);
+ }
+ return result;
+}

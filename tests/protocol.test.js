@@ -284,12 +284,15 @@ test('older DotCode and rMQR programs still use their original game markup',asyn
 
 test('Ironpass preserves its tower-defense mechanics without opening filler text',async()=>{
  const html=readFileSync(new URL('../examples/ironpass-micro-v3.html',import.meta.url),'utf8').trim();
+ const {compactGameHtml}=await import('../tools/optimize-encoding.mjs');
+ const compacted=await compactGameHtml(html);
  const payload=readFileSync(new URL('../assets/ironpass-micro-v3.txt',import.meta.url),'utf8').trim();
  const game=await decodeGame(payload);
- assert.equal(game.source,html);
+ assert.equal(game.source,compacted);
  assert.equal(game.title,'Ironpass');
  assert.ok(!html.includes('TAP TO PLAY')&&!html.includes('IRONPASS MICRO'));
  for(const rule of ['function map()','function hit(t,e)','function step(dt)','function draw()','c.onpointerdown','requestAnimationFrame(frame)'])
   assert.ok(html.includes(rule),'Game mechanic missing: '+rule);
  assert.ok(html.includes("'IRONPASS'"));
+ assert.ok(compacted.length<=html.length,'Script minification must not add source bytes');
 });

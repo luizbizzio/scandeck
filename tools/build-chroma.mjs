@@ -1,6 +1,6 @@
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {deflateSync} from 'node:zlib';
-import {bestDeflateRaw} from './optimize-encoding.mjs';
+import {bestDeflateRaw,compactGameHtml} from './optimize-encoding.mjs';
 import qrcode from 'qrcode-generator';
 import {readBarcodes} from 'zxing-wasm';
 import {base43Encode} from '../src/protocol.js';
@@ -29,7 +29,7 @@ function png(rgb){
  const head=Buffer.alloc(13);head.writeUInt32BE(width,0);head.writeUInt32BE(height,4);head[8]=8;head[9]=2;
  return Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]),chunk('IHDR',head),chunk('IDAT',deflateSync(bytes,{level:9})),chunk('IEND',Buffer.alloc(0))]);
 }
-const source=readFileSync(new URL('examples/colorpath-jab.html',root),'utf8').trim();
+const source=await compactGameHtml(readFileSync(new URL('examples/colorpath-jab.html',root),'utf8').trim());
 const payload='SD1:'+base43Encode(bestDeflateRaw(source));
 const symbol=encodeChroma(qrcode,payload);
 const pixels=chromaPixels(symbol,10);

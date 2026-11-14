@@ -90,3 +90,11 @@ test('rMQR switches to an independent local WASM detector before falling back to
  assert.match(flow,/vendor\/anyd\.wasm vendor\/anyd\.LICENSE dist\/vendor\//);
  assert.ok(sw.includes('"src/rmqr-anyd.js"')&&sw.includes('"vendor/anyd.wasm"'));
 });
+
+test('lossless optimization rewrites scripts, not game behavior or UI structure',()=>{
+ const optimizer=readFileSync(new URL('tools/optimize-encoding.mjs',root),'utf8');
+ assert.match(optimizer,/compactGameHtml/);
+ assert.match(optimizer,/unsafe:false/);
+ assert.match(optimizer,/mangle:\{toplevel:false\}/);
+ assert.match(optimizer,/inflateRawSync\(best\)\.equals\(bytes\)/);
+});

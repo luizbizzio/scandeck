@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
-import {bestDeflateRaw} from './optimize-encoding.mjs';
+import {bestDeflateRaw,compactGameHtml} from './optimize-encoding.mjs';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
 import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame } from '../src/protocol.js';
 
@@ -19,7 +19,8 @@ const matrixGames=[
 ];
 
 for (const game of matrixGames) {
-  const source=readFileSync(new URL(game.input,root),'utf8').trim();
+  const originalSource=readFileSync(new URL(game.input,root),'utf8').trim();
+  const source=game.kind==='html'?await compactGameHtml(originalSource):originalSource;
   const payload=game.kind==='script'?packScript(source):game.kind==='microhtml'?packMicroHtml(source):game.kind==='ean'?packEanLevel(source):game.kind==='tiny'?source:
     'SD1:'+base43Encode(bestDeflateRaw(source));
   const max=game.max??1400;
@@ -75,7 +76,8 @@ for (const game of matrixGames) {
 
 // Generate Ironpass from its complete HTML on every build. The writer selects
 // the smallest QR version fitting the whole program, rather than forcing v40.
-const ironpassSource=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();
+const ironpassOriginal=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();
+const ironpassSource=await compactGameHtml(ironpassOriginal);
 const ironpassPayload='IP3:'+base43Encode(bestDeflateRaw(ironpassSource));
 if(ironpassPayload.length>4296)throw Error('Ironpass exceeds QR-L capacity');
 if((await decodeGame(ironpassPayload)).source!==ironpassSource)throw Error('Ironpass lost game content');
