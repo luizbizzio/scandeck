@@ -359,7 +359,7 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 #code-image-dialog .dialog-head{gap:12px}
 #code-image-dialog .dialog-head>div:first-child{min-width:0}
 #code-image-heading{font-size:19px;overflow-wrap:anywhere}
-#code-image-dialog .code-image-viewport{display:grid;place-items:center;max-height:calc(94dvh - 140px);min-height:180px;overflow:auto;overscroll-behavior:contain;margin:16px 0 10px;padding:14px;background:#f7f9f7;border-radius:9px}
+#code-image-dialog .code-image-viewport{display:grid;place-items:center;max-height:calc(94dvh - 140px);min-height:180px;overflow:auto;overscroll-behavior:contain;margin:16px 0 10px;padding:14px;background:#0c120f;border-radius:9px}
 #code-image-full{display:block;width:auto;height:auto;max-width:100%;max-height:calc(94dvh - 170px);object-fit:contain;image-rendering:pixelated}
 #code-image-dialog p{margin:0}
 /* DotCode only: a larger square image with no unused white side bands. */

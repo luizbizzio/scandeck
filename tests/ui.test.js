@@ -309,8 +309,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=59/);
-  assert.match(html,/src\/style\.css\?v=59/);
+  assert.match(html,/src\/app\.js\?v=60/);
+  assert.match(html,/src\/style\.css\?v=60/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -472,6 +472,7 @@ test('all code previews open an in-page dialog headed with the barcode type',()=
   assert.match(css,/#code-image-dialog\.dotcode-viewer\{width:min\(1020px,calc\(100vw - 20px\),calc\(100dvh - 115px\)\)/);
   assert.match(css,/#code-image-dialog\.dotcode-viewer \.code-image-viewport\{width:100%;aspect-ratio:1/);
   assert.match(css,/#code-image-dialog\.dotcode-viewer #code-image-full\{width:100%;height:100%;/);
+  assert.match(css,/padding:14px;background:#0c120f;border-radius:9px/);
   assert.match(script,/classList\.remove\('dotcode-viewer'\)/);
   assert.match(script,/querySelector\('\.group-title'\)/);
   assert.match(script,/querySelector\('\.about-code-heading h3'\)/);

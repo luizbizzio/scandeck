@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=59"/);
- assert.match(html,/src="src\/app\.js\?v=59"/);
+ assert.match(html,/href="src\/style\.css\?v=60"/);
+ assert.match(html,/src="src\/app\.js\?v=60"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -60,4 +60,13 @@ test('IRIS tries isolated RGB card and markers in a separate worker',()=>{
  assert.match(worker,/cropIrisCard\(grid\)/);
  assert.match(worker,/decodeColorMarkers\(card\)/);
  assert.match(sw,/"src\/iris-camera\.js"/);
+});
+
+test('rMQR camera preprocessing offers both true pure-code and finder-based reads',()=>{
+ const script=readFileSync(new URL('../src/specialty-candidates.js',import.meta.url),'utf8');
+ assert.match(script,/format==='rmqr'\)return \[/);
+ assert.match(script,/image:crop,options:\{isPure:true/);
+ assert.match(script,/image:crop,options:\{isPure:false/);
+ const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
+ assert.match(worker,/tryHarder:specialty==='rmqr'/);
 });

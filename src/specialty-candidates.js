@@ -93,8 +93,14 @@ export function specialtyCandidates(image,format){
   const crop=cropRgba(image,card);
   if(crop.width<75||crop.height<55||crop.width*crop.height>1_600_000)return [];
   const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
+  if(format==='rmqr')return [
+    {image:crop,options:{isPure:true,binarizer:'LocalAverage'}},
+    {image:thresholdRgba(crop),options:{isPure:true,binarizer:'FixedThreshold'}},
+    {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
+    {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
+  ];
   return [
-    {image:format==='maxicode'?padded:crop,options:{isPure:format==='maxicode',binarizer:'LocalAverage'}},
+    {image:padded,options:{isPure:true,binarizer:'LocalAverage'}},
     {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
   ];
 }

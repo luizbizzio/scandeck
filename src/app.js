@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=59';
-import { gameDocument } from './runtime.js?v=59';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=60';
+import { gameDocument } from './runtime.js?v=60';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=59';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=60';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','maxi_code','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=59',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=60',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -465,7 +465,7 @@ function makeFocusedPixels(image,mode,monochrome=false,phase=0){
 async function readFocused(lib,source,mode,frame){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
-  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%4===1||frame%4===3:(mode==='pdf417'||mode==='micropdf417')&&frame%3===1;
+  const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3===1:(mode==='pdf417'||mode==='micropdf417')&&frame%3===1;
   const monochrome=mode==='maxicode'&&useCrop&&frame%4===2;
   const pix=useCrop?makeFocusedPixels(source,mode,monochrome,frame):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
@@ -474,12 +474,12 @@ async function readFocused(lib,source,mode,frame){
     binarizer:useCrop?'GlobalHistogram':'LocalAverage',
     isPure:monochrome, // Only one centered MaxiCode pass assumes a clean aligned image.
     minLineCount:mode==='code128'?1:2,
-    tryDownscale:mode==='rmqr'&&frame%4===3,
+    tryDownscale:false, // Preserve rMQR locator detail at phone camera resolution.
     tryDenoise:false, // expensive morphology hurts continuous camera scans
     tryRotate:true,
     retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
     specialty:mode==='rmqr'||mode==='maxicode'?mode:null,
-    retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%4===3
+    retryRotated:mode==='code128'?frame%3===0:(mode==='rmqr'||mode==='maxicode')&&frame%3===2
   };
   const result=(await lib.readBarcodes(pix,opts)).find(item=>isGamePayload(item.text));
   return result||null;
@@ -634,7 +634,7 @@ async function detectImage(file) {
           try{
             const hits=await lib.readBarcodes(candidate.image,{
               ...wasmOptions,formats:[FOCUS_FORMATS[specialtyFormat]],...candidate.options,
-              tryRotate:specialtyFormat==='rmqr',tryHarder:false,
+              tryRotate:specialtyFormat==='rmqr',tryHarder:specialtyFormat==='rmqr',
               tryDownscale:false,tryDenoise:false
             });
             const match=hits.find(item=>isGamePayload(item.text));
