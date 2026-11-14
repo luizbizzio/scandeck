@@ -499,7 +499,7 @@ test('all library shapes fit their actual codes while preview heights remain ide
  const square=['ironpass-micro-v3-qr','neon-dodge-dotcode','catch-datamatrix',
   'memory-aztec','reflex-microqr','codebreaker-jab','iris-wire','chromaqr-chroma'];
  const wide=['taprush-code128','dice-streak-micropdf417','breakout-pdf417',
-  'timing-ean13','codebreaker-jab'];
+  'timing-ean13'];
  for(const [shape,ids] of [['square',square],['wide',wide]]){
   for(const id of ids){
    const marker='href="assets/'+id+'.png"';
