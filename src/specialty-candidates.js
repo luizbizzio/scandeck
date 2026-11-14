@@ -157,7 +157,10 @@ export function specialtyCandidates(image,format,phase=0){
     // rMQR's finder sampler tolerates slight residual skew better than its
     // pure sampler. Cycle a small angular correction across camera frames.
     const offset=phase%4===1?-.016:phase%4===3?.016:0;
-    const straightened=deskewDarkSymbol(isolated,offset);
+    // If a white page fills the camera, use the complete frame for angle
+    // estimation. A tight crop can bias the thin rMQR's principal axis.
+    const wholeWhite=card.x===0&&card.y===0&&card.width===image.width&&card.height===image.height;
+    const straightened=deskewDarkSymbol(wholeWhite?crop:isolated,offset);
     return [
       {image:isolated,options:{isPure:true,binarizer:'LocalAverage'}},
       {image:thresholdRgba(isolated),options:{isPure:true,binarizer:'FixedThreshold'}},
