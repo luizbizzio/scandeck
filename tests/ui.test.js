@@ -31,22 +31,23 @@ test('games show their actual QR and Code 128 images with full-size links', () =
     assert.match(html, new RegExp('href="assets/' + name.replace('.', '\\.') + '"'));
     assert.match(html, new RegExp('src="assets/' + name.replace('.', '\\.') + '"'));
   }
-  assert.match(html, /class="game-code-preview qr-code-preview"/);
-  assert.match(html, /class="game-code-preview barcode-code-preview"/);
-  assert.match(html, /class="game-code-preview stacked-code-preview"/);
-  assert.match(html, /class="game-code-preview dotcode-code-preview"/);
-  assert.match(html, /class="game-code-preview microqr-code-preview"/);
+  assert.match(html, /class="game-code-preview qr-code-preview square-code-preview"/);
+  assert.match(html, /class="game-code-preview barcode-code-preview wide-code-preview"/);
+  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview"/);
+  assert.match(html, /class="game-code-preview dotcode-code-preview square-code-preview"/);
+  assert.match(html, /class="game-code-preview microqr-code-preview square-code-preview"/);
   assert.match(css, /\.game-groups\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.doesNotMatch(css, /\.game-group--scan-wide|\.game-group--barcode\{order:|\.game-group--dotcode\{order:/);
   assert.doesNotMatch(html, /game-group--scan-wide/);
-  assert.match(css, /\.barcode-code-preview \.game-code-paper\{width:100%;height:166px/);
-  assert.match(css, /\.barcode-code-preview \.game-code-paper img\{width:100%;height:100%;object-fit:fill/);
-  assert.match(css, /\.dotcode-code-preview \.game-code-paper,\.microqr-code-preview \.game-code-paper\{width:min\(100%,190px\);height:190px/);
+  assert.match(css, /\.wide-code-preview \.game-code-paper\{width:100%;height:166px/);
+  assert.match(css, /\.square-code-preview \.game-code-paper\{width:min\(100%,190px\);height:190px;aspect-ratio:1/);
+  assert.match(css, /\.barcode-code-preview \.game-code-paper img\{object-fit:fill/);
+  assert.match(css, /\.square-code-preview \.game-code-paper img,\.wide-code-preview \.game-code-paper img\{width:100%;height:100%;object-fit:contain/);
   assert.match(css, /\.game-code-preview\{height:228px;flex-shrink:0;/);
   assert.match(css, /\.game-code-paper\{[^}]*max-height:190px;flex-shrink:0;/);
   assert.doesNotMatch(css, /\.game-code-preview\.(?:barcode|dotcode|microqr)-code-preview\{height:/);
   assert.match(css, /@media\(max-width:700px\)/);
-  assert.match(css, /\.stacked-code-preview \.game-code-paper\{width:190px;height:190px/);
+  assert.match(html, /class="game-code-preview stacked-code-preview wide-code-preview"/);
   assert.doesNotMatch(html, /class="game-art/);
   assert.match(script, /playMatrixExample\('dice-streak-micropdf417','Dice Streak','MicroPDF417'\)/);
   assert.match(script, /playMatrixExample\('taprush-code128','Tap Rush','Code128'\)/);
@@ -308,8 +309,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=62/);
-  assert.match(html,/src\/style\.css\?v=62/);
+  assert.match(html,/src\/app\.js\?v=63/);
+  assert.match(html,/src\/style\.css\?v=63/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -489,4 +490,25 @@ test('rMQR uploads get a pure-image pass and the camera dynamically limits CPU u
  assert.match(upload,/item=>isGamePayload\(item\.text\)/);
  assert.match(script,/slowDecodeBackoff=elapsed>750/);
  assert.match(script,/frameRate:\{ideal:24,max:30\}/);
+});
+
+test('all library shapes fit their actual codes while preview heights remain identical',()=>{
+ const square=['ironpass-micro-v3-qr','neon-dodge-dotcode','catch-datamatrix',
+  'memory-aztec','reflex-microqr','iris-wire','chromaqr-chroma'];
+ const wide=['taprush-code128','dice-streak-micropdf417','breakout-pdf417',
+  'timing-ean13','math-rmqr'];
+ for(const [shape,ids] of [['square',square],['wide',wide]]){
+  for(const id of ids){
+   const marker='href="assets/'+id+'.png"';
+   const pos=html.indexOf(marker);
+   assert.ok(pos>0,'Missing '+id);
+   const preceding=html.slice(Math.max(0,pos-140),pos);
+   const classes=preceding.match(/class="game-code-preview ([^"]+)"/)?.[1]?.split(' ')||[];
+   assert.ok(classes.includes(shape+'-code-preview'),id+' needs '+shape+' layout');
+   assert.ok(!classes.includes((shape==='square'?'wide':'square')+'-code-preview'),id+' has wrong layout');
+  }
+ }
+ assert.equal(square.length+wide.length,12);
+ assert.match(css,/\.game-code-preview\{height:228px;flex-shrink:0;/);
+ assert.doesNotMatch(css,/\.game-code-preview\.(?:square|wide)-code-preview\{height:/);
 });
