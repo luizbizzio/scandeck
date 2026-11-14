@@ -28,12 +28,14 @@ for(const id of entries){
   if(size<8||!readFileSync(png).subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex')))
     throw Error('Invalid PNG for '+id);
   const payload=bytes.toString('utf8');
-  const completeness=payload.startsWith('V1')||/^299000[0-9]{7}$/.test(payload)?'bytecode'
-    :/^91SDCB[1-9]$/.test(payload)||payload.startsWith('SDS:')||payload.startsWith('SDJ:')||payload.startsWith('SDZ:')||payload.startsWith('SDB:')?'partial'
+  const completeness=payload.startsWith('V1')||/^299000[0-9]{7}$/.test(payload)||/^91SDCB[1-9]$/.test(payload)?'bytecode'
+    :payload.startsWith('SDS:')||payload.startsWith('SDJ:')||payload.startsWith('SDZ:')||payload.startsWith('SDB:')?'partial'
     :payload.startsWith('IP3:')||payload.startsWith('SD1:')||payload.startsWith('SDH:')||payload.startsWith('SDC:')||payload.startsWith('SDM:')?'full'
     :null;
   if(!completeness)throw Error('Unknown game encoding: '+id);
-  if(completeness==='bytecode'&&!['reflex-microqr','timing-ean13'].includes(id))throw Error('Unexpected bytecode game: '+id);
+  if(id==='codebreaker-databar'&&completeness==='partial'&&!payload.startsWith('SDS:'))
+    throw Error('Cannot label DataBar Partial without its own JavaScript payload.');
+  if(completeness==='bytecode'&&!['reflex-microqr','timing-ean13','codebreaker-databar'].includes(id))throw Error('Unexpected bytecode game: '+id);
   out[id]={payloadBytes:bytes.length,pngBytes:size,completeness};
 }
 writeFileSync(new URL('code-sizes.json',root),JSON.stringify(out)+'\n');
