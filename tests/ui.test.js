@@ -445,7 +445,7 @@ test('experimental upload processes full-resolution photos without discarding 2M
 });
 
 test('dense experimental camera uses direct full and cropped sensor pixels, not stretched images',()=>{
- assert.match(script,/exoticCaptureRegion\(canvas\.width,canvas\.height,frame\)/);
+ assert.match(script,/exoticCaptureRegion\(target\.width,target\.height,frame\)/);
  assert.match(script,/ctx\.getImageData\(roi\.left,roi\.top,roi\.width,roi\.height\)/);
  assert.match(script,/micropdf417:'Keep every bar and both white margins visible/);
 });
@@ -568,7 +568,7 @@ test('legacy rMQR fallback keeps its independent decoders',()=>{
  const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
  assert.match(script,/const w=image.videoWidth\|\|image.width,h=image.videoHeight\|\|image.height/);
  assert.match(script,/mode==='rmqr'\?frame%3!==0/);
- assert.match(script,/mode==='rmqr'\?video:canvas/);
+ assert.match(script,/mode==='rmqr'\?video:target/);
  assert.match(geom,/mode==='rmqr'\?2_200_000/);
  assert.match(worker,/phase%3===1/);
  assert.match(worker,/readRxingRMQRFrame/);
