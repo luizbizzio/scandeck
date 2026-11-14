@@ -42,8 +42,8 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
     else if(meta.completeness==='bytecode')bytecode++;
     else assert.fail(id+' has unknown completeness');
   }
-  assert.equal(complete,6);
-  assert.equal(partial,4);
+  assert.equal(complete,5);
+  assert.equal(partial,5);
   assert.equal(bytecode,2);
   assert.equal(manifest['reflex-microqr'].completeness,'bytecode');
   assert.equal(manifest['timing-ean13'].completeness,'bytecode');
@@ -57,12 +57,12 @@ test('sizes are taken from exact shipped PNG and embedded payload bytes',()=>{
 });
 
 test('one lightweight metadata request updates all sizes without decoding any images',()=>{
-  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=61'/);
+  assert.match(source,/fetch\('assets\/code-sizes\.json\?v=62'/);
   assert.match(source,/function formatCodeSize\(/);
   assert.match(source,/querySelectorAll\('\.code-metadata\[data-code-asset\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-payload-size\]'\)/);
   assert.match(source,/row\.querySelector\('\[data-png-size\]'\)/);
   assert.match(source,/if\(tab==='library'\)void loadCodeSizes\(\)/);
-  assert.match(html,/src="src\/app\.js\?v=61"/);
-  assert.match(html,/href="src\/style\.css\?v=61"/);
+  assert.match(html,/src="src\/app\.js\?v=62"/);
+  assert.match(html,/href="src\/style\.css\?v=62"/);
 });

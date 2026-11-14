@@ -16,6 +16,10 @@ export function gameDocument(game) {
     return gameDocument({...game,kind:'standalone',title:'Perfect Timing',
       source:'n='+target+';t=0;onclick=()=>t?alert(+new Date-t-n):t=+new Date'});
   }
+  if(game.kind==='standalone'&&game.title==='Neon Dodge'){
+    // The game logic is inside DotCode. The shared runner provides only the canvas.
+    return shell('<style>html,body{margin:0;min-height:100%;background:#122}body{display:grid;place-items:center;min-height:100dvh}canvas{display:block;width:min(240px,90vw);height:auto;touch-action:none}</style><canvas id=c width=240 height=360></canvas><script>'+game.source+'</script>');
+  }
   if (game.kind === 'html') {
     // The policy and optional presentation rules precede the self-contained game.
     const brick=game.title==='Brick Rush'?

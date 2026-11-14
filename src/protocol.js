@@ -221,7 +221,7 @@ export async function decodeGame(raw) {
     const script=await inflateRaw(base64Decode(value.slice(4)));
     if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
       throw Error('Invalid compressed JavaScript game.');
-    return {title:'Standalone Barcode Game',type:'SDZ / CODABLOCK F',kind:'standalone',
+    return {title:'Standalone Barcode Game',type:'SDZ / DOTCODE',kind:'standalone',
       source:script,payload:value,size:script.length};
   }
   if (value.startsWith('IP3:') || value.startsWith('SD1:')) {

@@ -41,7 +41,7 @@ function pngGrid(asset,scale,margin){
 
 const games=[
   {asset:'snake-codablockf',format:'codablockf',encode:encodeCodablockF,source:'snake-standalone.js',kind:'standalone'},
-  {asset:'neon-dodge-dotcode',format:'dotcode',encode:encodeDotCode,source:'neon-dodge-dotcode.html',kind:'html'},
+  {asset:'neon-dodge-dotcode',format:'dotcode',encode:encodeDotCode,source:'neon-dodge-dotcode.js',kind:'standalone'},
 ];
 for(const g of games){
   test(g.format+' PNG and strict matrix carry a complete standalone game, no external URL',async()=>{

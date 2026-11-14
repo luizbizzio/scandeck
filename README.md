@@ -33,7 +33,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-IRIS and ChromaQR previews and downloads use PNG. Auto mode includes ChromaQR. MicroPDF417 uses the existing ZXing reader; DotCode, IRIS and ChromaQR use experimental camera readers. DotCode PNGs use the writer matching the local strict decoder. A validated photo-framing pipeline now improves focused scanning, but real devices still require testing. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
+IRIS and ChromaQR previews and downloads use PNG. Auto mode includes ChromaQR. MicroPDF417 uses the existing ZXing reader; DotCode, IRIS and ChromaQR use experimental camera readers. DotCode stores compressed JavaScript in a smaller symbol, with the HTML provided by ScanDeck. Its PNG uses the writer matching the local strict decoder. A validated photo-framing pipeline now improves focused scanning, but real devices still require testing. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
 
 ## Run locally
 

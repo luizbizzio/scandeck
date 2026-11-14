@@ -30,8 +30,8 @@
   }
   </script>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
-  <link rel="stylesheet" href="src/style.css?v=61">
-  <script type="module" src="src/app.js?v=61"></script>
+  <link rel="stylesheet" href="src/style.css?v=62">
+  <script type="module" src="src/app.js?v=62"></script>
 </head>
 <body>
 <div class="shell">
@@ -138,9 +138,9 @@
         <section class="game-group" aria-labelledby="dotcode-games-heading">
           <h2 class="group-title" id="dotcode-games-heading">DotCode</h2>
           <article class="surface game-card">
-            <a class="game-code-preview dotcode-code-preview" href="assets/neon-dodge-dotcode.png" aria-label="View full Neon Dodge DotCode symbol"><span class="game-code-paper"><img src="assets/neon-dodge-dotcode.png" alt="DotCode containing the complete Neon Dodge HTML game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <a class="game-code-preview dotcode-code-preview" href="assets/neon-dodge-dotcode.png" aria-label="View full Neon Dodge DotCode symbol"><span class="game-code-paper"><img src="assets/neon-dodge-dotcode.png" alt="DotCode containing the Neon Dodge JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
             <div class="game-body"><h3>Neon Dodge</h3><p>Switch between two lanes, dodge falling blocks and stay alive as the speed increases.</p><div class="code-metadata" data-code-asset="neon-dodge-dotcode" aria-label="Code embedding and file sizes">
-              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-embedding code-embedding-partial" title="JavaScript game stored in the code; ScanDeck supplies the HTML interface"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
               <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
               <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
             </div><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download PNG</a><button class="btn btn-source" type="button" data-source-asset="neon-dodge-dotcode" data-source-title="Neon Dodge" aria-label="View source for Neon Dodge">View source</button></div></div>
@@ -254,7 +254,7 @@
             <button class="format-option" data-format="iris" aria-pressed="false"><strong>IRIS color</strong><span>For full HTML games</span></button>
             <button class="format-option" data-format="chromaqr" aria-pressed="false"><strong>ChromaQR</strong><span>For JavaScript games across RGB layers</span></button>
             <button class="format-option" data-format="micropdf417" aria-pressed="false"><strong>MicroPDF417</strong><span>Short JavaScript games in stacked bars</span></button>
-            <button class="format-option" data-format="dotcode" aria-pressed="false"><strong>DotCode</strong><span>Compact complete HTML games in dots</span></button>
+            <button class="format-option" data-format="dotcode" aria-pressed="false"><strong>DotCode</strong><span>Compressed JavaScript in fewer dots</span></button>
           </div>
           <p class="format-note" id="create-help">QR codes can store more game data.</p>
           <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
@@ -309,7 +309,7 @@
           </article>
           <article class="about-code-card">
             <div class="about-code-heading"><h3>DotCode</h3><span>2009 · AIM standard</span></div>
-            <p>DotCode uses separate dots instead of solid square cells. It was designed for fast industrial printing on production lines, including packages and small products. Its standard was published by AIM in 2009. ScanDeck uses those dots to store Neon Dodge.</p>
+            <p>DotCode uses separate dots instead of square cells. Originally designed for industrial printing and standardized by AIM in 2009, it stores the Neon Dodge JavaScript game. ScanDeck provides the canvas interface.</p>
             <a class="about-code-example" href="assets/neon-dodge-dotcode.png" aria-label="View full-size DotCode example containing Neon Dodge">
               <span class="about-example-preview"><img src="assets/neon-dodge-dotcode.png" alt="DotCode example containing Neon Dodge" loading="lazy" decoding="async"></span>
               <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Neon Dodge</strong></span><span class="about-example-open">View PNG</span></span>
@@ -391,7 +391,7 @@
         </div>
         <div class="about-explainer">
           <h2>What does "the game is in the code" mean?</h2>
-          <p>Six games contain a full HTML game. Four contain JavaScript with ScanDeck providing the interface. Two are Bytecode: Pocket Reflex uses the Micro VM, while Perfect Timing stores a numeric EAN-13 level. All three labels describe what the symbol stores, not whether a phone camera can scan it.</p>
+          <p>Five games contain a full HTML game. Five contain JavaScript with ScanDeck providing the interface. Two are Bytecode: Pocket Reflex uses the Micro VM, while Perfect Timing stores a numeric EAN-13 level. All three labels describe what the symbol stores, not whether a phone camera can scan it.</p>
           <p>Code capacity and camera readability are not the same thing. A large game can fit into a symbol and still be hard for a phone to scan, especially with experimental formats.</p>
           <p>Only compatible game codes work. Normal website links and product barcodes are not games. Only open game codes you trust.</p>
         </div>
