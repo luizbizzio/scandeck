@@ -8,11 +8,33 @@ import {packScript,decodeGame} from '../src/protocol.js';
 
 const root=new URL('../',import.meta.url);
 mkdirSync(new URL('vendor/',root),{recursive:true});
+// Sythos performs the same expensive Gauss-Jordan elimination on every frame.
+// The parity matrix depends only on the JAB symbol size, not its game data.
+// Cache each reduced parity matrix inside the bundled worker module so the
+// first decode warms it and subsequent camera frames run without that work.
+const ldpcSource=readFileSync(new URL('../node_modules/@sythos/js_barcode_universal/src/js/jabcode/ldpc.js',import.meta.url),'utf8');
+const originalBlock='    const matrixA = createMatrixA(wc, wr, gross);\\n    const { matrix, rank } = gaussJordan(matrixA, gross, false);'.replaceAll('\\n','\\n');
+if(!ldpcSource.includes(originalBlock))throw Error('Sythos LDPC code changed; update the cache patch');
+const optimizedLDPC=ldpcSource
+ .replace('function decodeBlock(data, offset, wc, wr, gross) {',
+          'const decodedMatrices = new Map();\\nfunction decodeBlock(data, offset, wc, wr, gross) {'.replaceAll('\\n','\\n'))
+ .replace(originalBlock,[
+   '    const key = wc+":"+wr+":"+gross;',
+   '    let reduced = decodedMatrices.get(key);',
+   '    if (!reduced) {',
+   '      reduced = gaussJordan(createMatrixA(wc, wr, gross), gross, false);',
+   '      decodedMatrices.set(key, reduced);',
+   '    }',
+   '    const { matrix, rank } = reduced;'
+ ].join('\\n'.replace('\\n','\\n')));
 await build({
  entryPoints:[new URL('../node_modules/@sythos/js_barcode_universal/src/js/jabcode/index.js',import.meta.url).pathname],
  outfile:new URL('../vendor/jabcode.js',import.meta.url).pathname,
  platform:'neutral',format:'esm',target:'es2022',bundle:true,minify:true,logLevel:'warning',
- legalComments:'eof'
+ legalComments:'eof',
+ plugins:[{name:'jab-ldpc-matrix-cache',setup(api){
+   api.onLoad({filter:/[/\\\\]jabcode[/\\\\]ldpc\\.js$/},()=>({contents:optimizedLDPC,loader:'js'}));
+ }}]
 });
 const {encodeJABCode,decodeJABCode,toColorImageData}=await import('../vendor/jabcode.js');
 const source=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
