@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Open QR and Code 128 game reader and creator",
+  "description": "Offline-first barcode game scanner and creator with 12 unique code formats",
   "scripts": {
     "test": "node --test tests/*.test.js",
     "start": "python -m http.server 8000",
