@@ -239,18 +239,18 @@ function getIrisWorker(){
   }
   return irisWorker;
 }
-function readIrisPixels(image){
+function readIrisPixels(image,transferPixels=false){
   const {width,height,data}=image;
-  if(width*height>2_000_000)return Promise.resolve('');
-  const rgb=new Uint8Array(width*height*3);
-  for(let i=0,j=0;i<data.length;i+=4,j+=3){
-    rgb[j]=data[i];rgb[j+1]=data[i+1];rgb[j+2]=data[i+2];
-  }
+  if(!width||!height||width*height>2_000_000||
+     data?.length!==width*height*4)return Promise.resolve('');
+  // Leave upload buffers intact. Camera captures are disposable and transfer
+  // directly, so conversion to IRIS RGB happens off the main thread.
+  const rgba=transferPixels?data:new Uint8ClampedArray(data);
   return new Promise(resolve=>{
     const id=++irisSeq;
     const timer=setTimeout(failIrisWorker,3800);
     irisPending.set(id,{resolve,timer});
-    try{getIrisWorker().postMessage({id,width,height,buffer:rgb.buffer},[rgb.buffer])}
+    try{getIrisWorker().postMessage({id,width,height,buffer:rgba.buffer,rgba:true},[rgba.buffer])}
     catch{clearTimeout(timer);irisPending.delete(id);resolve('')}
   });
 }
