@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=67"/);
- assert.match(html,/src="src\/app\.js\?v=67"/);
+ assert.match(html,/href="src\/style\.css\?v=68"/);
+ assert.match(html,/src="src\/app\.js\?v=68"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -49,7 +49,7 @@ test('MaxiCode and rMQR have camera-card normalization before a pure/regular sec
  const specialty=readFileSync(new URL('src/specialty-candidates.js',root),'utf8');
  assert.match(app,/specialty:mode==='rmqr'\|\|mode==='maxicode'/);
  assert.match(worker,/getSpecialtyPreprocessor/);
- assert.match(worker,/specialtyCandidates\(pixels,specialty\)/);
+ assert.match(worker,/specialtyCandidates\(pixels,specialty,specialtyPhase\)/);
  assert.match(specialty,/export function findLightCard/);
  assert.match(specialty,/export function thresholdRgba/);
  assert.match(specialty,/export function withWhiteBorder/);
@@ -74,4 +74,10 @@ test('rMQR camera preprocessing offers both true pure-code and finder-based read
  assert.match(worker,/tryHarder:specialty==='rmqr'&&!candidate\.options\.isPure/);
  assert.match(worker,/candidates.slice\(start,start\+2\)/);
  assert.match(app,/specialtyPhase:frame/);
+});
+
+test('camera DotCode transfers a disposable frame and limits blocking time',()=>{
+ assert.match(app,/readExoticPixels\(pixels,mode,false,frame%5,true\)/);
+ assert.match(app,/transferPixels\?data:new Uint8ClampedArray\(data\)/);
+ assert.match(app,/setTimeout\(resetExoticWorker,exact\?9000:4000\)/);
 });
