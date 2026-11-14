@@ -5,6 +5,7 @@ import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
 import {decodeCodebreakerDataBar} from './databar.js';
 import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=78';
+import { createAutoScanScheduler, autoQuickFormats } from './camera-scheduler.js?v=78';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr'];
@@ -309,12 +310,14 @@ function syncCameraLayout(){
 }
 addEventListener('resize',syncCameraLayout);
 addEventListener('orientationchange',syncCameraLayout);
-function centeredIrisFrame(video,full=false){
+function centeredIrisFrame(video,full=false,reuse=null){
   const w=video.videoWidth,h=video.videoHeight,side=Math.min(w,h);
   const scale=full?Math.min(1,1100/Math.max(w,h),Math.sqrt(850_000/(w*h))):Math.min(1,960/side);
-  const canvas=document.createElement('canvas');
-  canvas.width=Math.max(1,Math.round((full?w:side)*scale));
-  canvas.height=Math.max(1,Math.round((full?h:side)*scale));
+  const canvas=reuse||document.createElement('canvas');
+  const targetWidth=Math.max(1,Math.round((full?w:side)*scale));
+  const targetHeight=Math.max(1,Math.round((full?h:side)*scale));
+  if(canvas.width!==targetWidth)canvas.width=targetWidth;
+  if(canvas.height!==targetHeight)canvas.height=targetHeight;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   ctx.imageSmoothingEnabled=false;
   if(full)ctx.drawImage(video,0,0,w,h,0,0,canvas.width,canvas.height);
@@ -466,12 +469,13 @@ function readExoticPixels(image,format,exact=false,phase=0,transferPixels=false)
 
 // An alternate centered crop helps dense PDF417/rMQR and frontal MaxiCode.
 // The full frame is always tried too, so cropped quiet zones cannot block scanning.
-function makeFocusedPixels(image,mode,monochrome=false,phase=0){
+function makeFocusedPixels(image,mode,monochrome=false,phase=0,reuse=null){
   // Use native video pixels for focused rMQR crops, before the preview canvas downsamples them.
   const w=image.videoWidth||image.width,h=image.videoHeight||image.height;
   const roi=focusedCrop(w,h,mode,phase);
-  const canvas=document.createElement('canvas');
-  canvas.width=roi.outputWidth;canvas.height=roi.outputHeight;
+  const canvas=reuse||document.createElement('canvas');
+  if(canvas.width!==roi.outputWidth)canvas.width=roi.outputWidth;
+  if(canvas.height!==roi.outputHeight)canvas.height=roi.outputHeight;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
   ctx.imageSmoothingEnabled=mode!=='rmqr';
   ctx.drawImage(image,roi.left,roi.top,roi.width,roi.height,0,0,canvas.width,canvas.height);
@@ -489,15 +493,15 @@ function makeFocusedPixels(image,mode,monochrome=false,phase=0){
       data[i]=data[i+1]=data[i+2]=v;data[i+3]=255;
     }
   }
-  canvas.width=canvas.height=1;
+  if(!reuse)canvas.width=canvas.height=1;
   return pixels;
 }
-async function readFocused(lib,source,mode,frame,cropSource=source){
+async function readFocused(lib,source,mode,frame,cropSource=source,scratch=null){
   const format=FOCUS_FORMATS[mode];
   if(!format)return null;
   const useCrop=mode==='maxicode'?frame%4!==0:mode==='rmqr'?frame%3!==0:(mode==='pdf417'||mode==='micropdf417')&&frame%3===1;
   const monochrome=mode==='maxicode'&&useCrop&&frame%4===2;
-  const pix=useCrop?makeFocusedPixels(cropSource,mode,monochrome,frame):
+  const pix=useCrop?makeFocusedPixels(cropSource,mode,monochrome,frame,scratch):
     source.getContext('2d',{willReadFrequently:true}).getImageData(0,0,source.width,source.height);
   const opts={
     ...wasmOptions,formats:[format],
@@ -518,16 +522,19 @@ async function readFocused(lib,source,mode,frame,cropSource=source){
 // Native detection can read some difficult linear codes without an extra WASM pass.
 let nativeFocusPromise=null;
 async function detectNativeFocused(mode,video){
-  const names={code128:'code_128',ean13:'ean_13',pdf417:'pdf417',rmqr:'rmqr'};
+  const names={code128:'code_128',ean13:'ean_13',pdf417:'pdf417',rmqr:'rmqr',databar:'gs1_databar_expanded'};
   const format=names[mode];
   if(!format||!('BarcodeDetector' in globalThis))return null;
   if(!nativeFocusPromise)nativeFocusPromise=(async()=>{
     try{
       const supported=await BarcodeDetector.getSupportedFormats();
-      return new Map(supported.map(name=>[name,new BarcodeDetector({formats:[name]})]));
+      const map=new Map(supported.map(name=>[name,new BarcodeDetector({formats:[name]})]));
+      const autoFormats=['qr_code','data_matrix','aztec','code_128','ean_13','pdf417','micro_qr'].filter(name=>supported.includes(name));
+      if(autoFormats.length)map.set('auto',new BarcodeDetector({formats:autoFormats}));
+      return map;
     }catch{return new Map()}
   })();
-  const detector=(await nativeFocusPromise).get(format);
+  const detector=(await nativeFocusPromise).get(mode==='auto'?'auto':format);
   if(!detector)return null;
   try{return (await detector.detect(video)).find(result=>isGamePayload(result.rawValue))||null}
   catch{return null}
