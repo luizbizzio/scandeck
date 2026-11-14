@@ -41,7 +41,7 @@ for(const name of ['iris-wire']){
     const png=readRgbPng(name);
     assert.ok(png.width>=1200,'IRIS PNG should be high-resolution');
     const symbol=encodeColor(expected,{markers:true});
-    assert.ok(symbol.params.K<=14,'IRIS must fit at most 14 rings with intermediate schedules');
+    assert.ok(symbol.params.K<=13,'IRIS must fit 13 rings or fewer after moving the controls to the runtime');
     assert.equal(decodeColor(png).text,expected);
     assert.ok(['SD1:','SDS:','SDB:'].some(prefix=>expected.startsWith(prefix)));
   });

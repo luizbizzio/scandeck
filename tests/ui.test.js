@@ -533,3 +533,14 @@ test('stacked and horizontal 2D codes trim only their preview paper, not their s
  assert.match(css,/\.game-code-preview\{height:228px;/);
  assert.doesNotMatch(css,/\.game-code-preview\.tight-code-preview\{height:/);
 });
+
+test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML controls in the player',()=>{
+ const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+ const source=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
+ assert.ok(source.length<=205);
+ assert.doesNotMatch(source,/document\.write/);
+ assert.match(source,/n<5/);
+ assert.match(runtime,/const wireMarkup=game\.title==='Wire Crisis'/);
+ assert.match(runtime,/wireMarkup\+'<script>'\+game\.source/);
+ assert.match(script,/game\.source\.startsWith\('n=0;f=\(\)=>'\)/);
+});
