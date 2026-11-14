@@ -299,7 +299,7 @@ test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames'
  assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
- assert.match(script,/autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame/);
+ assert.match(script,/autoPdf\?'pdf417':autoRmqr\?'rmqr':mode,autoPdf\?autoPdfPass\+\+:frame/);
  assert.match(html,/Auto \(all supported\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
@@ -460,7 +460,7 @@ test('Auto lists all supported formats and retains dedicated color scan controls
  assert.match(html,/Auto \(all supported\)/);
  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
  assert.ok(html.includes('<option value="iris">IRIS</option>'));
- assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
+ assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':autoRmqr\?'rmqr':mode/);
  assert.match(script,/await readCameraChroma\(pixels\)/);
  assert.match(script,/await readIrisPixels\(/);
 });
@@ -547,8 +547,27 @@ test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML contr
 
 test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=>{
  assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
- assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame\)/);
+ assert.match(script,/readFocused\(lib,canvas,autoPdf\?'pdf417':autoRmqr\?'rmqr':mode,autoPdf\?autoPdfPass\+\+:frame,captureMode==='rmqr'\?video:canvas\)/);
  assert.match(script,/detectNativeFocused\(autoPdf\?'pdf417':mode,video\)/);
  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
  assert.match(runtime,/const codeMarkup=game.title==='Codebreaker'/);
+});
+
+test('detected game exposes Play and View source as aligned direct buttons',()=>{
+ const result=html.slice(html.indexOf('<section id="detected"'),html.indexOf('id="scan-games"'));
+ assert.match(result,/<div class="detected-actions"><button[^>]*id="play-detected"/);
+ assert.match(result,/<button[^>]*id="inspect-detected"/);
+ assert.doesNotMatch(result,/<details class="detected-more"/);
+ assert.match(css,/\.detected-actions\{display:flex;flex:0 0 auto;align-items:center/);
+});
+test('rMQR camera uses native video for crop sampling and cycles independent decoders',()=>{
+ const geom=readFileSync(new URL('../src/scanner-geometry.js',import.meta.url),'utf8');
+ const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
+ assert.match(script,/const w=image.videoWidth\|\|image.width,h=image.videoHeight\|\|image.height/);
+ assert.match(script,/mode==='rmqr'\?frame%3!==0/);
+ assert.match(script,/captureMode==='rmqr'\?video:canvas/);
+ assert.match(geom,/mode==='rmqr'\?2_200_000/);
+ assert.match(worker,/phase%3===1/);
+ assert.match(worker,/readRxingRMQRFrame/);
+ assert.match(worker,/readAnyDRMQRFrame/);
 });
