@@ -51,7 +51,7 @@ function switchTab(tab) {
   if (!['scan','library','create','about'].includes(tab)) tab='scan';
   document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active', x.id===tab));
   document.querySelectorAll('[data-tab]').forEach(x=>{x.classList.toggle('active',x.dataset.tab===tab);x.setAttribute('aria-current',x.dataset.tab===tab?'page':'false')});
-  if (tab!=='scan') { stopCamera(); status(''); }
+  if (tab!=='scan') { stopCamera();cancelUploadDecode();++uploadGeneration;status(''); }
   if(tab==='library')void loadCodeSizes();
   history.replaceState(null,'','#'+tab);
 }
@@ -160,7 +160,7 @@ $('scan-games').addEventListener('click',()=>switchTab('library'));
 function resetDetected(){selectedGame=null;show('detected',false);}
 
 function playGame(game) {
-  stopCamera();
+  stopCamera();cancelUploadDecode();++uploadGeneration;
   lastGame=game;
   $('overlay-game-title').textContent=game.title;
   const hints={'Dice Streak':'ROLL THE DICE · A 1 ENDS YOUR STREAK','Tap Rush':'AS MANY TAPS AS YOU CAN IN 5 SECONDS · FIRST TAP STARTS TIMER','Neon Dodge':'TAP TO CHANGE LANES · AVOID THE RED BLOCKS','Lights Out':'FLIP THE LIGHTS · SOLVE THE 4×4 GRID','Snake':'ARROWS / SWIPE · EAT THE FOOD','Perfect Timing':'MATCH YOUR TARGET TIME IN MILLISECONDS','Codebreaker':'GUESS 0-98 · 7 TRIES · UP / DOWN','Pocket Reflex':'FIND THE MATCHING NUMBER · ENDLESS SCORE · FASTER EACH POINT','Chroma Rush':'TAP THE INK COLOR, NOT THE WORD','Wire Crisis':'5 ROUNDS · REMEMBER 3-7 COLORS · BEAT THE CLOCK'};
@@ -652,6 +652,7 @@ $('start-camera').addEventListener('click',startCamera);
 $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopped.')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCamera()});
 addEventListener('pagehide',stopCamera);
+addEventListener('pagehide',cancelUploadDecode);
 let activeUploadWorker=null,activeUploadCancel=null,uploadSequence=0,uploadGeneration=0;
 function cancelUploadDecode(){
   if(activeUploadCancel)activeUploadCancel();
