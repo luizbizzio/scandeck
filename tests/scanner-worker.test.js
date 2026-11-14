@@ -12,8 +12,8 @@ test('source tree keeps application files out of repository root',()=>{
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=78"/);
- assert.match(html,/src="src\/app\.js\?v=78"/);
+ assert.match(html,/href="src\/style\.css\?v=79"/);
+ assert.match(html,/src="src\/app\.js\?v=79"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
@@ -42,7 +42,9 @@ test('legacy Codablock F and current DotCode payloads reach the experimental rea
 test('continuous scanner recycles worker memory without affecting camera streams',()=>{
   assert.match(app,/\+\+barcodeReads>=90/);
   assert.match(app,/\+\+irisReads>=32/);
-  assert.match(app,/mode==='chroma'\?6800:options\.formats\?\.length===1\?3000:2200/);
+  assert.match(app,/mode==='chroma'\?7800:barcodeReads===0\?6500:options\.formats\?\.length===1\?4200:3200/);
+ assert.match(app,/const dedicated=mode==='auto'&&\(autoChroma\|\|autoPdf\)/);
+ assert.match(app,/autoQuickFormats\(quickPass\+\+\)/);
 });
 
 test('MaxiCode and rMQR have camera-card normalization before a pure/regular second decode',()=>{
