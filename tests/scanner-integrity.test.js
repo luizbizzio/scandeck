@@ -40,3 +40,16 @@ test('PDF417 Auto reader options decode the published Brick Rush pixel image',as
  });
  assert.ok(results.some(r=>r.text===payload),'Auto focused pass must decode the complete PDF417 game');
 });
+
+test('rMQR PNG, saved payload and original game source agree',async()=>{
+ const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));
+ const payload=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8').trim();
+ const original=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
+ const {decodeGame}=await import('../src/protocol.js');
+ const hits=await readBarcodes({width:png.width,height:png.height,data:new Uint8ClampedArray(png.data)},{
+  formats:['RMQRCode'],maxNumberOfSymbols:1,tryRotate:true,tryDownscale:false
+ });
+ assert.ok(hits.some(hit=>hit.text===payload),'Decoded PNG differs from published rMQR payload');
+ const decoded=await decodeGame(payload);
+ assert.equal(decoded.source.trim(),original,'Published rMQR payload differs from its original game source');
+});
