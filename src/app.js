@@ -120,7 +120,7 @@ function getEmbeddingStatus(game){
   if(game.kind==='html')return {status:'full',label:'Full',format:'HTML game',
     description:'The full HTML game and its JavaScript are stored inside the code.'};
   if(['microvm','bytecode','maze','lights','eanlevel','codebreaker'].includes(game.kind))
-    return {status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'?'EAN-13 numeric level':'VM instructions',
+    return {status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'?'EAN-13 numeric level':game.kind==='codebreaker'?'GS1 Codebreaker rules':'VM instructions',
       description:'The symbol contains game instructions, not JavaScript. ScanDeck provides the interpreter and interface.'};
   return {status:'partial',label:'Partial',format:'JavaScript only',
     description:'The complete JavaScript game is stored in the code, but ScanDeck provides its HTML interface.'};
@@ -626,7 +626,7 @@ async function detectImage(file) {
   const lib=engine.kind==='wasm'?engine.engine:await getMatrixEngine();
   // PNG uploads are already isolated symbols. The MaxiCode reader needs this
   // explicit pure-image pass; all-format scanning can fail on clean MaxiCode.
-  for(const format of ['RMQRCode']){
+  for(const format of ['DataBarExpStk','RMQRCode']){
     try{
       const isolated=await lib.readBarcodes(file,{
         ...wasmOptions,formats:[format],isPure:true,
