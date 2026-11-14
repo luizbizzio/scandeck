@@ -679,6 +679,15 @@ async function detectImage(file) {
         }
       }
     }finally{specialtyCanvas.width=specialtyCanvas.height=1}
+    // Uploaded photographs get the same independent rMQR readers as the camera.
+    // The worker handles large WASM decoders without blocking the page.
+    try{
+      const independent=await readCameraBarcodes(specialtyPixels,{
+        ...wasmOptions,formats:['RMQRCode'],specialty:'rmqr',specialtyPhase:0
+      });
+      const recovered=independent.find(hit=>isGamePayload(hit.text));
+      if(recovered)return {text:recovered.text,format:recovered.format};
+    }catch{/* The existing image decoders remain available. */}
     // Camera screenshots and photos may need a centered, monochrome pass.
     for(const focusedFormat of ['rmqr','pdf417','micropdf417']){
       // Upload decoding uses both uncropped pixels and centered subject passes.
