@@ -266,3 +266,18 @@ test('DotCode accepts new Z85 payloads and legacy Base64 symbols',async()=>{
  const legacy='SDZ:'+Buffer.from((await import('node:zlib')).deflateRawSync(Buffer.from(src))).toString('base64');
  assert.equal((await decodeGame(legacy)).source,src);
 });
+
+test('older DotCode and rMQR programs still use their original game markup',async()=>{
+ const {gameDocument}=await import('../src/runtime.js');
+ const oldDot='g=c.getContext("2d");requestAnimationFrame(()=>0)';
+ const newDot='p=s=z=0;y=-32;v=0;a=4;c.onclick=()=>p^=1;tick=d=>{}';
+ const legacy=gameDocument({kind:'standalone',title:'Neon Dodge',source:oldDot});
+ const modern=gameDocument({kind:'standalone',title:'Neon Dodge',source:newDot});
+ assert.ok(legacy.includes(oldDot));
+ assert.ok(!legacy.includes('tick(d)'),'Old DotCode supplies its own animation loop');
+ assert.ok(modern.includes('tick(d)'),'New DotCode uses shared rendering');
+ const oldRMQR=gameDocument({kind:'standalone',title:'Codebreaker',source:"document.write('<input id=a><button id=b>GO');n=2"});
+ assert.equal((oldRMQR.match(/<input id=a>/g)||[]).length,1,'Legacy rMQR must not duplicate input');
+ const newer=gameDocument({kind:'standalone',title:'Codebreaker',source:'n=2;b.onclick=()=>0'});
+ assert.ok(newer.includes('<input id=a><button id=b>GO</button>'));
+});
