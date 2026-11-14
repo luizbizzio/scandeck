@@ -26,7 +26,7 @@ export async function compactGameHtml(source,{minifyGlobals=false}={}){
   const m=matches[i],script=m[2];
   if(!script.trim())continue;
   const optimized=await minify(script,{
-   ecma:2020,compress:{passes:2,unsafe:false},mangle:{toplevel:minifyGlobals},
+   ecma:2020,compress:{passes:minifyGlobals?4:2,toplevel:minifyGlobals,unsafe:false},mangle:{toplevel:minifyGlobals},
    format:{comments:false}
   });
   if(!optimized.code||optimized.code.length>=script.length)continue;

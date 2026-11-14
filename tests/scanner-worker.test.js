@@ -95,6 +95,6 @@ test('lossless optimization rewrites scripts, not game behavior or UI structure'
  const optimizer=readFileSync(new URL('tools/optimize-encoding.mjs',root),'utf8');
  assert.match(optimizer,/compactGameHtml/);
  assert.match(optimizer,/unsafe:false/);
- assert.match(optimizer,/mangle:\{toplevel:false\}/);
+ assert.match(optimizer,/mangle:\{toplevel:minifyGlobals\}/);
  assert.match(optimizer,/inflateRawSync\(best\)\.equals\(bytes\)/);
 });
