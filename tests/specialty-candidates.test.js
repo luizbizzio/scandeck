@@ -21,7 +21,7 @@ function photoOf(png){
   }
   return {width,height,data};
 }
-for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-rmqr','RMQRCode','rmqr']]){
+for(const [name,format,mode] of [['math-rmqr','RMQRCode','rmqr']]){
  test(mode+' localizes the camera photo and preserves standalone PNG decoding',async()=>{
   const png=PNG.sync.read(readFileSync(new URL('../assets/'+name+'.png',import.meta.url)));
   const expected=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8');
@@ -33,7 +33,7 @@ for(const [name,format,mode] of [['tap-maxicode','MaxiCode','maxicode'],['math-r
   assert.ok(card,'The white card must be located without knowing its code');
   assert.ok(card.width<photo.width*.9,'Card should not be mistaken for the whole dark frame');
   const candidates=specialtyCandidates(photo,mode);
-  assert.equal(candidates.length,2);
+  assert.equal(candidates.length,4);
   assert.ok(candidates[0].image.width<candidates[0].image.height*8);
   assert.ok(candidates[1].image.width*candidates[1].image.height<=1_600_000);
   let success=false;

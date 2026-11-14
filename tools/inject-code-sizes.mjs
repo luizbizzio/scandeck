@@ -19,7 +19,7 @@ for(const id of Object.keys(sizes)){
  const name=id==='ironpass-micro-v3-qr'?'ironpass-micro-v3':id;
  const payload=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8').trim();
  const game=await decodeGame(payload);
- if(!['html','standalone','bytecode','maze','lights','microvm','micro'].includes(game.kind))
+ if(!['html','standalone','bytecode','maze','lights','microvm','micro','eanlevel'].includes(game.kind))
   throw Error('Unsupported catalog game '+name);
  catalog[name]=game;
 }

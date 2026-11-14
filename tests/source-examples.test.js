@@ -103,7 +103,7 @@ test('source dialog reports Full for HTML, Partial for JavaScript and yellow Byt
   assert.match(app,/function getEmbeddingStatus\(game\)/);
   assert.match(app,/game\.kind==='html'\)return \{status:'full',label:'Full'/);
   assert.match(app,/status:'partial',label:'Partial',format:'JavaScript only'/);
-  assert.match(app,/status:'bytecode',label:'Bytecode',format:'VM instructions'/);
+  assert.match(app,/status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'\?'EAN-13 numeric level':'VM instructions'/);
   assert.match(app,/badge\.className='code-embedding code-embedding-'\+embedding\.status/);
   assert.match(app,/\$\('source-status-label'\)\.textContent=embedding\.label/);
   assert.match(css,/\.code-embedding-bytecode\{color:#f1d77d\}/);

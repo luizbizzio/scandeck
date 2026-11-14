@@ -44,6 +44,6 @@ test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
  const second=state.a;state.next(33.334);
  assert.ok(second>start&&state.a>start,'Speed must grow during active play');
  assert.equal(state.s,0,'Acceleration cannot depend only on points');
- state.dead=1;c.onclick();
+ state.z=1;c.onclick();
  assert.equal(state.a,3.6,'Retry must reset acceleration to the start speed');
 });

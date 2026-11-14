@@ -145,23 +145,20 @@ test('Pattern Memory also works without an audio device',()=>{
   assert.equal(game.s.textContent,'NICE');
 });
 
-test('Perfect Timing sets a randomized millisecond target and starts on the first tap',()=>{
- const src=readFileSync(new URL('../examples/tap-maxicode.js',import.meta.url),'utf8').trim();
- const alerts=[];let now=100000;
- const DateMock=function(){return {valueOf:()=>now}};
- const context={Date:DateMock,alert:x=>alerts.push(x)};
- vm.runInNewContext(src,context,{timeout:500});
- const target=999+100000%999;
- assert.equal(context.n,target);
- assert.equal(context.t,0);
- context.onclick();assert.equal(context.t,100000);
- now+=target-55;context.onclick();assert.equal(alerts.at(-1),-55);
- now+=100;context.onclick();assert.equal(alerts.at(-1),45);
- assert.ok(src.length<=80,'The full program must fit MaxiCode');
- now+=317;
- const other={Date:DateMock,alert(){}};
- vm.runInNewContext(src,other,{timeout:500});
- assert.notEqual(context.n,other.n,'A new launch uses a new millisecond-derived target');
+test('Perfect Timing uses a valid EAN-13 numeric challenge and shared game runtime',async()=>{
+ const {packEanLevel,decodeGame}=await import('../src/protocol.js');
+ const {gameDocument}=await import('../src/runtime.js');
+ const seed=readFileSync(new URL('../examples/perfect-timing-ean13.txt',import.meta.url),'utf8').trim();
+ const code=packEanLevel(seed);
+ assert.equal(code.length,13);
+ const decoded=await decodeGame(code);
+ assert.equal(decoded.kind,'eanlevel');
+ assert.equal(decoded.source,code);
+ assert.equal(decoded.title,'Perfect Timing');
+ const html=gameDocument(decoded);
+ assert.ok(html.includes('n=1244;'));
+ assert.ok(html.includes('PLAY AGAIN'));
+ assert.throws(()=>packEanLevel(seed+'9'),/check digit/);
 });
 test('Codebreaker checks only GO and spells both directions completely',()=>{
  const src=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
