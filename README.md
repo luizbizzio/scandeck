@@ -14,7 +14,7 @@
 - Create your own code-based games with the supported formats.
 - Use the app offline after the files have been saved by the browser.
 
-The Games library shows three data types: **Full** (complete HTML game), **Partial** (a game that relies on a shared runtime, including JavaScript-only games and Codebreaker), and **Bytecode** (small instructions that need a shared interpreter). These labels describe the code contents, not scan reliability.
+The Games library shows three data types: **Full** (complete HTML game), **Partial** (the complete JavaScript is inside the code, with a shared HTML interface), and **Bytecode** (small instructions that need a shared interpreter). These labels describe the code contents, not scan reliability.
 
 ## Games and formats
 
@@ -33,7 +33,7 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-Codebreaker uses **GS1 DataBar Expanded Stacked**, a distinct stacked linear barcode. It stores `91SDCB7`: GS1 company-internal AI (91), ScanDeck's `SDCB` instruction and the number of guesses (7). It is labeled **Partial** in the interface because ScanDeck supplies its game runtime; technically, the symbol still contains compact instructions, not embedded JavaScript. ScanDeck supplies the local game interpreter, with the original random secret, UP/DOWN hints, WIN and LOSE. PNG generation uses ZXing-C++ (with BWIPP as a fallback) and **must pass a ZXing image-decoding test** at build time. Camera scanning remains dependent on focus and real-world tests; successful upload or build checks do not prove a mobile camera will read it. Older JAB and rMQR reader files are kept only for backwards compatibility, not offered in the game library. MicroPDF417 uses ZXing; DotCode, IRIS and ChromaQR have experimental readers.
+Codebreaker uses **GS1 DataBar Expanded Stacked**, a distinct stacked linear barcode. It stores `91SDCB7`: GS1 company-internal AI (91), ScanDeck's `SDCB` instruction and the number of guesses (7). It is **Bytecode**, not Partial: the GS1 symbol does not store the JavaScript. The GS1 DataBar Expanded Stacked format has a hard maximum of 41 alphanumeric characters, too small for the complete 97-character Codebreaker JavaScript. ScanDeck supplies the local game interpreter, with the original random secret, UP/DOWN hints, WIN and LOSE. PNG generation uses ZXing-C++ (with BWIPP as a fallback) and **must pass a ZXing image-decoding test** at build time. Camera scanning remains dependent on focus and real-world tests; successful upload or build checks do not prove a mobile camera will read it. Older JAB and rMQR reader files are kept only for backwards compatibility, not offered in the game library. MicroPDF417 uses ZXing; DotCode, IRIS and ChromaQR have experimental readers.
 
 ## Run locally
 
