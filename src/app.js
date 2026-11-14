@@ -388,6 +388,7 @@ async function startCamera() {
     return;
   }
   resetDetected();
+  cancelUploadDecode();
   const token=++cameraToken;
   $('start-camera').disabled=true;
   status('Opening camera...');
@@ -650,7 +651,51 @@ $('start-camera').addEventListener('click',startCamera);
 $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopped.')});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCamera()});
 addEventListener('pagehide',stopCamera);
+let activeUploadWorker=null,uploadSequence=0,uploadGeneration=0;
+function cancelUploadDecode(){
+  if(activeUploadWorker){activeUploadWorker.terminate();activeUploadWorker=null}
+}
+function decodeImageInWorker(file){
+  return new Promise((resolve,reject)=>{
+    const worker=new Worker(new URL('./upload-worker.js',import.meta.url));
+    activeUploadWorker=worker;
+    const id=++uploadSequence;
+    let complete=false;
+    const finish=(error,result)=>{
+      if(complete)return;
+      complete=true;clearTimeout(timer);
+      worker.terminate();
+      if(activeUploadWorker===worker)activeUploadWorker=null;
+      if(error)reject(error);else resolve(result);
+    };
+    const timer=setTimeout(()=>finish(new Error('Image processing timed out. Try a smaller image or a clear crop.')),45000);
+    worker.onmessage=({data})=>{
+      if(data?.id!==id)return;
+      if(data.unsupported){
+        const error=new Error('Image worker is unsupported.');
+        error.fallback=true;finish(error);return;
+      }
+      if(data.error){finish(new Error(data.error));return}
+      finish(null,data.result||null);
+    };
+    worker.onerror=()=>finish(new Error('Image reader failed. Please try a different image.'));
+    worker.onmessageerror=()=>finish(new Error('Could not transfer the uploaded image.'));
+    try{worker.postMessage({id,file})}catch(error){finish(error)}
+  });
+}
 async function detectImage(file) {
+  // The normal path runs entire image analysis in a separate worker. Browser
+  // fallback retains legacy readers only if module/image-worker APIs are absent.
+  if(typeof Worker==='function'&&typeof createImageBitmap==='function'){
+    try{
+      const result=await decodeImageInWorker(file);
+      if(result)return result;
+      throw Error('No supported game code was found in this image.');
+    }catch(error){if(!error.fallback)throw error}
+  }
+  return detectImageLegacy(file);
+}
+async function detectImageLegacy(file) {
   const engine=await getScanner();
   if(engine.kind==='native'){
     let bitmap;
@@ -785,10 +830,20 @@ async function uploadImage(file) {
   if(!file)return;
   if(file.size>15_000_000) {status('Image is larger than 15 MB. Choose a smaller image.',true);return}
   if(live)stopCamera();
+  // A new selection cancels the previous scan instead of letting uploads
+  // decode in parallel and fill WASM heaps on slow phones.
+  cancelUploadDecode();
+  const generation=++uploadGeneration;
   resetDetected();
   status('Reading image...');
-  try { const hit=await detectImage(file);await acceptPayload(hit.text,'upload',hit.format) }
-  catch(error){status(`Could not read the image: ${error.message}`,true)}
+  try {
+    const hit=await detectImage(file);
+    if(generation!==uploadGeneration)return;
+    await acceptPayload(hit.text,'upload',hit.format);
+  }catch(error){
+    if(generation===uploadGeneration)
+      status(`Could not read the image: ${error.message}`,true);
+  }
 }
 $('image-input').addEventListener('change',async e=>{await uploadImage(e.target.files?.[0]);e.target.value=''});
 $('scan-viewport').addEventListener('dragover',e=>e.preventDefault());
