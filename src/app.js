@@ -6,8 +6,8 @@ import { specialtyCandidates } from './specialty-candidates.js';
 import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=73';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
-const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
-const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec','PDF417','MicroPDF417','EAN13','MicroQRCode','RMQRCode'];
+const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr'];
+const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec','PDF417','MicroPDF417','EAN13','MicroQRCode'];
 const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
@@ -88,7 +88,7 @@ async function acceptPayload(raw, mode='manual', format='') {
   try {
     const game = await decodeGame(raw);
     if(format==='MicroPDF417'&&game.kind==='html'&&game.source.startsWith('<button onclick="r=Math.random()*6|0;'))game.title='Dice Streak';
-    if((format==='RMQRCode'||format==='rmqr')&&game.kind==='standalone')game.title='Codebreaker';
+    if((format==='JABCode'||format==='RMQRCode'||format==='rmqr')&&game.kind==='standalone')game.title='Codebreaker';
     if(['QRCode','qr_code','CodablockF'].includes(format)&&game.kind==='standalone'&&game.source.startsWith("b=document.body"))game.title='Snake';
     if((format==='Code128'||format==='code_128')&&game.kind==='standalone'&&game.source.startsWith('n=0;onclick=_=>n++'))game.title='Tap Rush';
     if(format==='DotCode'&&game.kind==='standalone'&&(game.source.startsWith('p=s=z=0;y=-32;')||game.source.startsWith("g=c.getContext('2d')")))game.title='Neon Dodge';
@@ -98,7 +98,7 @@ async function acceptPayload(raw, mode='manual', format='') {
     $('detected-title').textContent = game.title;
     $('detected-description').textContent = 'Ready to play.';
     $('detected-meta').replaceChildren();
-    const labels={IRIS:'IRIS',ChromaQR:'ChromaQR',CodablockF:'Codablock F',DotCode:'DotCode',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MicroPDF417:'MicroPDF417',EAN13:'EAN-13',ean_13:'EAN-13',MicroQRCode:'Micro QR',RMQRCode:'rMQR'};
+    const labels={IRIS:'IRIS',ChromaQR:'ChromaQR',CodablockF:'Codablock F',DotCode:'DotCode',qr_code:'QR Code',QRCode:'QR Code',code_128:'Code 128',Code128:'Code 128',data_matrix:'Data Matrix',DataMatrix:'Data Matrix',aztec:'Aztec Code',Aztec:'Aztec Code',PDF417:'PDF417',MicroPDF417:'MicroPDF417',EAN13:'EAN-13',ean_13:'EAN-13',MicroQRCode:'Micro QR',RMQRCode:'rMQR',JABCode:'JAB Code'};
     for (const label of [labels[format] || (game.kind==='micro'||game.kind==='standalone'||game.kind==='snake'?'Code 128':'2D game code')]) {
       const span=document.createElement('span'); span.textContent=label; $('detected-meta').append(span);
     }
@@ -273,12 +273,12 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',micropdf417:'MicroPDF417',ean13:'EAN13',microqr:'MicroQRCode',rmqr:'RMQRCode'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Standard formats including PDF417, plus periodic ChromaQR and IRIS scans. Use format focus if needed.',
+  auto:'Standard formats plus periodic JAB Code, ChromaQR and IRIS scans. Use format focus if needed.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
   microqr:'Move closer to the small Micro QR without cutting off the edges.',
-  rmqr:'Turn your phone sideways. Fill most of the frame width with the entire code and keep the white margins sharp.',
+  jab:'Keep the complete colored square in view, including its white border. Avoid glare and reflections.',
   ean13:'Keep every EAN-13 bar and its white side margins visible.',
   pdf417:'Try landscape. Keep every PDF417 row visible and focus on the fine bars.',
   micropdf417:'Keep every bar and both white margins visible. Try landscape if the code is small.',
@@ -288,7 +288,7 @@ const focusTips={
   dotcode:'Open the full-size PNG on another screen. Keep all dots visible, sharp and evenly lit.'
 };
 function setScanFocus(mode){
-  if(!['auto','qr','code128','datamatrix','aztec','pdf417','micropdf417','ean13','microqr','rmqr','iris','chromaqr','codablockf','dotcode'].includes(mode))mode='auto';
+  if(!['auto','qr','code128','datamatrix','aztec','pdf417','micropdf417','ean13','microqr','jab','iris','chromaqr','codablockf','dotcode'].includes(mode))mode='auto';
   $('scan-mode').value=mode;
   $('camera-mode').value=mode;
   $('camera-panel').dataset.focus=mode;
@@ -353,7 +353,7 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
     const {width,height,data}=pixels;
     if(!width||!height||data.length!==width*height*4){resolve(mode==='chroma'?'':[]);return}
     const id=++barcodeSequence;
-    const timeout=options.specialty==='rmqr'?7500:mode==='chroma'?6800:options.formats?.length===1?3000:2200;
+    const timeout=mode==='jab'?4800:options.specialty==='rmqr'?7500:mode==='chroma'?6800:options.formats?.length===1?3000:2200;
     const timer=setTimeout(stopBarcodeWorker,timeout);
     barcodePending.set(id,{resolve,timer,mode});
     try{getBarcodeWorker().postMessage({id,mode,width,height,buffer:data.buffer,options},[data.buffer])}
@@ -546,8 +546,8 @@ async function cameraLoop(token){
           const autoIris=mode==='auto'&&frame%12===7;
           const autoChroma=mode==='auto'&&frame%6===4;
           const autoPdf=mode==='auto'&&(frame%6===2||frame%6===5);
-          // Give rMQR its independent AnyDCode path in Auto, not just ZXing's generic sweep.
-          const autoRmqr=mode==='auto'&&frame%8===3&&!autoPdf;
+          // Scan JAB periodically in Auto without stalling ordinary formats.
+          const autoJab=mode==='auto'&&frame%9===3&&!autoIris&&!autoChroma&&!autoPdf;
           if(frame%2===0){
             const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
             if(live&&token===cameraToken&&native&&await acceptPayload(native.rawValue,'camera',native.format))return;
@@ -560,27 +560,32 @@ async function cameraLoop(token){
               if(live&&token===cameraToken&&iris&&await acceptPayload(iris,'camera','IRIS'))return;
             }finally{crop.width=crop.height=1}
           }else{
-            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':autoRmqr?'rmqr':mode;
+            const captureMode=mode==='jab'||autoJab?'jab':autoChroma?'chromaqr':autoPdf?'pdf417':mode;
             const size=captureDimensions(video.videoWidth,video.videoHeight,captureMode);
             if(canvas.width!==size.width||canvas.height!==size.height){
               canvas.width=size.width;canvas.height=size.height;
             }
             ctx.drawImage(video,0,0,canvas.width,canvas.height);
-            if(mode==='chromaqr'||autoChroma){
+            if(mode==='jab'||autoJab){
+              const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+              const found=await requestBarcodeWorker(pixels,'jab',{phase:frame});
+              const hit=found.find(x=>isGamePayload(x.text));
+              if(live&&token===cameraToken&&hit&&await acceptPayload(hit.text,'camera','JABCode'))return;
+            }else if(mode==='chromaqr'||autoChroma){
               const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
               const chroma=await readCameraChroma(pixels);
               if(live&&token===cameraToken&&chroma&&await acceptPayload(chroma,'camera','ChromaQR'))return;
             }else if(mode==='auto'||focused){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
-              if(autoPdf||autoRmqr||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
-                result=await readFocused(lib,canvas,autoPdf?'pdf417':autoRmqr?'rmqr':mode,autoPdf?autoPdfPass++:frame,captureMode==='rmqr'?video:canvas);
+              if(autoPdf||['rmqr','pdf417','micropdf417','code128'].includes(mode)){
+                result=await readFocused(lib,canvas,autoPdf?'pdf417':mode,autoPdf?autoPdfPass++:frame,mode==='rmqr'?video:canvas);
               }else{
                 const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
                 const formats=focused?[focused]:frame%4===0
                   ?['QRCode','DataMatrix','Aztec','Code128','EAN13']
                   :frame%4===1?['PDF417','MicroPDF417']
-                  :frame%4===2?['RMQRCode','MicroQRCode']:['QRCode','DataMatrix','EAN13'];
+                  :frame%4===2?['MicroQRCode']:['QRCode','DataMatrix','EAN13'];
                 result=(await lib.readBarcodes(pixels,{
                   ...wasmOptions,formats,tryHarder:false,tryDenoise:false,tryRotate:true
                 })).find(x=>isGamePayload(x.text));
@@ -615,6 +620,21 @@ $('stop-camera').addEventListener('click',()=>{stopCamera();status('Camera stopp
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCamera()});
 addEventListener('pagehide',stopCamera);
 async function detectImage(file) {
+  // Decode JAB in colour before trying standard monochrome upload readers.
+  try{
+    const jabBitmap=await createImageBitmap(file);
+    const jabCanvas=document.createElement('canvas');
+    try{
+      const size=captureDimensions(jabBitmap.width,jabBitmap.height,'jab');
+      jabCanvas.width=size.width;jabCanvas.height=size.height;
+      const jabCtx=jabCanvas.getContext('2d',{willReadFrequently:true});
+      jabCtx.drawImage(jabBitmap,0,0,size.width,size.height);
+      const jabPixels=jabCtx.getImageData(0,0,size.width,size.height);
+      const hits=await requestBarcodeWorker(jabPixels,'jab',{phase:0});
+      const match=hits.find(hit=>isGamePayload(hit.text));
+      if(match)return {text:match.text,format:'JABCode'};
+    }finally{jabBitmap.close();jabCanvas.width=jabCanvas.height=1}
+  }catch{/* Standard barcode uploads remain supported. */}
   const engine=await getScanner();
   if(engine.kind==='native'){
     let bitmap;
@@ -854,7 +874,7 @@ $('try-memory').addEventListener('click',()=>playMatrixExample('memory-aztec','P
 $('try-breakout').addEventListener('click',()=>playMatrixExample('breakout-pdf417','Brick Rush','PDF417'));
 $('try-tap').addEventListener('click',()=>playMatrixExample('timing-ean13','Perfect Timing','EAN13'));
 $('try-micro').addEventListener('click',()=>playMatrixExample('reflex-microqr','Pocket Reflex','MicroQRCode'));
-$('try-rmqr').addEventListener('click',()=>playMatrixExample('math-rmqr','Codebreaker','RMQRCode'));
+$('try-jab').addEventListener('click',()=>playMatrixExample('codebreaker-jab','Codebreaker','JABCode'));
 $('try-taprush').addEventListener('click',()=>playMatrixExample('taprush-code128','Tap Rush','Code128'));
 async function playExoticExample(name,title,format){
   return openCatalogGame(name,title);
@@ -904,7 +924,7 @@ $('use-example').addEventListener('click',async()=>{
     $('create-source').value="g=c.getContext('2d');p=s=z=0;o=-35;v=h=0;a=3.6;c.onclick=()=>z?(z=p=s=0,o=-35,a=3.6):p^=1;r=(k,x,y,w,h)=>{g.fillStyle=k;g.fillRect(x,y,w,h)};function f(t=0){d=h?Math.min(3,(t-h)/17):1;h=t;r('#122',0,0,240,360);if(!z){a+=.009*d;o+=a*d;if(o>360)o=-35,v=Math.random()*2|0,s++;if(o>288&&o<332&&v==p)z=1}r('#e67',35+v*120,o,45,32);r('#afa',40+p*120,300,35,35);g.fillStyle='#fff';g.font='19px system-ui';g.fillText(z?'CRASH - TAP TO RETRY':'DODGE '+s,10,23);requestAnimationFrame(f)}f()";
   }else if(generatorFormat==='ean13'){
     $('create-source').value='299000124450';
-  }else if(!['bar','rmqr','chromaqr'].includes(generatorFormat)){
+  }else if(!['bar','jab','chromaqr'].includes(generatorFormat)){
     $('create-source').value=`<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><body style="background:#101719;color:#b9ef79;display:grid;place-items:center;height:96vh;font:25px monospace"><button onclick="this.textContent='YOU WIN!'" style="padding:28px;background:#b9ef79;border:0">TAP TO WIN</button></body>`;
   } else {
     $('create-source').value="document.body.innerHTML='<button>Tap me</button>';document.querySelector('button').onclick=e=>e.target.textContent='You win!'";
@@ -964,7 +984,7 @@ $('generate').addEventListener('click',async()=>{
   const button=$('generate');button.disabled=true;button.textContent='Generating...';show('create-error',false);
   try {
     const input=$('create-source').value.trim();if(!input)throw Error('Add a game or try an example first.');
-    const payload=generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packMicroHtml(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','rmqr','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
+    const payload=generatorFormat==='ean13'?packEanLevel(input):generatorFormat==='microqr'?packMicroVm(input):generatorFormat==='bar'&&input.toUpperCase().startsWith('LO:')?(/^LO:[0-9A-F]{4}$/.test(input.toUpperCase())&&input.toUpperCase()!=='LO:0000'?input.toUpperCase():(()=>{throw Error('Lights Out levels must be LO: and four hex digits, e.g. LO:5A36.')})()):generatorFormat==='micropdf417'?packMicroHtml(input):generatorFormat==='dotcode'?await packCompactScript(input):['bar','jab','chromaqr'].includes(generatorFormat)?packScript(input):generatorFormat==='iris'?await packIrisHtml(input):await packHtml(input);
     if(generatorFormat==='micropdf417'&&new TextEncoder().encode(payload).length>150)throw Error('MicroPDF417 is limited to 150 encoded bytes. Shorten the HTML game.');
     if(generatorFormat==='bar'&&payload.length>95)throw Error('For a camera-readable Code 128, keep the total below 95 characters or select a 2D code.');
     let svg,png;
@@ -980,6 +1000,20 @@ $('generate').addEventListener('click',async()=>{
     } else if(generatorFormat==='chromaqr'){
       const factory=await loadExternal(QR_GENERATOR_URL,'qrcode');
       svg=displaySvg(chromaSvg(encodeChroma(factory,payload)));
+    } else if(generatorFormat==='jab'){
+      const {encodeJABCode,toColorImageData}=await import('../vendor/jabcode.js');
+      const matrix=encodeJABCode(new TextEncoder().encode(payload));
+      const margin=4,scale=12,image=toColorImageData(matrix,{scale,margin});
+      const edge=margin*scale,side=matrix.width*scale;
+      for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+        if(x>=edge&&x<edge+side&&y>=edge&&y<edge+side)continue;
+        const i=(y*image.width+x)*4;
+        image.data[i]=image.data[i+1]=image.data[i+2]=image.data[i+3]=255;
+      }
+      const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;
+      const ctx=canvas.getContext('2d');ctx.putImageData(new ImageData(image.data,image.width,image.height),0,0);
+      png=await new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(Error('JAB PNG conversion failed')),'image/png'));
+      canvas.width=canvas.height=1;
     } else if(generatorFormat==='dotcode'){
       const {encodeDotCode,toPNG}=await import('../vendor/sythos-barcode.esm.js');
       const matrix=encodeDotCode(payload,{aspectRatio:1});
