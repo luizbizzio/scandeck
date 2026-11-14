@@ -1,3 +1,17 @@
+## Pre-release live-camera performance gate
+
+Do not merge the camera audit until tests are repeated on at least one real Android/Chrome phone and one iOS/Safari phone. GitHub Actions cannot simulate autofocus, thermal throttling or a physical camera.
+
+- [ ] Keep Auto running for **15 minutes**. Video preview remains fluid; capture does not become progressively slower or freeze
+- [ ] Scan the same QR, Data Matrix and GS1 DataBar codes at the beginning and after 15 minutes. Compare how quickly each is recognized
+- [ ] Scan the Micro QR and MicroPDF417 with Auto, then their dedicated focus. Confirm no missing formats
+- [ ] Open ChromaQR and IRIS using dedicated focus. Verify their PNGs on a second screen; Auto intentionally checks them less often
+- [ ] Scan DotCode in dedicated mode for 10 minutes. Verify performance does not degrade when its decoder worker is recycled
+- [ ] Rotate the phone, change focus rapidly, lock/unlock the screen and grant/deny camera permission. All camera tracks should stop cleanly
+- [ ] Try a large image upload immediately after closing the camera; the previous live camera must not retain a worker or block the new scan
+- [ ] Check Chrome DevTools Performance Monitor where available: JavaScript heap and process memory must not climb without stabilizing
+- [ ] Verify the source viewer, Play, Download and Create still work for every game, and Full/Partial/Bytecode labels reflect actual payloads
+
 # ScanDeck release QA checklist
 
 Do not mark the camera checks as passed until tested on real devices. Unit tests and generated image decoding cannot replace them.
