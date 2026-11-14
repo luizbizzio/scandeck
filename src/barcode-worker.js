@@ -1,6 +1,7 @@
 /* Long-running camera decoders run away from the UI thread.
    Only one request is sent at a time, and closing the camera terminates this worker. */
 let decoderPromise=null,preprocessorPromise=null;
+const decoderWarnings=new Set();
 function getSpecialtyPreprocessor(){
   if(!preprocessorPromise)preprocessorPromise=import('./specialty-candidates.js').catch(error=>{
     preprocessorPromise=null;throw error;
@@ -39,11 +40,24 @@ self.onmessage=async({data:task})=>{
       throw Error('Invalid camera frame');
     const pixels={width,height,data:new Uint8ClampedArray(buffer)};
     if(mode==='standard'&&options?.specialty==='rmqr'){
+      // Run just ONE independent rMQR decoder before ZXing on a given frame.
+      // Running AnyDCode, ZXing variants and Rxing in sequence can exceed the
+      // 7.5-second camera deadline before the last decoder is reached.
+      const phase=options.specialtyPhase||0;
       try{
-        const {readAnyDRMQRFrame}=await import('./rmqr-anyd.js');
-        const alternative=await readAnyDRMQRFrame(pixels,options.specialtyPhase||0);
+        const alternative=phase%3===1
+          ?await (await import('./rmqr-rxing.js')).readRxingRMQRFrame(pixels,phase)
+          :phase%3===0
+            ?await (await import('./rmqr-anyd.js')).readAnyDRMQRFrame(pixels,phase)
+            :[];
         if(alternative.length){self.postMessage({id,result:alternative});return}
-      }catch{/* Independent rMQR reader unavailable: continue with ZXing. */}
+      }catch(error){
+        const name=phase%3===1?'Rxing':'AnyDCode';
+        if(!decoderWarnings.has(name)){
+          decoderWarnings.add(name);
+          console.warn('[ScanDeck] rMQR '+name+' decoder unavailable:',error);
+        }
+      }
     }
     const zxing=await getDecoder();
     if(mode==='chroma'){
@@ -85,15 +99,6 @@ self.onmessage=async({data:task})=>{
           });
           if(more.some(hit=>hit.text)){hits=more;break}
         }
-      }
-      // Rxing is an independent Rust decoder. Keep it rMQR-only and intermittent
-      // so a difficult camera scene cannot slow other barcode formats.
-      if(specialty==='rmqr'&&!hits.some(hit=>hit.text)&&specialtyPhase%3===0){
-        try{
-          const {readRxingRMQRFrame}=await import('./rmqr-rxing.js');
-          const alternative=await readRxingRMQRFrame(pixels,specialtyPhase);
-          if(alternative.length)hits=alternative;
-        }catch{/* Keep ZXing and AnyDCode available if Rxing cannot load. */}
       }
       result=hits.filter(hit=>typeof hit.text==='string'&&hit.text.length).map(hit=>({text:hit.text,format:hit.format})).slice(0,2);
     }
