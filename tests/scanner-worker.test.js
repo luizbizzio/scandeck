@@ -64,7 +64,7 @@ test('IRIS tries isolated RGB card and markers in a separate worker',()=>{
 
 test('rMQR camera preprocessing offers both true pure-code and finder-based reads',()=>{
  const script=readFileSync(new URL('../src/specialty-candidates.js',import.meta.url),'utf8');
- assert.match(script,/format==='rmqr'\)return \[/);
+ assert.match(script,/if\(format==='rmqr'\)\{/);
  assert.match(script,/image:crop,options:\{isPure:true/);
  assert.match(script,/image:crop,options:\{isPure:false/);
  const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
