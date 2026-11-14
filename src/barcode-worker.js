@@ -65,7 +65,7 @@ self.onmessage=async({data:task})=>{
           const more=await zxing.readBarcodes(candidate.image,{
             ...readOptions,...candidate.options,
             tryDownscale:false,tryDenoise:false,tryRotate:specialty==='rmqr',
-            tryHarder:specialty==='rmqr'
+            tryHarder:specialty==='rmqr'&&!candidate.options.isPure
           });
           if(more.some(hit=>hit.text)){hits=more;break}
         }

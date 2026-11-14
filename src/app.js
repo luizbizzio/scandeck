@@ -469,7 +469,7 @@ function makeFocusedPixels(image,mode,monochrome=false,phase=0){
   const canvas=document.createElement('canvas');
   canvas.width=roi.outputWidth;canvas.height=roi.outputHeight;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
-  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingEnabled=mode!=='rmqr';
   ctx.drawImage(image,roi.left,roi.top,roi.width,roi.height,0,0,canvas.width,canvas.height);
   const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
   if(monochrome){
@@ -503,7 +503,7 @@ async function readFocused(lib,source,mode,frame){
     tryDownscale:false, // Preserve rMQR locator detail at phone camera resolution.
     tryDenoise:false, // expensive morphology hurts continuous camera scans
     tryRotate:true,
-    retryBinarizer:(mode==='rmqr'||mode==='maxicode')&&frame%4===0,
+    retryBinarizer:mode==='maxicode'&&frame%4===0,
     specialty:mode==='rmqr'||mode==='maxicode'?mode:null,
     specialtyPhase:frame,
     retryRotated:mode==='code128'?frame%3===0:mode==='maxicode'&&frame%3===2

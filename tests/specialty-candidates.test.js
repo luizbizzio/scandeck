@@ -61,3 +61,22 @@ test('specialty preprocessor rejects non-white scenes and keeps bounded work',()
  assert.deepEqual(specialtyCandidates({width,height,data},'rmqr'),[]);
  assert.deepEqual(specialtyCandidates({width,height,data},'code128'),[]);
 });
+
+test('rMQR pure-code fallback works when a white page swallows the white card boundary',async()=>{
+ const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));
+ const width=Math.max(png.width+70,1150),height=Math.max(png.height+70,720);
+ const data=new Uint8ClampedArray(width*height*4).fill(255);
+ const ox=Math.floor((width-png.width)/2),oy=Math.floor((height-png.height)/2);
+ for(let y=0;y<png.height;y++){
+  const from=y*png.width*4,to=((y+oy)*width+ox)*4;
+  data.set(png.data.subarray(from,from+png.width*4),to);
+ }
+ const whole={width,height,data};
+ assert.equal(findLightCard(whole),null,'white connected screen background has no isolated light card');
+ const candidates=specialtyCandidates(whole,'rmqr');
+ assert.equal(candidates.length,4);
+ assert.ok(candidates[0].image.width<width,'pure candidate must isolate module area');
+ const expected=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8');
+ const results=await readBarcodes(candidates[0].image,{formats:['RMQRCode'],isPure:true,tryHarder:false,tryRotate:true});
+ assert.ok(results.some(x=>x.text===expected),'isolated code must be decoded from its camera-like white background');
+});

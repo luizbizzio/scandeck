@@ -107,18 +107,28 @@ export function isolateDarkSymbol(image){
 }
 export function specialtyCandidates(image,format){
   if(format!=='maxicode'&&format!=='rmqr')return [];
-  const card=findLightCard(image);
+  let card=findLightCard(image);
+  if(!card&&format==='rmqr'){
+    // On a white page or a bright monitor the white quiet zone connects
+    // to the background, so no separate white-card component exists.
+    // Only enable whole-frame isolation if there is enough real white space.
+    const {width,height,data}=image;
+    let lightPixels=0,samples=0;
+    for(let i=0;i<data.length;i+=128){samples++;if(light(data,i))lightPixels++}
+    if(samples&&lightPixels/samples>.28)
+      card={x:0,y:0,width,height};
+  }
   if(!card)return [];
   const crop=cropRgba(image,card);
   if(crop.width<75||crop.height<55||crop.width*crop.height>1_600_000)return [];
   const padded=withWhiteBorder(crop,format==='maxicode'?.14:.06);
   if(format==='rmqr'){
-    const isolated=isolateDarkSymbol(crop);
+    const isolated=isolateDarkSymbol(crop)||crop;
     return [
-      {image:crop,options:{isPure:true,binarizer:'LocalAverage'}},
-      {image:thresholdRgba(crop),options:{isPure:true,binarizer:'FixedThreshold'}},
+      {image:isolated,options:{isPure:true,binarizer:'LocalAverage'}},
+      {image:thresholdRgba(isolated),options:{isPure:true,binarizer:'FixedThreshold'}},
       {image:crop,options:{isPure:false,binarizer:'LocalAverage'}},
-      {image:isolated?thresholdRgba(isolated):thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
+      {image:thresholdRgba(padded),options:{isPure:true,binarizer:'FixedThreshold'}}
     ];
   }
   return [

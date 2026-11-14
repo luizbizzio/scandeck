@@ -59,16 +59,18 @@ test('IRIS tries isolated RGB card and markers in a separate worker',()=>{
  const worker=readFileSync(new URL('src/iris-worker.js',root),'utf8');
  assert.match(worker,/cropIrisCard\(grid\)/);
  assert.match(worker,/decodeColorMarkers\(card\)/);
+   assert.ok(worker.indexOf('decodeColorMarkers(card)')<worker.indexOf('decodeColorMarkers(grid)'));
+   assert.match(worker,/decodeColorRobust\(card,\{budgetMs:650\}\)/);
  assert.match(sw,/"src\/iris-camera\.js"/);
 });
 
 test('rMQR camera preprocessing offers both true pure-code and finder-based reads',()=>{
  const script=readFileSync(new URL('../src/specialty-candidates.js',import.meta.url),'utf8');
  assert.match(script,/if\(format==='rmqr'\)\{/);
- assert.match(script,/image:crop,options:\{isPure:true/);
+ assert.match(script,/image:isolated,options:\{isPure:true/);
  assert.match(script,/image:crop,options:\{isPure:false/);
  const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
- assert.match(worker,/tryHarder:specialty==='rmqr'/);
+ assert.match(worker,/tryHarder:specialty==='rmqr'&&!candidate\.options\.isPure/);
  assert.match(worker,/candidates.slice\(start,start\+2\)/);
  assert.match(app,/specialtyPhase:frame/);
 });

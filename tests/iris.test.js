@@ -62,3 +62,11 @@ test('compact IRIS game remains decodable after mobile-sized nearest-neighbor re
   const expected=readFileSync(new URL('../assets/iris-wire.txt',import.meta.url),'utf8');
   assert.equal(decodeColor({width,height,data}).text,expected);
 });
+
+test('IRIS camera worker prioritizes RGB markers and isolated card over costly full-frame search',()=>{
+ const worker=readFileSync(new URL('../src/iris-worker.js',import.meta.url),'utf8');
+ assert.ok(worker.indexOf('cropIrisCard(grid)')<worker.indexOf('decodeColorMarkers(grid)'));
+ assert.ok(worker.indexOf('decodeColorMarkers(card)')<worker.indexOf('decodeColorRobust(card,'));
+ assert.match(worker,/budgetMs:650/);
+ assert.match(worker,/budgetMs:600/);
+});
