@@ -103,3 +103,13 @@ test('lossless optimization rewrites scripts, not game behavior or UI structure'
  assert.match(optimizer,/mangle:\{toplevel:minifyGlobals\}/);
  assert.match(optimizer,/inflateRawSync\(best\)\.equals\(bytes\)/);
 });
+
+test('continuous sessions recycle exotic workers and share heavy WASM initialization',()=>{
+ assert.match(app,/if\(\+\+exoticReads>=48&&exoticWaiting\.size===0\)/);
+ assert.match(app,/let matrixEnginePromise=null/);
+ assert.match(app,/if\(!matrixEnginePromise\)matrixEnginePromise=/);
+ assert.match(app,/matrixEnginePromise=null;throw error/);
+ assert.match(app,/new BarcodeDetector\(\{formats:autoFormats\}\)/);
+ assert.match(app,/track\.addEventListener\('ended'/);
+ assert.match(app,/mode===scanFocus\(\)/);
+});
