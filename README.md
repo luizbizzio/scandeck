@@ -29,15 +29,15 @@ The Games library shows three data types: **Full** (complete HTML game), **Parti
 | Brick Rush | PDF417 |
 | Perfect Timing | EAN-13 |
 | Pocket Reflex | Micro QR |
-| Codebreaker | rMQR |
+| Codebreaker | JAB Code |
 | Wire Crisis | IRIS |
 | Chroma Rush | ChromaQR |
 
-IRIS and ChromaQR previews and downloads use PNG. Auto mode includes ChromaQR. rMQR uses AnyDCode (MIT) as an independent local WASM detector, with ZXing fallback. MicroPDF417 uses the existing ZXing reader; DotCode, IRIS and ChromaQR use experimental camera readers. DotCode stores compactly compressed JavaScript using a smaller Z85 payload (legacy Base64 DotCodes remain readable), with the HTML provided by ScanDeck. Its PNG uses the writer matching the local strict decoder. A validated photo-framing pipeline now improves focused scanning, but real devices still require testing. Dense PDF417, MaxiCode, rMQR and long Code 128 symbols may also be hard to scan. **Successful PNG decoding does not prove real-camera reliability.**
+JAB Code is the Codebreaker format. Its PNG contains the full JavaScript game, not a link. ScanDeck uses the experimental 8-color JAB implementation in Sythos Barcode Universal 1.6.8 and a color-aware camera reader. JAB decoding currently requires a visible, approximately front-facing square and white margins; perspective, glare and strong color shifts can still cause camera failures. The JAB profile has not been independently verified against the official reference implementation, so it should not yet be treated as universal ISO-compatible JAB. MicroPDF417 uses ZXing; DotCode, IRIS and ChromaQR also have experimental readers. **A successful image upload does not prove real-camera reliability.**
 
 ## Run locally
 
-You need Node.js 22 or newer.
+You need Node.js 24 or newer.
 
 ```bash
 npm install
