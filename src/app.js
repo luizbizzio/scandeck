@@ -995,7 +995,7 @@ $('generate').addEventListener('click',async()=>{
               scale:8,addHRT:false,options:'columns='+cols});
             if(!result.image)continue;
             const found=await lib.readBarcodes(result.image,readOpts);
-            if(found.some(hit=>decodeCodebreakerDataBar(hit.text)?.payload===payload)){
+            if(found.some(hit=>hit.format==='DataBarExpStk'&&decodeCodebreakerDataBar(hit.text)?.payload===payload)){
               png=result.image;break;
             }
           }catch{/* Try the next valid GS1 representation. */}
