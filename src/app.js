@@ -1,9 +1,9 @@
-import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=63';
-import { gameDocument } from './runtime.js?v=63';
+import { decodeGame, packHtml, packScript, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=64';
+import { gameDocument } from './runtime.js?v=64';
 import { code128Svg, decodeCode128Svg } from './code128.js';
 import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
 import { specialtyCandidates } from './specialty-candidates.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=63';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=64';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr','rmqr'];
@@ -25,7 +25,7 @@ async function loadCodeSizes(){
   const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
   if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
   if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=63',{cache:'no-store'})
+    codeSizesRequest=fetch('assets/code-sizes.json?v=64',{cache:'no-store'})
       .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
       .catch(error=>{codeSizesRequest=null;throw error});
   }
@@ -55,6 +55,32 @@ function switchTab(tab) {
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', event=>{event.preventDefault();switchTab(b.dataset.tab)}));
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
+
+// Keep the paper close to the actual symbol, preserving the PNG's existing quiet zone.
+// The outer gallery preview stays 228px high. ResizeObserver also handles a hidden
+// library tab becoming visible and responsive width changes.
+const tightPreviews=[...document.querySelectorAll('.tight-code-preview')];
+function fitTightCodePaper(preview){
+  const img=preview.querySelector('.game-code-paper img'),paper=img?.parentElement;
+  if(!img?.naturalWidth||!img.naturalHeight||!paper||!preview.clientWidth)return;
+  const availableWidth=Math.max(1,preview.clientWidth-40);
+  const scale=Math.min(150/img.naturalHeight,availableWidth/img.naturalWidth);
+  paper.style.width=Math.ceil(img.naturalWidth*scale+16)+'px';
+  paper.style.height=Math.ceil(img.naturalHeight*scale+16)+'px';
+}
+if(tightPreviews.length){
+  const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(entries=>{
+    for(const entry of entries)fitTightCodePaper(entry.target);
+  });
+  for(const preview of tightPreviews){
+    const img=preview.querySelector('img');
+    if(img.complete)fitTightCodePaper(preview);
+    else img.addEventListener('load',()=>fitTightCodePaper(preview),{once:true});
+    observer?.observe(preview);
+  }
+  if(!observer)addEventListener('resize',()=>tightPreviews.forEach(fitTightCodePaper));
+}
+
 // Initial navigation runs after all module-level worker state is initialized.
 void loadCodeSizes();
 

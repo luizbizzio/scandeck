@@ -309,8 +309,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=63/);
-  assert.match(html,/src\/style\.css\?v=63/);
+  assert.match(html,/src\/app\.js\?v=64/);
+  assert.match(html,/src\/style\.css\?v=64/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
@@ -511,4 +511,22 @@ test('all library shapes fit their actual codes while preview heights remain ide
  assert.equal(square.length+wide.length,12);
  assert.match(css,/\.game-code-preview\{height:228px;flex-shrink:0;/);
  assert.doesNotMatch(css,/\.game-code-preview\.(?:square|wide)-code-preview\{height:/);
+});
+
+test('stacked and horizontal 2D codes trim only their preview paper, not their scanner margins',()=>{
+ const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417','math-rmqr'];
+ for(const id of assets){
+   const position=html.indexOf('href="assets/'+id+'.png"');
+   assert.ok(position>0,id+' is not in the gallery');
+   const classes=html.slice(position-155,position);
+   assert.match(classes,/tight-code-preview/,id+' needs tight white paper');
+ }
+ assert.equal((html.match(/tight-code-preview"/g)||[]).length,assets.length);
+ assert.match(css,/\.tight-code-preview \.game-code-paper\{width:min\(100%,280px\);height:166px;/);
+ assert.match(script,/function fitTightCodePaper\(preview\)/);
+ assert.match(script,/const scale=Math\.min\(150\/img\.naturalHeight,availableWidth\/img\.naturalWidth\)/);
+ assert.match(script,/new ResizeObserver\(entries=>/);
+ assert.match(script,/paper\.style\.width=Math\.ceil\(img\.naturalWidth\*scale\+16\)/);
+ assert.match(css,/\.game-code-preview\{height:228px;/);
+ assert.doesNotMatch(css,/\.game-code-preview\.tight-code-preview\{height:/);
 });
