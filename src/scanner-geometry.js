@@ -1,13 +1,13 @@
 // Small, testable camera heuristics. Avoid allocating full-resolution pixels on every scan.
-const DENSE=new Set(['code128','pdf417','micropdf417','rmqr','jab','codablockf','dotcode']);
+const DENSE=new Set(['code128','pdf417','micropdf417','rmqr','databar','codablockf','dotcode']);
 export function captureDimensions(width,height,mode='auto'){
   if(!Number.isFinite(width)||!Number.isFinite(height)||width<1||height<1)
     return {width:1,height:1};
   const dense=DENSE.has(mode);
   // Dedicated 1D/rMQR/Maxi readers need full detail to resolve thin modules.
-  const highDetail=['code128','rmqr','maxicode','pdf417','micropdf417'].includes(mode);
-  const maxEdge=mode==='jab'?1550:mode==='code128'?2300:mode==='codablockf'?1920:highDetail?1900:dense?1500:mode==='auto'?960:mode==='iris'||mode==='chromaqr'?1200:1440;
-  const maxPixels=mode==='jab'?1_500_000:mode==='code128'?2_200_000:mode==='rmqr'?2_200_000:mode==='codablockf'?1_950_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
+  const highDetail=['code128','rmqr','maxicode','pdf417','micropdf417','databar'].includes(mode);
+  const maxEdge=mode==='databar'?1900:mode==='code128'?2300:mode==='codablockf'?1920:highDetail?1900:dense?1500:mode==='auto'?960:mode==='iris'||mode==='chromaqr'?1200:1440;
+  const maxPixels=mode==='databar'?2_000_000:mode==='code128'?2_200_000:mode==='rmqr'?2_200_000:mode==='codablockf'?1_950_000:highDetail?1_600_000:dense?1_100_000:mode==='chromaqr'||mode==='iris'?700_000:mode==='auto'?500_000:750_000;
   const scale=Math.min(1,maxEdge/Math.max(width,height),Math.sqrt(maxPixels/(width*height)));
   return {width:Math.max(1,Math.floor(width*scale)),height:Math.max(1,Math.floor(height*scale))};
 }
