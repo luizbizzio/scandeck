@@ -47,3 +47,21 @@ test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
  state.z=1;c.onclick();
  assert.equal(state.a,3.6,'Retry must reset acceleration to the start speed');
 });
+
+test('published DotCode JavaScript advances at the same rate across frame rates and resets speed',()=>{
+ const js=readFileSync(new URL('../examples/neon-dodge-dotcode.js',import.meta.url),'utf8').trim();
+ function play(fps){
+   const pen={fillRect(){},fillText(){},set fillStyle(v){},set font(v){}};
+   const c={getContext:()=>pen};
+   const state={c,Math,requestAnimationFrame(fn){state.next=fn}};
+   vm.runInNewContext(js,state,{timeout:500});
+   for(let k=1;k<=fps;k++)state.next(k*1000/fps);
+   return state;
+ }
+ const slow=play(30),fast=play(60);
+ assert.ok(Math.abs(slow.o-fast.o)<12,'Speed should be independent of display refresh rate');
+ assert.ok(slow.a>4&&fast.a>4,'Obstacle speed must increase within the first second');
+ slow.z=1;slow.c.onclick();
+ assert.equal(slow.a,4,'Retry must reset acceleration');
+ assert.equal(slow.s,0,'Retry must reset score');
+});

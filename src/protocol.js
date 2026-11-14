@@ -126,7 +126,7 @@ export async function packCompactHtml(html){
 export async function packCompactScript(script){
   const source=String(script).trim();
   packScript(source);
-  return 'SDZ:'+base64Encode(await deflateRaw(source));
+  return 'SDZ:~'+base85Encode(await deflateRaw(source));
 }
 export async function packHtml(html) {
   if (!/<(?:canvas|html|body|svg|div|script)\b/i.test(html)) throw new Error('Paste an HTML game, not plain text.');
@@ -237,7 +237,10 @@ export async function decodeGame(raw) {
       source:script,payload:value,size:script.length};
   }
   if(value.startsWith('SDZ:')){
-    const script=await inflateRaw(base64Decode(value.slice(4)));
+    // New DotCode uses compact Z85; older published Base64 symbols stay readable.
+    const encoded=value.slice(4);
+    const script=await inflateRaw(encoded.startsWith('~')
+      ?base85Decode(encoded.slice(1)):base64Decode(encoded));
     if(!script||script.length>16_000||/[^\x20-\x7e]/.test(script)||/<\/script/i.test(script))
       throw Error('Invalid compressed JavaScript game.');
     return {title:'Standalone Barcode Game',type:'SDZ / DOTCODE',kind:'standalone',

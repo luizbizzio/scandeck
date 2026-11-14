@@ -55,7 +55,7 @@ const games=[
   },{
     name:'neon-dodge-dotcode',
     input:'examples/neon-dodge-dotcode.js',
-    payload:source=>'SDZ:'+deflateRawSync(Buffer.from(source),{level:9}).toString('base64'),
+    payload:source=>compact(source,'SDZ:~'),
     format:'dotcode',
     encode:payload=>{
       const fallback=encodeDotCode(payload,{aspectRatio:1});

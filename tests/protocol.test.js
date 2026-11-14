@@ -222,7 +222,7 @@ test('compressed full HTML and standalone JavaScript preserve source bytes and r
   const script="document.body.textContent='Snake';onkeydown=e=>document.title=e.key";
   const denseHtml=await packCompactHtml(html),denseScript=await packCompactScript(script);
   assert.match(denseHtml,/^SDH:[A-Za-z0-9+/=]+$/);
-  assert.match(denseScript,/^SDZ:[A-Za-z0-9+/=]+$/);
+  assert.match(denseScript,/^SDZ:~[0-3][0-9A-Za-z!#$%&()*+\-;<=>?@^_`{|}~.\/:[\]\\]+$/);
   const [a,b]=await Promise.all([decodeGame(denseHtml),decodeGame(denseScript)]);
   assert.equal(a.kind,'html');assert.equal(a.source,html);assert.equal(a.payload,denseHtml);
   assert.equal(b.kind,'standalone');assert.equal(b.source,script);assert.equal(b.payload,denseScript);
@@ -256,4 +256,13 @@ test('Z85 game transport round-trips bytes and both source types',async()=>{
   assert.equal(s.source,js);assert.equal(s.kind,'standalone');
   for(const bad of ['SDB:0abcde!','SDC:4abcde','SDB:0zzzzz'])
     await assert.rejects(()=>decodeGame(bad),/Invalid|TypeError|decompress/i);
+});
+
+test('DotCode accepts new Z85 payloads and legacy Base64 symbols',async()=>{
+ const src=readFileSync(new URL('../examples/neon-dodge-dotcode.js',import.meta.url),'utf8').trim();
+ const newCode=await packCompactScript(src);
+ assert.ok(newCode.startsWith('SDZ:~'));
+ assert.equal((await decodeGame(newCode)).source,src);
+ const legacy='SDZ:'+Buffer.from((await import('node:zlib')).deflateRawSync(Buffer.from(src))).toString('base64');
+ assert.equal((await decodeGame(legacy)).source,src);
 });
