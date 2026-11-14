@@ -117,4 +117,6 @@ test('rMQR alignment recovers small camera rotation before pure sampling',async(
  const cameraCandidates=specialtyCandidates(rotated,'rmqr',1);
  assert.equal(cameraCandidates.length,4);
  assert.equal(cameraCandidates[3].options.isPure,false,'Deskewed camera pass needs the finder-based decoder');
+ const cameraHits=await readBarcodes(cameraCandidates[3].image,{formats:['RMQRCode'],tryDownscale:false,tryHarder:true,...cameraCandidates[3].options});
+ assert.ok(cameraHits.some(x=>x.text===expected),'Actual camera deskew candidate should decode the rotated symbol');
 });

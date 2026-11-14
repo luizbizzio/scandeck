@@ -156,7 +156,7 @@ export function specialtyCandidates(image,format,phase=0){
     const isolated=isolateDarkSymbol(crop)||crop;
     // rMQR's finder sampler tolerates slight residual skew better than its
     // pure sampler. Cycle a small angular correction across camera frames.
-    const offset=phase%4===1?-.012:phase%4===3?.012:0;
+    const offset=phase%4===1?-.016:phase%4===3?.016:0;
     const straightened=deskewDarkSymbol(isolated,offset);
     return [
       {image:isolated,options:{isPure:true,binarizer:'LocalAverage'}},
