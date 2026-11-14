@@ -23,6 +23,7 @@ test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/\[data.buffer\]/);
  assert.match(worker,/importScripts\('\.\.\/vendor\/zxing-wasm\/index\.js'\)/);
  assert.match(worker,/await import\('\.\/chroma\.js'\)/);
+  assert.match(worker,/if\(!result\)result=await decodeChromaPixels\(pixels,readQr\)/);
  assert.match(worker,/self\.postMessage\(\{id,result\}\)/);
  assert.match(worker,/rotatePixels\(pixels,clockwise\)/);
  assert.match(worker,/retryBinarizer/);

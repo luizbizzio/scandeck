@@ -41,7 +41,16 @@ self.onmessage=async({data:task})=>{
     const pixels={width,height,data:new Uint8ClampedArray(buffer)};
     if(mode==='chroma'){
       const {decodeChromaPixels}=await import('./chroma.js');
-      result=await decodeChromaPixels(pixels,(image,opts)=>zxing.readBarcodes(image,opts))||'';
+      const readQr=(image,opts)=>zxing.readBarcodes(image,opts);
+      // A color QR on a dark website often has a clearly separated white card.
+      // Cropping that card first greatly reduces work across three RGB planes.
+      const {findLightCard,cropRgba}=await getSpecialtyPreprocessor();
+      const card=findLightCard(pixels);
+      if(card&&card.width>100&&card.height>100&&card.width*card.height<width*height*.88){
+        const isolated=cropRgba(pixels,card);
+        result=await decodeChromaPixels(isolated,readQr)||'';
+      }
+      if(!result)result=await decodeChromaPixels(pixels,readQr)||'';
     }else if(mode==='standard'){
       const {retryRotated=false,retryBinarizer=false,specialty=null,specialtyPhase=0,...readOptions}=options||{};
       let hits=await zxing.readBarcodes(pixels,readOptions);

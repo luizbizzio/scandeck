@@ -55,3 +55,19 @@ test('ChromaQR camera tries a fast pass before expensive QR recovery',()=>{
  const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
  assert.match(app,/mode==='chroma'\?6800/);
 });
+
+test('camera-style ChromaQR white card can be isolated from the dark page',async()=>{
+ const {findLightCard,cropRgba}=await import('../src/specialty-candidates.js');
+ const image=pngPixels('chromaqr-chroma.png');
+ const width=image.width+220,height=image.height+220,data=new Uint8ClampedArray(width*height*4);
+ for(let i=0;i<data.length;i+=4){data[i]=17;data[i+1]=24;data[i+2]=22;data[i+3]=255}
+ for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++){
+  const from=(y*image.width+x)*3,to=((y+110)*width+(x+110))*4;
+  data[to]=image.data[from];data[to+1]=image.data[from+1];data[to+2]=image.data[from+2];
+ }
+ const card=findLightCard({width,height,data});
+ assert.ok(card,'The scanner needs to find the pale ChromaQR card on a dark page');
+ const cropped=cropRgba({width,height,data},card);
+ const expected=readFileSync(new URL('../assets/chromaqr-chroma.txt',import.meta.url),'utf8');
+ assert.equal(await decodeChromaPixels(cropped,readBarcodes),expected);
+});
