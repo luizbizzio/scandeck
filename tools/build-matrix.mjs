@@ -54,11 +54,14 @@ for (const game of matrixGames) {
         if(!candidate?.image)continue;
         const png=Buffer.from(await candidate.image.arrayBuffer());
         const w=png.readUInt32BE(16),h=png.readUInt32BE(20),area=w*h;
-        if(area>baseArea*1.13)continue;
+        // Permit a taller, more camera-readable rectangle even if it uses more pixels.
+        if(area>baseArea*1.5)continue;
         const hits=await readBarcodes(candidate.image,{formats:['RMQRCode'],tryHarder:true,maxNumberOfSymbols:1});
         if(!hits.some(x=>x.text===selectedPayload))continue;
         const ratio=Math.max(w,h)/Math.min(w,h);
-        const score=area*(1+Math.max(0,ratio-5.5)*.1);
+        // At equal content, a 17-row symbol is easier to resolve than a 13-row strip.
+        // Penalize extreme aspect ratios more than a modest increase in symbol area.
+        const score=area/baseArea+Math.max(0,ratio-5.5)*.30;
         if(score<bestScore){bestScore=score;bestResult=candidate;bestVersion=version??'auto'}
       }catch{}
     }
