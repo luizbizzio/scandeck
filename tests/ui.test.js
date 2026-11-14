@@ -299,7 +299,7 @@ test('auto scans PDF417, ChromaQR and IRIS on bounded alternating camera frames'
  assert.match(script,/const autoPdf=mode==='auto'&&\(frame%6===2\|\|frame%6===5\)/);
  assert.match(script,/if\(mode==='iris'\|\|autoIris\)/);
  assert.match(script,/if\(mode==='chromaqr'\|\|autoChroma\)/);
- assert.match(script,/autoPdf\?'pdf417':mode,frame/);
+ assert.match(script,/autoPdf\?'pdf417':mode,autoPdf\?autoPdfPass\+\+:frame/);
  assert.match(html,/Auto \(all supported\)/);
 });
 test('library Play is fast, uses cached exact payload copies, and supports Micro VM programs',()=>{
