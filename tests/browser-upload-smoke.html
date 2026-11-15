@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>ScanDeck upload worker smoke test</title></head>
+<body>
+<main id="result" data-status="running">Testing image upload worker</main>
+<script>
+(async()=>{
+ const result=document.querySelector('#result');
+ const codes=[
+  {file:'ironpass-micro-v3-qr.png',contains:'IP3:'},
+  {file:'taprush-code128.png',format:'Code128'},
+  {file:'catch-datamatrix.png',format:'DataMatrix'},
+  {file:'memory-aztec.png',format:'Aztec'},
+  {file:'breakout-pdf417.png',format:'PDF417'},
+  {file:'dice-streak-micropdf417.png',format:'MicroPDF417'},
+  {file:'reflex-microqr.png',format:'MicroQRCode'},
+  {file:'timing-ean13.png',format:'EAN13'},
+  {file:'codebreaker-databar.png',contains:'SDCB7'},
+  {file:'neon-dodge-dotcode.png',format:'DotCode'},
+  {file:'chromaqr-chroma.png',format:'ChromaQR'},
+  {file:'iris-wire.png',format:'IRIS'}
+ ];
+ const details=[];
+ for(const code of codes){
+   const response=await fetch('../assets/'+code.file,{cache:'no-store'});
+   if(!response.ok)throw Error('Missing '+code.file);
+   const blob=await response.blob();
+   const decoded=await new Promise((resolve,reject)=>{
+     const worker=new Worker('../src/scanner/upload-worker.js');
+     const id=1;
+     const timeout=setTimeout(()=>{worker.terminate();reject(Error('Timed out on '+code.file))},60000);
+     worker.onmessage=({data})=>{
+       if(data?.id!==id)return;
+       if(typeof data.stage==='string'){result.textContent=code.file+': '+data.stage;return;}
+       clearTimeout(timeout);worker.terminate();
+       if(data.error||data.unsupported)reject(Error(String(data.error||'Worker unsupported')));
+       else resolve(data.result);
+     };
+     worker.onerror=event=>{clearTimeout(timeout);worker.terminate();reject(Error(event.message))};
+     worker.postMessage({id,file:blob});
+   });
+   if(!decoded?.text||(code.contains&&!decoded.text.includes(code.contains))||
+      (code.format&&decoded.format!==code.format))
+     throw Error('Wrong decoded payload for '+code.file+': '+JSON.stringify(decoded));
+   details.push(code.file+' OK');
+ }
+ result.dataset.status='passed';
+ result.textContent=details.join(' | ');
+})().catch(error=>{
+ const result=document.querySelector('#result');
+ result.dataset.status='failed';result.textContent=String(error?.stack||error);
+});
+</script>
+</body></html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://scandeck.luizbizzio.com/sitemap.xml

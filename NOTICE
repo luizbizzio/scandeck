@@ -1,0 +1,8 @@
+ScanDeck
+Copyright 2026 Luiz Bizzio
+
+ScanDeck's original source code is licensed under the Apache License, Version 2.0.
+
+This repository also includes third-party libraries and generated assets based
+on those libraries. These components keep their own copyright notices and
+licenses. See the vendor directory and package-lock.json for more information.

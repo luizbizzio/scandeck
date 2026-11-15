@@ -1,0 +1,50 @@
+name: Refresh README screenshots
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - 'src/**'
+      - tools/automation/capture-readme.mjs
+      - .github/workflows/readme-preview.yml
+permissions:
+  contents: write
+jobs:
+  screenshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install and build the website
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+          node tools/build/prepare-cloudflare.mjs
+      - name: Start local website and Chrome
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory dist >/tmp/scandeck-preview-http.log 2>&1 &
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:8765/ >/dev/null && break
+            sleep 1
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium)
+          if [ -z "$CHROME" ]; then echo 'Chrome is unavailable'; exit 1; fi
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu \
+            --remote-allow-origins='*' --remote-debugging-port=9222 \
+            --user-data-dir=/tmp/scandeck-readme-chrome about:blank >/tmp/scandeck-preview-browser.log 2>&1 &
+      - name: Capture Scan page
+        run: node tools/automation/capture-readme.mjs http://127.0.0.1:8765/
+      - name: Commit the actual screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots/scandeck-demo.png
+          if git diff --cached --quiet; then
+            echo 'Screenshots already match.'
+          else
+            git commit -m "docs: refresh website screenshots [skip ci]"
+            git push origin HEAD:main
+          fi

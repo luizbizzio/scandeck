@@ -1,0 +1,26 @@
+/* Offline shell cache. Game code is never sent to a remote endpoint. */
+const CACHE='scandeck-v85';
+const FILES=["./","index.html","src/style.css","src/app.js","src/ui/game-metadata.js","src/ui/gallery-layout.js","src/formats/protocol.js","src/formats/databar.js","src/games/runtime.js","src/games/microvm.js","src/games/maze.js","src/formats/code128.js","src/formats/chroma.js","src/scanner/scanner-geometry.js","src/scanner/camera-scheduler.js","src/scanner/iris-worker.js","src/scanner/iris-camera.js","src/scanner/exotic-worker.js","src/scanner/exotic-grid.js","src/scanner/exotic-shapes.js","src/scanner/barcode-worker.js","src/scanner/upload-worker.js","src/scanner/rmqr-anyd.js","src/scanner/rmqr-rxing.js","src/scanner/specialty-candidates.js","assets/favicon.svg","assets/code-sizes.json","assets/ironpass-micro-v3.txt","assets/ironpass-micro-v3-qr.png","assets/snake-qr.png","assets/snake-qr.txt","assets/dice-streak-micropdf417.png","assets/dice-streak-micropdf417.txt","assets/neon-dodge-dotcode.png","assets/neon-dodge-dotcode.txt","assets/taprush-code128.png","assets/taprush-code128.txt","assets/catch-datamatrix.png","assets/catch-datamatrix.txt","assets/memory-aztec.png","assets/memory-aztec.txt","assets/breakout-pdf417.png","assets/breakout-pdf417.txt","assets/timing-ean13.png","assets/timing-ean13.txt","assets/reflex-microqr.png","assets/reflex-microqr.txt","assets/codebreaker-databar.png","assets/codebreaker-databar.txt","assets/iris-wire.png","assets/iris-wire.txt","assets/chromaqr-chroma.png","assets/chromaqr-chroma.txt","vendor/zxing-wasm/index.js","vendor/zxing-wasm/zxing_full.wasm","vendor/rxing-wasm/rxing_wasm.js","vendor/rxing-wasm/rxing_wasm_bg.js","vendor/rxing-wasm/rxing_wasm_bg.wasm","vendor/qrcode-generator.js","vendor/sythos-barcode.esm.js","vendor/sythos.LICENSE","vendor/anyd.wasm","vendor/anyd.LICENSE","vendor/iris/bits.js","vendor/iris/blocks.js","vendor/iris/color.js","vendor/iris/frame.js","vendor/iris/markers.js","vendor/iris/params.js","vendor/iris/render-svg.js","vendor/iris/robust.js","vendor/iris/rs.js"];
+self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
+// Generated game assets revalidate on every request. Cache is only an offline fallback.
+// JS/CSS/HTML also revalidate, avoiding mixed old/new modules after a deploy.
+self.addEventListener('fetch', e => {
+  if(e.request.method!=='GET'||new URL(e.request.url).origin!==self.location.origin)return;
+  e.respondWith((async()=>{
+    const cache=await caches.open(CACHE);
+    const pathname=new URL(e.request.url).pathname;
+    const gameAsset=/\/assets\/[^/]+\.(?:png|svg|txt)$/.test(pathname);
+    try{
+      const dynamic=/\.(?:js|css|html)$/.test(pathname)||pathname.endsWith('/');
+      // Network-first for generated codes: never mix a previous PNG or payload with a new build.
+      const response=await fetch(e.request,(dynamic||gameAsset)?{cache:'no-store'}:undefined);
+      if(response.ok)await cache.put(e.request,response.clone());
+      return response;
+    }catch(error){
+      const cached=await cache.match(e.request);
+      if(cached)return cached;
+      throw Error('Offline and this file has not been saved.');
+    }
+  })());
+});
