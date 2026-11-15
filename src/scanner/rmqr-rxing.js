@@ -3,10 +3,10 @@
 let readerPromise=null;
 async function getRxing(){
  if(!readerPromise)readerPromise=(async()=>{
-  const rx=await import('../vendor/rxing-wasm/rxing_wasm.js');
+  const rx=await import('../../vendor/rxing-wasm/rxing_wasm.js');
   if(typeof rx.default!=='function'||typeof rx.decode_barcode!=='function')
    throw Error('Invalid Rxing WASM bindings');
-  await rx.default(new URL('../vendor/rxing-wasm/rxing_wasm_bg.wasm',import.meta.url));
+  await rx.default(new URL('../../vendor/rxing-wasm/rxing_wasm_bg.wasm',import.meta.url));
   return rx;
  })().catch(error=>{readerPromise=null;throw error});
  return readerPromise;

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
-import {instantiateAnyD,decodeAnyDImage} from '../src/rmqr-anyd.js';
+import {instantiateAnyD,decodeAnyDImage} from '../src/scanner/rmqr-anyd.js';
 
 test('independent AnyDCode WASM reader decodes the exact rMQR game PNG',async()=>{
  const wasm=readFileSync(new URL('../vendor/anyd.wasm',import.meta.url));

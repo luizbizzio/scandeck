@@ -21,11 +21,11 @@ function rotatePixels(image,clockwise){
 }
 function getDecoder(){
   if(!decoderPromise)decoderPromise=(async()=>{
-    importScripts('../vendor/zxing-wasm/index.js');
+    importScripts('../../vendor/zxing-wasm/index.js');
     const zxing=self.ZXingWASM;
     if(!zxing?.readBarcodes)throw Error('ZXing worker unavailable');
     zxing.prepareZXingModule({overrides:{locateFile:path=>
-      path.endsWith('.wasm')?new URL('../vendor/zxing-wasm/'+path,self.location.href).href:path}});
+      path.endsWith('.wasm')?new URL('../../vendor/zxing-wasm/'+path,self.location.href).href:path}});
     return zxing;
   })().catch(error=>{decoderPromise=null;throw error});
   return decoderPromise;
@@ -61,7 +61,7 @@ self.onmessage=async({data:task})=>{
     }
     const zxing=await getDecoder();
     if(mode==='chroma'){
-      const {decodeChromaPixels}=await import('./chroma.js');
+      const {decodeChromaPixels}=await import('../formats/chroma.js');
       const readQr=(image,opts)=>zxing.readBarcodes(image,opts);
       // A color QR on a dark website often has a clearly separated white card.
       // Cropping that card first greatly reduces work across three RGB planes.

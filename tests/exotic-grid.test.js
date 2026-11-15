@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {BitMatrix,decodeDotCode,decodeCodablockF} from '@sythos/js_barcode_universal';
-import {EXOTIC_SHAPES} from '../src/exotic-shapes.js';
-import {sampleKnownGrid,samplePerspectiveGrid} from '../src/exotic-grid.js';
+import {EXOTIC_SHAPES} from '../src/scanner/exotic-shapes.js';
+import {sampleKnownGrid,samplePerspectiveGrid} from '../src/scanner/exotic-grid.js';
 
 // Simulate a camera that sees a white barcode sheet against a dark background.
 function cameraImage(png,scale){

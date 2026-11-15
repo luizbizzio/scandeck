@@ -1,3 +1,7 @@
+# Manual QA checklist
+
+This is a **manual verification backlog**, not a record that the checks have passed. Unchecked cases must be verified on real phones. Compatibility and older-format entries can remain as regression tests even when they are not featured in the current 12-game library.
+
 ## Pre-release live-camera performance gate
 
 Do not merge the camera audit until tests are repeated on at least one real Android/Chrome phone and one iOS/Safari phone. GitHub Actions cannot simulate autofocus, thermal throttling or a physical camera.

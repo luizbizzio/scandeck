@@ -1,10 +1,10 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 import {bestDeflateRaw} from './optimize-encoding.mjs';
-import { encodeColor, renderColorSVG, renderColorRaster, decodeColor } from '../vendor/iris/color.js';
-import { base43Encode, base85Encode, packScript, decodeGame } from '../src/protocol.js';
+import { encodeColor, renderColorSVG, renderColorRaster, decodeColor } from '../../vendor/iris/color.js';
+import { base43Encode, base85Encode, packScript, decodeGame } from '../../src/formats/protocol.js';
 
-const root=new URL('../',import.meta.url);
+const root=new URL('../..//',import.meta.url);
 const asset=name=>new URL('assets/'+name,root);
 mkdirSync(asset(''),{recursive:true});
 

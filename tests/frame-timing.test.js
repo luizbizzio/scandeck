@@ -12,7 +12,7 @@ function fixtureScript(source,filename){
  return code;
 }
 function runGame(filename,fps){
- const source=readFileSync(new URL('../examples/'+filename,import.meta.url),'utf8');
+ const source=readFileSync(new URL(filename==='neon-dodge-dotcode.html'?'./fixtures/'+filename:'../examples/'+filename,import.meta.url),'utf8');
  const code=fixtureScript(source,filename);
  const pen={clearRect(){},fillRect(){},fillText(){}};
  const canvas={clientWidth:300,getContext:()=>pen};
@@ -34,7 +34,7 @@ test('Neon Dodge scrolls at the same speed at 30 and 60 FPS',()=>{
 });
 
 test('Neon Dodge continuously accelerates before any obstacle is passed',()=>{
- const html=readFileSync(new URL('../examples/neon-dodge-dotcode.html',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../tests/fixtures/neon-dodge-dotcode.html',import.meta.url),'utf8');
  const src=fixtureScript(html,'neon-dodge-dotcode.html');
  const g={fillRect(){},fillText(){},set fillStyle(x){},set font(x){}};
  const c={getContext:()=>g};

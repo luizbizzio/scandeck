@@ -7,9 +7,9 @@
   "scripts": {
     "test": "node --test tests/*.test.js",
     "start": "python -m http.server 8000",
-    "build:snake": "node tools/build-matrix.mjs",
-    "build": "node tools/build-matrix.mjs && node tools/build-color.mjs && node tools/build-chroma.mjs && node tools/build-exotic.mjs && node tools/build-code-sizes.mjs && node tools/fetch-anyd.mjs",
-    "build:cloudflare": "npm run build && node tools/prepare-cloudflare.mjs"
+    "build:snake": "node tools/build/build-matrix.mjs",
+    "build": "node tools/build/build-matrix.mjs && node tools/build/build-color.mjs && node tools/build/build-chroma.mjs && node tools/build/build-exotic.mjs && node tools/build/build-code-sizes.mjs && node tools/build/fetch-anyd.mjs",
+    "build:cloudflare": "npm run build && node tools/build/prepare-cloudflare.mjs"
   },
   "license": "Apache-2.0",
   "dependencies": {

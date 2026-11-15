@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import {readBarcodes} from 'zxing-wasm';
-import {findLightCard,specialtyCandidates,isolateDarkSymbol,deskewDarkSymbol} from '../src/specialty-candidates.js';
+import {findLightCard,specialtyCandidates,isolateDarkSymbol,deskewDarkSymbol} from '../src/scanner/specialty-candidates.js';
 
 function photoOf(png){
   const width=1500,height=1050,data=new Uint8ClampedArray(width*height*4);

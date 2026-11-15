@@ -4,7 +4,7 @@ import bwipjs from 'bwip-js';
 import {PNG} from 'pngjs';
 import {decode,decodeCodablockF,BitMatrix} from '@sythos/js_barcode_universal';
 import {readBarcodes} from 'zxing-wasm';
-const payload=readFileSync(new URL('../assets/snake-codablockf.txt',import.meta.url),'utf8').trim();
+const payload=readFileSync(new URL('../../assets/snake-codablockf.txt',import.meta.url),'utf8').trim();
 for(const text of ['SDB:HELLO-CODABLOCKF',payload]){
  for(const columns of [10,18,22,26,30]){
   try{

@@ -17,11 +17,11 @@ const matching=results=>{
 };
 function decoder(){
   if(!decoderPromise)decoderPromise=(async()=>{
-    importScripts('../vendor/zxing-wasm/index.js');
+    importScripts('../../vendor/zxing-wasm/index.js');
     const zx=self.ZXingWASM;
     if(!zx?.readBarcodes)throw Error('ZXing upload reader could not start.');
     zx.prepareZXingModule({overrides:{locateFile:path=>path.endsWith('.wasm')
-      ?new URL('../vendor/zxing-wasm/'+path,self.location.href).href:path}});
+      ?new URL('../../vendor/zxing-wasm/'+path,self.location.href).href:path}});
     return zx;
   })().catch(err=>{decoderPromise=null;throw err});
   return decoderPromise;
@@ -70,7 +70,7 @@ function cropBitmap(bitmap,mode,phase){
 }
 async function decodeExotic(image,format,phase=0,exact=false){
   try{
-    const {BitMatrix,decodeCodablockF,decodeDotCode,decode}=await import('../vendor/sythos-barcode.esm.js');
+    const {BitMatrix,decodeCodablockF,decodeDotCode,decode}=await import('../../vendor/sythos-barcode.esm.js');
     const {EXOTIC_SHAPES}=await import('./exotic-shapes.js');
     const {sampleKnownGrid,samplePerspectiveGrid}=await import('./exotic-grid.js');
     const {width,height,data}=image;
@@ -104,9 +104,9 @@ async function decodeExotic(image,format,phase=0,exact=false){
 }
 async function decodeIris(image){
   try{
-    const {decodeColor}=await import('../vendor/iris/color.js');
-    const {decodeColorMarkers}=await import('../vendor/iris/markers.js');
-    const {decodeColorRobust}=await import('../vendor/iris/robust.js');
+    const {decodeColor}=await import('../../vendor/iris/color.js');
+    const {decodeColorMarkers}=await import('../../vendor/iris/markers.js');
+    const {decodeColorRobust}=await import('../../vendor/iris/robust.js');
     const {cropIrisCard,cropIrisDisk}=await import('./iris-camera.js');
     const {width,height,data}=image;
     const rgb=new Uint8Array(width*height*3);
@@ -194,7 +194,7 @@ async function decodeFile(file,id){
         }
       }
     }
-    const {decodeChromaPixels}=await import('./chroma.js');
+    const {decodeChromaPixels}=await import('../formats/chroma.js');
     const {findLightCard,cropRgba}=await import('./specialty-candidates.js');
     const card=findLightCard(pixels);
     if(card&&card.width>100&&card.height>100&&card.width*card.height<pixels.width*pixels.height*.88){

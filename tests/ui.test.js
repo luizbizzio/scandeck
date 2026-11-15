@@ -148,7 +148,7 @@ test('every displayed and downloadable game code uses PNG',()=>{
   assert.match(script,/game\.png/);
 });
 test('standalone CSS is kept in the head when game rewrites body HTML',async()=>{
-  const {gameDocument}=await import('../src/runtime.js');
+  const {gameDocument}=await import('../src/games/runtime.js');
   const doc=gameDocument({kind:'standalone',title:'Perfect Timing',instructions:'TAP WHEN 7',
     source:'document.body.innerHTML=7'});
   const head=doc.slice(0,doc.indexOf('</head>'));
@@ -168,7 +168,7 @@ test('Every game has a real restart button',()=>{
 });
 
 test('the arcade design presents time, attempts, wires and a centered brick field',async()=>{
- const {gameDocument}=await import('../src/runtime.js');
+ const {gameDocument}=await import('../src/games/runtime.js');
  const timing=gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'});
  assert.match(timing,/YOUR TARGET/);
  assert.match(timing,/ELAPSED TIME/);
@@ -187,7 +187,7 @@ test('the arcade design presents time, attempts, wires and a centered brick fiel
 });
 
 test('inline barcode buttons are closed before player UI scripts',async()=>{
- const {gameDocument}=await import('../src/runtime.js');
+ const {gameDocument}=await import('../src/games/runtime.js');
  const frame=gameDocument({kind:'standalone',title:'Codebreaker',source:"document.write('<input id=a><button id=b>GO')"});
  assert.match(frame,/<\/script><\/button><script>/);
 });
@@ -195,7 +195,7 @@ test('inline barcode buttons are closed before player UI scripts',async()=>{
 test('arcade shell contains all games with a centered Snake and working replay controls',async()=>{
  assert.match(html,/class="game-app"/);assert.match(html,/class="game-viewport"/);
  assert.match(html,/sandbox="allow-scripts"/);assert.match(css,/\.game-app\{/);
- const {gameDocument}=await import('../src/runtime.js');
+ const {gameDocument}=await import('../src/games/runtime.js');
  assert.match(gameDocument({kind:'snake',source:'s=[27,26,25];f=45;I=180;T=()=>{}'}),/body\{display:grid;place-items:center\}/);
  assert.match(gameDocument({kind:'standalone',title:'Perfect Timing',source:'n=1400;t=0;onclick=()=>alert(2)'}),/PLAY AGAIN/);
  assert.match(gameDocument({kind:'standalone',title:'Codebreaker',source:'document.write("Test")'}),/THE CODE WAS/);
@@ -255,7 +255,7 @@ test('Tap Rush is a five-second high-score challenge and its player shows a live
   assert.ok(!html.includes('Make ten taps in three seconds'));
   assert.ok(script.includes('AS MANY TAPS AS YOU CAN IN 5 SECONDS'));
   assert.ok(script.includes("game.source.startsWith('n=0;onclick=_=>n++')"),'Camera scans should get the correct Tap Rush title and scoreboard');
-  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+  const runtime=readFileSync(new URL('../src/games/runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes('sd-rush-count'));
   assert.ok(runtime.includes('sd-rush-clock'));
   assert.ok(runtime.includes('TAPS IN 5 SECONDS'));
@@ -270,7 +270,7 @@ test('Pocket Reflex is a complete 13-character Micro VM program in the Micro QR 
   assert.ok(script.includes('V1R4T3DIC+L0X'));
   assert.ok(script.includes('packMicroVm(input)'));
   assert.ok(script.includes("V1|LO:"));
-  const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+  const runtime=readFileSync(new URL('../src/games/runtime.js',import.meta.url),'utf8');
   assert.ok(runtime.includes("game.kind==='microvm'"));
   assert.ok(runtime.includes('microVmHtml'));
 });
@@ -297,7 +297,7 @@ test('Auto schedules color scans without starving standard formats',()=>{
  const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
  assert.ok(open.includes("show('camera-panel',true)"));
  assert.doesNotMatch(open,/await getScanner\(\)/);
- assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
+ assert.match(script,/new Worker\(new URL\('\.\/scanner\/barcode-worker\.js'/);
  assert.match(script,/createAutoScanScheduler\(performance\.now\(\)\)/);
  assert.match(script,/const plan=mode==='auto'\?scheduler\.next\(decodeStarted\):null/);
  assert.match(script,/const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417'/);
@@ -527,6 +527,7 @@ test('all library shapes fit their actual codes while preview heights remain ide
 });
 
 test('stacked and horizontal 2D codes trim only their preview paper, not their scanner margins',()=>{
+  const layout=readFileSync(new URL('../src/ui/gallery-layout.js',import.meta.url),'utf8');
  const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417','codebreaker-databar'];
  for(const id of assets){
    const position=html.indexOf('href="assets/'+id+'.png"');
@@ -536,16 +537,17 @@ test('stacked and horizontal 2D codes trim only their preview paper, not their s
  }
  assert.equal((html.match(/tight-code-preview"/g)||[]).length,assets.length);
  assert.match(css,/\.tight-code-preview \.game-code-paper\{width:min\(100%,280px\);height:166px;/);
- assert.match(script,/function fitTightCodePaper\(preview\)/);
- assert.match(script,/const scale=Math\.min\(150\/img\.naturalHeight,availableWidth\/img\.naturalWidth\)/);
- assert.match(script,/new ResizeObserver\(entries=>/);
- assert.match(script,/paper\.style\.width=Math\.ceil\(img\.naturalWidth\*scale\+16\)/);
+ assert.match(script,/initializeTightCodePreviews\(\)/);
+  assert.match(layout,/function fitTightCodePaper\(preview\)/);
+ assert.match(layout,/const scale=Math\.min\(150\/img\.naturalHeight,availableWidth\/img\.naturalWidth\)/);
+ assert.match(layout,/new ResizeObserver\(entries=>/);
+ assert.match(layout,/paper\.style\.width=Math\.ceil\(img\.naturalWidth\*scale\+16\)/);
  assert.match(css,/\.game-code-preview\{height:228px;/);
  assert.doesNotMatch(css,/\.game-code-preview\.tight-code-preview\{height:/);
 });
 
 test('Wire Crisis keeps all five rounds in the IRIS payload with only HTML controls in the player',()=>{
- const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+ const runtime=readFileSync(new URL('../src/games/runtime.js',import.meta.url),'utf8');
  const source=readFileSync(new URL('../examples/colormatch-ultra.js',import.meta.url),'utf8').trim();
  assert.ok(source.length<=205);
  assert.doesNotMatch(source,/document\.write/);
@@ -559,7 +561,7 @@ test('PDF417 Auto alternates uncropped and cropped high-resolution attempts',()=
  assert.match(script,/const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417'/);
  assert.match(script,/autoPdf\?autoPdfPass\+\+:frame,mode==='rmqr'\?video:target,focusCanvas,autoPdf\)/);
  assert.match(script,/detectNativeFocused\(autoPdf\?'pdf417':mode,video\)/);
- const runtime=readFileSync(new URL('../src/runtime.js',import.meta.url),'utf8');
+ const runtime=readFileSync(new URL('../src/games/runtime.js',import.meta.url),'utf8');
  assert.match(runtime,/const codeMarkup=game.title==='Codebreaker'/);
 });
 
@@ -572,8 +574,8 @@ test('detected game exposes Play and View source as aligned direct buttons',()=>
  assert.match(css,/\.detected-actions\{display:flex;flex:0 0 auto;align-items:center/);
 });
 test('legacy rMQR fallback keeps its independent decoders',()=>{
- const geom=readFileSync(new URL('../src/scanner-geometry.js',import.meta.url),'utf8');
- const worker=readFileSync(new URL('../src/barcode-worker.js',import.meta.url),'utf8');
+ const geom=readFileSync(new URL('../src/scanner/scanner-geometry.js',import.meta.url),'utf8');
+ const worker=readFileSync(new URL('../src/scanner/barcode-worker.js',import.meta.url),'utf8');
  assert.match(script,/const w=image.videoWidth\|\|image.width,h=image.videoHeight\|\|image.height/);
  assert.match(script,/mode==='rmqr'\?frame%3!==0/);
  assert.match(script,/mode==='rmqr'\?video:target/);
@@ -584,6 +586,7 @@ test('legacy rMQR fallback keeps its independent decoders',()=>{
 });
 
 test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
+ const metadata=readFileSync(new URL('../src/ui/game-metadata.js',import.meta.url),'utf8');
  assert.match(html,/id="databar-games-heading">GS1 DataBar Expanded Stacked/);
  assert.match(html,/data-code-asset="codebreaker-databar"/);
  assert.match(html,/data-format="databar"/);
@@ -593,7 +596,7 @@ test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
  assert.match(script,/databar:'DataBarExpStk'/);
  assert.match(script,/generatorFormat==='databar'/);
  assert.match(script,/decodeCodebreakerDataBar/);
- assert.match(script,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
+ assert.match(metadata,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
  assert.match(script,/DataBarExpStk:'GS1 DataBar Expanded Stacked'/);
 });
 

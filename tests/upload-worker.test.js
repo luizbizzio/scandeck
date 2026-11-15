@@ -3,20 +3,20 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 const root=new URL('../',import.meta.url);
 const app=readFileSync(new URL('src/app.js',root),'utf8');
-const worker=readFileSync(new URL('src/upload-worker.js',root),'utf8');
+const worker=readFileSync(new URL('src/scanner/upload-worker.js',root),'utf8');
 const sw=readFileSync(new URL('sw.js',root),'utf8');
 const pages=readFileSync(new URL('.github/workflows/pages.yml',root),'utf8');
 const pkg=JSON.parse(readFileSync(new URL('package.json',root),'utf8'));
 const lock=JSON.parse(readFileSync(new URL('package-lock.json',root),'utf8'));
 
 test('uploaded images are decoded in a disposable off-thread worker',()=>{
- assert.match(app,/new Worker\(new URL\('\.\/upload-worker\.js',import\.meta\.url\)\)/);
+ assert.match(app,/new Worker\(new URL\('\.\/scanner\/upload-worker\.js',import\.meta\.url\)\)/);
  assert.match(app,/worker\.terminate\(\)/);
  assert.match(app,/cancelUploadDecode\(\)/);
  assert.match(app,/generation!==uploadGeneration/);
  assert.match(app,/addEventListener\('pagehide',cancelUploadDecode\)/);
  assert.match(app,/async function detectImageLegacy\(file\)/);
- assert.ok(sw.includes('"src/upload-worker.js"'));
+ assert.ok(sw.includes('"src/scanner/upload-worker.js"'));
  assert.match(worker,/self\.onmessage=async/);
  assert.match(worker,/new OffscreenCanvas\(/);
  assert.match(worker,/MAX_UPLOAD_PIXELS=12_000_000/);

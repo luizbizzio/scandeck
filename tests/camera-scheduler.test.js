@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {autoQuickFormats,createAutoScanScheduler,hasColorSignal} from '../src/camera-scheduler.js';
+import {autoQuickFormats,createAutoScanScheduler,hasColorSignal} from '../src/scanner/camera-scheduler.js';
 
 test('Auto quick scans cover every regular symbology and keep QR on every pass',()=>{
  const quick=Array.from({length:5},(_,i)=>autoQuickFormats(i));

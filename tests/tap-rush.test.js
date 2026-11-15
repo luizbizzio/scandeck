@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {gameDocument} from '../src/runtime.js';
+import {gameDocument} from '../src/games/runtime.js';
 
 test('Tap Rush embeds a compact executable tap counter, with its duration supplied by ScanDeck',()=>{
  const source=readFileSync(new URL('../examples/tap-rush-code128.js',import.meta.url),'utf8').trim();

@@ -1,35 +1,47 @@
 # Architecture
 
-ScanDeck is a static single-page application hosted with GitHub Pages. The files at the repository root are kept there because the entry page, imports and service-worker scope depend on these relative URLs.
+ScanDeck is a static single-page application deployed with GitHub Pages. The root `index.html` and `sw.js` retain their existing URLs and service-worker scope. All JavaScript modules and third-party decoders run locally in the browser.
 
-## Source layout
+## Repository layout
 
-- `src/app.js` connects the scan screen, library, code creator and game player.
-- `src/scanner-geometry.js` contains pure, unit-testable camera capture and crop sizing.
-- `src/camera-scheduler.js` manages safe Auto scanning intervals.
-- `src/upload-worker.js` decodes image uploads off the UI thread.
-- `src/protocol.js`, `src/runtime.js`, `src/microvm.js` and `src/maze.js` decode and run the game types.
-- `src/chroma.js`, `src/iris-worker.js` and `src/exotic-worker.js` handle experimental formats.
-- `examples/` holds the original source of each sample game.
-- `tools/` produces real PNG codes, text payloads, metadata and local vendor assets.
-- `tests/` checks decoding, game behavior, UI assumptions and image round trips.
-- `vendor/` includes pinned third-party code. Avoid editing it for local application changes.
-- `assets/` includes the favicon and the legacy Ironpass QR in Git. Most generated codes are built during deployment.
+- `src/app.js` manages the single-page interface, camera lifecycle, game cards and code creator.
+- `src/scanner/` contains capture geometry, scan scheduling, upload and camera workers, experimental format detection and compatibility decoders.
+- `src/formats/` contains game payload encoding and decoding, DataBar, Code 128 and ChromaQR helpers.
+- `src/games/` contains the sandboxed game document runtime and bytecode/maze interpreters.
+- `src/ui/` holds game metadata/source labels and responsive gallery layout helpers.
+- `src/style.css` styles the browser app.
+- `examples/` holds the source programs for published games and compatibility samples still used by automated tests.
+- `tests/fixtures/` contains test-only HTML source samples not shipped as games.
+- `tools/build/` generates code PNGs, encoded text payloads, metadata and browser dependencies. `tools/automation/` refreshes README screenshots; `tools/diagnostics/` holds manual engineering probes.
+- `tests/` contains automated unit, integration, scanner and static deployment checks.
+- `vendor/` contains generated or vendored third-party decoder assets and their licenses.
+- `docs/` contains technical information and the README screenshot.
 
-## Scan flow
+## Why code files are inside assets/
 
-1. A device camera or PNG produces pixels.
-2. Standard formats use local ZXing WebAssembly, with native BarcodeDetector tried when a supported browser implementation is available.
-3. IRIS runs in a worker. ChromaQR is split into RGB planes. Codablock F and DotCode run in an isolated worker.
-4. The decoded text must match a supported ScanDeck game protocol. Unrelated barcodes do not open games.
-5. The selected game runs inside the site's sandboxed game frame. The release build also embeds the original decoded sample games in a JSON data script, avoiding a separate fetch/decompression step when the user presses Play.
+`assets/` contains **published artifacts**, not ordinary JavaScript source modules. Each game has a downloadable `.png` symbol and an encoded `.txt` payload. For a complete game, the text payload contains the game's encoded program rather than a URL to a hosted game. ScanDeck uses the same payloads to show source and play games, including when offline.
 
-The Codebreaker game uses GS1 DataBar Expanded Stacked with a seven-character Bytecode configuration. The decoder does not store JavaScript in the GS1 symbol; ScanDeck provides the game runtime. The old JAB implementation has been removed. The rMQR decoders remain as compatibility readers, not as active library formats.
+The Ironpass `assets/ironpass-micro-v3.txt` file is the actual packed QR content; `assets/ironpass-micro-v3-qr.png` is its scannable image. Those two baseline assets remain tracked so source checkouts and external links retain their known references. The build regenerates them from `examples/ironpass-micro-v3.html`. Other generated `assets/*.png`, `assets/*.txt` and `assets/code-sizes.json` are produced by `npm run build`. Keep public paths stable: downloaded or bookmarked code images may use them.
 
-The live camera uses a single in-flight frame in its ZXing worker. Auto prioritizes standard QR/linear/matrix codes and schedules PDF417, ChromaQR and IRIS sparsely. ChromaQR and IRIS have dedicated focus modes when needed; DotCode requires dedicated focus. Native BarcodeDetector is used for Auto when available. Main and detailed capture canvases are reused, IRIS RGB conversion runs in its worker, and every worker has a bounded lifetime or recovery timeout. The camera stops its tracks and releases worker memory on close or when the page becomes hidden. Large image uploads run in a cancellable one-shot worker with a 12-megapixel pixel safety cap. SVG uses the previous compatibility reader. Real-device performance must still be verified before release.
+`src/scanner/exotic-shapes.js` is the generated geometry metadata for the experimental scanner; it is rewritten by `tools/build/build-exotic.mjs`.
 
-## Build and deployment
+## Decoding and execution
 
-`npm ci` installs locked versions from `package-lock.json`. `npm run build` creates the output images and vendor browser dependencies. `npm test` runs local checks. The Pages workflow builds and copies a tested static distribution into `dist/`, including `src/`, `robots.txt` and `sitemap.xml`.
+1. The camera or an uploaded code image provides pixels.
+2. Standard formats use bundled ZXing WebAssembly; native `BarcodeDetector` can accelerate supported formats.
+3. Dedicated local workers handle IRIS, ChromaQR, DotCode, Codablock F and compatible rMQR decode paths.
+4. `src/formats/protocol.js` validates decoded game payloads. Unrelated barcodes are not treated as ScanDeck games.
+5. `src/games/runtime.js` opens the game inside a sandboxed frame. The deploy build embeds the 12 decoded library games into `index.html` for immediate Play.
 
-Files directly used by GitHub Pages should not be moved without updating imports, service-worker precache, tests and the workflow together.
+The published library has 12 code formats. rMQR remains supported as an experimental compatibility decoder and build/test fixture; it is not a current library card. Codablock F and Snake are also used in engineering tests outside the 12-card library.
+
+## Build, tests and deployment
+
+- `npm ci`: install exact dependencies.
+- `npm run build`: regenerate code assets and local browser libraries.
+- `npm test`: execute the Node test suite (run the build first on a fresh clone).
+- `npm run build:cloudflare`: create the complete static `dist/` directory. Despite its historical name, the same output is now used for GitHub Pages.
+- `.github/workflows/pages.yml`: run build, syntax validation and tests, then deploy `dist/`.
+- `.github/workflows/audit-ci.yml`: security and browser-smoke checks for pull requests and audit branches.
+
+The distribution step copies `src/` recursively; flat copy rules such as `src/*.js` would miss nested scanner and game modules. The service-worker precache paths, worker URLs, tests and deployment output must change together if a module is moved. Do not change public `assets/` URLs without redirects.

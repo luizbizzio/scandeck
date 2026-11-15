@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {decodeGame} from '../src/protocol.js';
+import {decodeGame} from '../src/formats/protocol.js';
 
 const root=new URL('../',import.meta.url);
 const html=readFileSync(new URL('index.html',root),'utf8');
 const app=readFileSync(new URL('src/app.js',root),'utf8');
 const css=readFileSync(new URL('src/style.css',root),'utf8');
+const metadata=readFileSync(new URL('src/ui/game-metadata.js',root),'utf8');
 
 const examples=[
   ['QR Code','ironpass-micro-v3-qr','Ironpass'],
@@ -106,10 +107,10 @@ test('source dialog reports Full for HTML, Partial for JavaScript and yellow Byt
   assert.match(html,/id="source-status"/);
   assert.match(html,/id="source-status-label"/);
   assert.match(html,/id="source-format"/);
-  assert.match(app,/function getEmbeddingStatus\(game\)/);
-  assert.match(app,/game\.kind==='html'\)return \{status:'full',label:'Full'/);
-  assert.match(app,/status:'partial',label:'Partial',format:'JavaScript only'/);
-  assert.match(app,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
+  assert.match(metadata,/function getEmbeddingStatus\(game\)/);
+  assert.match(metadata,/game\.kind==='html'\)return \{status:'full',label:'Full'/);
+  assert.match(metadata,/status:'partial',label:'Partial',format:'JavaScript only'/);
+  assert.match(metadata,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
   assert.match(app,/badge\.className='code-embedding code-embedding-'\+embedding\.status/);
   assert.match(app,/\$\('source-status-label'\)\.textContent=embedding\.label/);
   assert.match(css,/\.code-embedding-bytecode\{color:#f1d77d\}/);

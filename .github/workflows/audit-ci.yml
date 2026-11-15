@@ -24,11 +24,11 @@ jobs:
         run: npm run build
       - name: Verify JavaScript syntax
         run: |
-          for file in src/*.js tools/*.mjs; do node --check "$file"; done
+          find src tools -type f \( -name '*.js' -o -name '*.mjs' \) -exec node --check {} \;
       - name: Run full test suite
         run: npm test
       - name: Verify static deployment assets
-        run: node tools/prepare-cloudflare.mjs
+        run: node tools/build/prepare-cloudflare.mjs
       - name: Browser smoke test for upload worker
         run: |
           mkdir -p dist/tests

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {inlineScriptRanges,firstHtmlAttribute} from '../tools/html-source.mjs';
-import {compactGameHtml} from '../tools/optimize-encoding.mjs';
+import {inlineScriptRanges,firstHtmlAttribute} from '../tools/build/html-source.mjs';
+import {compactGameHtml} from '../tools/build/optimize-encoding.mjs';
 
 test('HTML parser ignores fake scripts in comments and reads case-insensitive tags',()=>{
  const html='<!-- <script>bad()</script> --!><SCRIPT TYPE="text/javascript"> const answer = 42; </ScRiPt >';
