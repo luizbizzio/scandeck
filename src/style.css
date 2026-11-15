@@ -362,6 +362,10 @@ dialog{background:#141a17;color:var(--text);border:1px solid #425249;border-radi
 #code-image-dialog .code-image-viewport{display:grid;place-items:center;max-height:calc(94dvh - 140px);min-height:180px;overflow:auto;overscroll-behavior:contain;margin:16px 0 10px;padding:14px;background:#0c120f;border-radius:9px}
 #code-image-full{display:block;width:auto;height:auto;max-width:100%;max-height:calc(94dvh - 170px);object-fit:contain;image-rendering:pixelated}
 #code-image-dialog p{margin:0}
+/* Micro QR PNGs are tiny: enlarge crisp modules inside a compact viewer. */
+#code-image-dialog.microqr-viewer{width:min(690px,calc(100vw - 24px))}
+#code-image-dialog.microqr-viewer .code-image-viewport{min-height:min(60dvh,470px)}
+#code-image-dialog.microqr-viewer #code-image-full{width:min(460px,calc(100vw - 95px),calc(94dvh - 200px));height:auto;max-width:100%;image-rendering:pixelated}
 /* DotCode only: a larger square image with no unused white side bands. */
 #code-image-dialog.dotcode-viewer{width:min(1020px,calc(100vw - 20px),calc(100dvh - 115px));max-width:calc(100vw - 20px);max-height:98dvh;padding:12px}
 #code-image-dialog.dotcode-viewer .code-image-viewport{width:100%;aspect-ratio:1;min-height:0;max-height:none;overflow:hidden;margin:10px 0 7px;padding:8px}
