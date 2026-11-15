@@ -1,11 +1,11 @@
 import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from 'node:fs';
 import {bestDeflateRaw,compactGameHtml} from './optimize-encoding.mjs';
 import { writeBarcode, readBarcodes } from 'zxing-wasm';
-import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame, packCodebreakerDataBar } from '../src/protocol.js';
+import { base43Encode, packScript, packEanLevel, packMicroHtml, decodeGame, packCodebreakerDataBar } from '../../src/formats/protocol.js';
 import bwipjs from 'bwip-js';
-import {decodeCodebreakerDataBar} from '../src/databar.js';
+import {decodeCodebreakerDataBar} from '../../src/formats/databar.js';
 
-const root=new URL('../',import.meta.url);
+const root=new URL('../..//',import.meta.url);
 const asset=(name)=>new URL('assets/'+name,root);
 mkdirSync(new URL('assets/',root),{recursive:true});
 mkdirSync(new URL('vendor/zxing-wasm/',root),{recursive:true});

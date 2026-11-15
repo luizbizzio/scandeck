@@ -1,11 +1,11 @@
 import {readFileSync,writeFileSync,copyFileSync,mkdirSync} from 'node:fs';
 import {bestDeflateRaw} from './optimize-encoding.mjs';
 import {encodeCodablockF,encodeDotCode,decodeCodablockF,decodeDotCode,toPNG} from '@sythos/js_barcode_universal';
-import {base85Encode,decodeGame} from '../src/protocol.js';
+import {base85Encode,decodeGame} from '../../src/formats/protocol.js';
 
 // Both extra formats use the MIT-licensed Sythos SDK v1.6.8.
 // Store complete games, never an URL, game identifier, or interpreter bytecode.
-const root=new URL('../',import.meta.url);
+const root=new URL('../..//',import.meta.url);
 const asset=n=>new URL('assets/'+n,root);
 mkdirSync(asset(''),{recursive:true});
 mkdirSync(new URL('vendor/',root),{recursive:true});

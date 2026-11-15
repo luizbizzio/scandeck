@@ -3,12 +3,12 @@ import {deflateSync} from 'node:zlib';
 import {bestDeflateRaw,compactGameHtml} from './optimize-encoding.mjs';
 import qrcode from 'qrcode-generator';
 import {readBarcodes} from 'zxing-wasm';
-import {base43Encode} from '../src/protocol.js';
-import {encodeChroma,chromaSvg,chromaPixels,decodeChromaPixels} from '../src/chroma.js';
+import {base43Encode} from '../../src/formats/protocol.js';
+import {encodeChroma,chromaSvg,chromaPixels,decodeChromaPixels} from '../../src/formats/chroma.js';
 
 // RGB-channel ChromaQR adapted from w-henderson/ChromaQR (MIT).
 // The barcode is assembled from three independent, identically sized QR planes.
-const root=new URL('../',import.meta.url);
+const root=new URL('../..//',import.meta.url);
 const asset=name=>new URL('assets/'+name,root);
 mkdirSync(asset(''),{recursive:true});
 const table=Uint32Array.from({length:256},(_,v)=>{

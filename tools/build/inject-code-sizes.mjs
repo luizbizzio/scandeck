@@ -1,9 +1,9 @@
 // Generate build-time card sizes so they appear without JavaScript or a network request.
 import {readFileSync,writeFileSync} from 'node:fs';
-import {decodeGame} from '../src/protocol.js';
+import {decodeGame} from '../../src/formats/protocol.js';
 const path=process.argv[2];
 if(!path)throw Error('Pass the target HTML filename.');
-const sizes=JSON.parse(readFileSync(new URL('../assets/code-sizes.json',import.meta.url),'utf8'));
+const sizes=JSON.parse(readFileSync(new URL('../../assets/code-sizes.json',import.meta.url),'utf8'));
 const format=bytes=>bytes<1024?bytes.toLocaleString('en-US')+' B':(bytes/1024).toFixed(1)+' KB';
 let count=0;
 const html=readFileSync(path,'utf8').replace(/<div class="code-metadata" data-code-asset="([a-z0-9-]+)"[^>]*>[\s\S]*?<\/div>/g,(card,id)=>{
@@ -17,7 +17,7 @@ if(count!==12||html.includes('<strong data-payload-size>...</strong>')||html.inc
 const catalog={};
 for(const id of Object.keys(sizes)){
  const name=id==='ironpass-micro-v3-qr'?'ironpass-micro-v3':id;
- const payload=readFileSync(new URL('../assets/'+name+'.txt',import.meta.url),'utf8').trim();
+ const payload=readFileSync(new URL('../../assets/'+name+'.txt',import.meta.url),'utf8').trim();
  const game=await decodeGame(payload);
  if(!['html','standalone','bytecode','maze','lights','microvm','micro','eanlevel','codebreaker'].includes(game.kind))
   throw Error('Unsupported catalog game '+name);

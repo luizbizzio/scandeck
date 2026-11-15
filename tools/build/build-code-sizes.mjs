@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 
 // Every entry uses the actual PNG and exact encoded text shipped in the build.
 // Byte sizes are not estimates, and the PNG is never confused with payload data.
-const root=new URL('../assets/',import.meta.url);
+const root=new URL('../../assets/',import.meta.url);
 const entries=[
   'ironpass-micro-v3-qr',
   'taprush-code128',
