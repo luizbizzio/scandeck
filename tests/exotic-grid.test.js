@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {PNG} from 'pngjs';
 import {BitMatrix,decodeDotCode,decodeCodablockF} from '@sythos/js_barcode_universal';
 import {EXOTIC_SHAPES} from '../src/scanner/exotic-shapes.js';
@@ -105,3 +107,29 @@ for(const [name,format] of [
     assert.equal(recovered,payload);
   });
 }
+
+test('exotic shapes are generated, ignored and match the published PNGs',()=>{
+ const root=new URL('../',import.meta.url);
+ const modulePath='src/scanner/exotic-shapes.js';
+ const ignore=readFileSync(new URL('.gitignore',root),'utf8');
+ assert.ok(ignore.split(/\r?\n/).includes('/'+modulePath));
+ assert.ok(existsSync(new URL(modulePath,root)),'The build must generate the shapes module');
+ const generator=readFileSync(new URL('tools/build/build-exotic.mjs',root),'utf8');
+ assert.ok(generator.includes("writeFileSync(new URL('src/scanner/exotic-shapes.js',root)"));
+ for(const [filename,format,scale,margin] of [
+  ['snake-codablockf','codablockf',4,12],
+  ['neon-dodge-dotcode','dotcode',5,10]
+ ]){
+  const png=PNG.sync.read(readFileSync(new URL('assets/'+filename+'.png',root)));
+  assert.equal(png.width%scale,0);
+  assert.equal(png.height%scale,0);
+  assert.deepEqual(EXOTIC_SHAPES[format],
+   [png.width/scale-2*margin,png.height/scale-2*margin],
+   format+' generated shape must match the current symbol');
+ }
+ if(existsSync(new URL('.git',root))){
+  const tracked=execFileSync('git',['ls-files','--',modulePath],
+   {cwd:fileURLToPath(root),encoding:'utf8'}).trim();
+  assert.equal(tracked,'','Generated geometry must not be committed');
+ }
+});

@@ -8,3 +8,6 @@ dist/
 # Keep the logo SVG as the only versioned asset.
 /assets/*
 !/assets/favicon.svg
+
+# Geometry extracted from generated Codablock F and DotCode symbols.
+/src/scanner/exotic-shapes.js
