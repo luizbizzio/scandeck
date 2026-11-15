@@ -1,4 +1,4 @@
-import {parseMicroProgram} from './microvm.js?v=26';
+import {parseMicroProgram} from '../games/microvm.js?v=26';
 import {decodeCodebreakerDataBar,packCodebreakerDataBar} from './databar.js';
 export {packCodebreakerDataBar};
 /** ScanDeck wire formats. No code execution happens in this module. */
