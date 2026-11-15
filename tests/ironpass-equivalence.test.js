@@ -47,7 +47,7 @@ test('all Full HTML matrix games preserve the complete source after compression'
    ['catch-datamatrix','examples/catch-datamatrix.html'],
    ['memory-aztec','examples/memory-aztec.html'],
    ['breakout-pdf417','examples/breakout-pdf417.html'],
-   ['chromaqr-chroma','examples/colorpath-jab.html']
+   ['chromaqr-chroma','examples/colorpath-chromaqr.html']
  ]){
   const html=readFileSync(new URL(sourcePath,root),'utf8').trim();
   const encoded=readFileSync(new URL('assets/'+id+'.txt',root),'utf8');
