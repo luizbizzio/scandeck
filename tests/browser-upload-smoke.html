@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>ScanDeck upload worker smoke test</title></head>
+<body>
+<main id="result" data-status="running">Testing image upload worker</main>
+<script>
+(async()=>{
+ const result=document.querySelector('#result');
+ const codes=[
+  {file:'ironpass-micro-v3-qr.png',contains:'IP3:'},
+  {file:'codebreaker-databar.png',contains:'SDCB7'}
+ ];
+ const details=[];
+ for(const code of codes){
+   const response=await fetch('../assets/'+code.file,{cache:'no-store'});
+   if(!response.ok)throw Error('Missing '+code.file);
+   const blob=await response.blob();
+   const decoded=await new Promise((resolve,reject)=>{
+     const worker=new Worker('../src/upload-worker.js');
+     const id=1;
+     const timeout=setTimeout(()=>{worker.terminate();reject(Error('Timed out on '+code.file))},23000);
+     worker.onmessage=({data})=>{
+       if(data?.id!==id||typeof data.stage==='string')return;
+       clearTimeout(timeout);worker.terminate();
+       if(data.error||data.unsupported)reject(Error(String(data.error||'Worker unsupported')));
+       else resolve(data.result);
+     };
+     worker.onerror=event=>{clearTimeout(timeout);worker.terminate();reject(Error(event.message))};
+     worker.postMessage({id,file:blob});
+   });
+   if(!decoded?.text?.includes(code.contains))
+     throw Error('Wrong decoded payload for '+code.file+': '+JSON.stringify(decoded));
+   details.push(code.file+' OK');
+ }
+ result.dataset.status='passed';
+ result.textContent=details.join(' | ');
+})().catch(error=>{
+ const result=document.querySelector('#result');
+ result.dataset.status='failed';result.textContent=String(error?.stack||error);
+});
+</script>
+</body></html>
