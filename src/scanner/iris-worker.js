@@ -1,8 +1,8 @@
 // Camera and image IRIS decoding runs off the UI thread.
 // Vendored AllTerrainDeveloper/iris, MIT, pinned in vendor/iris.
-import { decodeColor } from '../vendor/iris/color.js';
-import { decodeColorMarkers } from '../vendor/iris/markers.js';
-import { decodeColorRobust } from '../vendor/iris/robust.js';
+import { decodeColor } from '../../vendor/iris/color.js';
+import { decodeColorMarkers } from '../../vendor/iris/markers.js';
+import { decodeColorRobust } from '../../vendor/iris/robust.js';
 import {cropIrisCard,cropIrisDisk} from './iris-camera.js';
 
 self.onmessage=({data:job})=>{

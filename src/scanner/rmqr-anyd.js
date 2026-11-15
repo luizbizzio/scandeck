@@ -11,7 +11,7 @@ export async function instantiateAnyD(bytes){
 }
 async function getAnyD(){
  if(!readerPromise)readerPromise=(async()=>{
-   const response=await fetch(new URL('../vendor/anyd.wasm',import.meta.url),{cache:'force-cache'});
+   const response=await fetch(new URL('../../vendor/anyd.wasm',import.meta.url),{cache:'force-cache'});
    if(!response.ok)throw Error('rMQR detector unavailable');
    return instantiateAnyD(await response.arrayBuffer());
  })().catch(error=>{readerPromise=null;throw error});
