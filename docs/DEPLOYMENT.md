@@ -1,6 +1,6 @@
 # Deployment and search indexing
 
-The public site uses **https://scandeck.luizbizzio.com/**. GitHub Pages is published by `.github/workflows/pages.yml` when `main` changes.
+The public site uses **https://scandeck.luizbizzio.com/**. GitHub Pages is published by `.github/workflows/pages.yml` when `main` changes. Its static distribution is created by `npm run build:cloudflare`, which runs the code generators and `tools/build/prepare-cloudflare.mjs`. The same generated `dist/` is tested and deployed; the script name is retained for compatibility.
 
 ## Custom domain
 

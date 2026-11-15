@@ -1,5 +1,7 @@
 # Camera scanning
 
+This file contains both **current user guidance** and a historical engineering log of experimental decoders. Sections headed *Legacy* and older measurements describe past investigations, not guaranteed current camera behavior. For the active paths, consult `src/scanner/` and `docs/QA_CHECKLIST.md`.
+
 Code generation and real-phone decoding are different problems. A perfect downloadable PNG can still be too dense to capture through a camera.
 
 ## Recommended test order
