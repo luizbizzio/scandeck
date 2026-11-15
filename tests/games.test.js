@@ -146,8 +146,8 @@ test('Pattern Memory also works without an audio device',()=>{
 });
 
 test('Perfect Timing uses a valid EAN-13 numeric challenge and shared game runtime',async()=>{
- const {packEanLevel,decodeGame}=await import('../src/protocol.js');
- const {gameDocument}=await import('../src/runtime.js');
+ const {packEanLevel,decodeGame}=await import('../src/formats/protocol.js');
+ const {gameDocument}=await import('../src/games/runtime.js');
  const seed=readFileSync(new URL('../examples/perfect-timing-ean13.txt',import.meta.url),'utf8').trim();
  const code=packEanLevel(seed);
  assert.equal(code.length,13);

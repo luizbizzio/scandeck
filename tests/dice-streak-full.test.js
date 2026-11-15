@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {packMicroHtml,decodeGame} from '../src/protocol.js';
-import {gameDocument} from '../src/runtime.js';
-import {inlineScriptRanges,firstHtmlAttribute} from '../tools/html-source.mjs';
+import {packMicroHtml,decodeGame} from '../src/formats/protocol.js';
+import {gameDocument} from '../src/games/runtime.js';
+import {inlineScriptRanges,firstHtmlAttribute} from '../tools/build/html-source.mjs';
 const source=readFileSync(new URL('../examples/dice-streak-micropdf417.html',import.meta.url),'utf8').trim();
 
 test('Dice Streak is executable self-contained HTML fitting a smaller MicroPDF417',async()=>{

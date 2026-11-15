@@ -26,7 +26,7 @@
    if(!response.ok)throw Error('Missing '+code.file);
    const blob=await response.blob();
    const decoded=await new Promise((resolve,reject)=>{
-     const worker=new Worker('../src/upload-worker.js');
+     const worker=new Worker('../src/scanner/upload-worker.js');
      const id=1;
      const timeout=setTimeout(()=>{worker.terminate();reject(Error('Timed out on '+code.file))},60000);
      worker.onmessage=({data})=>{

@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {readBarcodes} from 'zxing-wasm';
 import {PNG} from 'pngjs';
-import {decodeCodebreakerDataBar,packCodebreakerDataBar} from '../src/databar.js';
-import {decodeGame} from '../src/protocol.js';
-import {gameDocument} from '../src/runtime.js';
+import {decodeCodebreakerDataBar,packCodebreakerDataBar} from '../src/formats/databar.js';
+import {decodeGame} from '../src/formats/protocol.js';
+import {gameDocument} from '../src/games/runtime.js';
 
 test('GS1 AI 91 Codebreaker data is compact and has strict validation',()=>{
  assert.equal(packCodebreakerDataBar('SDCB7'),'91SDCB7');

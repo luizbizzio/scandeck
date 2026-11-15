@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {inflateSync} from 'node:zlib';
 import {readBarcodes} from 'zxing-wasm';
-import {splitChromaPayload,joinChromaPayload,decodeChromaPixels} from '../src/chroma.js';
+import {splitChromaPayload,joinChromaPayload,decodeChromaPixels} from '../src/formats/chroma.js';
 
 function pngPixels(filename){
   const bytes=readFileSync(new URL('../assets/'+filename,import.meta.url));
@@ -50,14 +50,14 @@ test('Chroma Rush ChromaQR PNG independently decodes all three color channels',a
 });
 
 test('ChromaQR camera tries a fast pass before expensive QR recovery',()=>{
- const source=readFileSync(new URL('../src/chroma.js',import.meta.url),'utf8');
+ const source=readFileSync(new URL('../src/formats/chroma.js',import.meta.url),'utf8');
  assert.match(source,/tryHarder:pivot!==thresholds\[0\]/);
  const app=readFileSync(new URL('../src/app.js',import.meta.url),'utf8');
  assert.match(app,/mode==='chroma'\?7800/);
 });
 
 test('camera-style ChromaQR white card can be isolated from the dark page',async()=>{
- const {findLightCard,cropRgba}=await import('../src/specialty-candidates.js');
+ const {findLightCard,cropRgba}=await import('../src/scanner/specialty-candidates.js');
  const image=pngPixels('chromaqr-chroma.png');
  const width=image.width+220,height=image.height+220,data=new Uint8ClampedArray(width*height*4);
  for(let i=0;i<data.length;i+=4){data[i]=17;data[i+1]=24;data[i+2]=22;data[i+3]=255}

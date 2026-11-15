@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {captureDimensions,focusedCrop,scanPause,exoticCaptureRegion} from '../src/scanner-geometry.js';
+import {captureDimensions,focusedCrop,scanPause,exoticCaptureRegion} from '../src/scanner/scanner-geometry.js';
 test('dense scanning keeps more camera pixels than auto without passing worker limits',()=>{
   const auto=captureDimensions(1920,1080,'auto');
   for(const mode of ['code128','pdf417','micropdf417','rmqr','codablockf','dotcode']){
