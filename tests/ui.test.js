@@ -586,6 +586,7 @@ test('legacy rMQR fallback keeps its independent decoders',()=>{
 });
 
 test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
+ const metadata=readFileSync(new URL('../src/ui/game-metadata.js',import.meta.url),'utf8');
  assert.match(html,/id="databar-games-heading">GS1 DataBar Expanded Stacked/);
  assert.match(html,/data-code-asset="codebreaker-databar"/);
  assert.match(html,/data-format="databar"/);
@@ -595,7 +596,7 @@ test('GS1 DataBar replaces JAB without duplicating existing codes',()=>{
  assert.match(script,/databar:'DataBarExpStk'/);
  assert.match(script,/generatorFormat==='databar'/);
  assert.match(script,/decodeCodebreakerDataBar/);
- assert.match(script,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
+ assert.match(metadata,/\['microvm','bytecode','maze','lights','eanlevel','codebreaker'\]/);
  assert.match(script,/DataBarExpStk:'GS1 DataBar Expanded Stacked'/);
 });
 
