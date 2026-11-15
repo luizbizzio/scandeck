@@ -76,6 +76,10 @@ test('Ironpass PNG and payload are generated during build, not tracked by Git',(
  if(existsSync(new URL('.git',root))){
   const tracked=execFileSync('git',['ls-files','--','assets'],{cwd:fileURLToPath(root),encoding:'utf8'})
     .trim().split('\n').filter(Boolean);
-  assert.deepEqual(tracked,['assets/favicon.svg']);
+  // Only build-generated game files are prohibited in Git. Screenshots and
+  // other manually maintained images in assets/ are valid repository files.
+  for(const file of ['assets/ironpass-micro-v3-qr.png','assets/ironpass-micro-v3.txt']){
+   assert.ok(!tracked.includes(file),file+' must be generated during build, not committed');
+  }
  }
 });
