@@ -14,8 +14,8 @@ test('source tree keeps modules in organized folders and publishes them',()=>{
    'src/scanner/barcode-worker.js','src/scanner/upload-worker.js'];
  assert.match(flow,/npm run build:cloudflare/);
  for(const file of files)assert.ok(sw.includes('"'+file+'"'),file);
- assert.match(html,/href="src\\/style\\.css\\?v=83"/);
- assert.match(html,/src="src\\/app\\.js\\?v=84"/);
+ assert.ok(html.includes('href="src/style.css?v=83"'));
+ assert.ok(html.includes('src="src/app.js?v=84"'));
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/scanner\/barcode-worker\.js'/);

@@ -10,7 +10,7 @@ const pkg=JSON.parse(readFileSync(new URL('package.json',root),'utf8'));
 const lock=JSON.parse(readFileSync(new URL('package-lock.json',root),'utf8'));
 
 test('uploaded images are decoded in a disposable off-thread worker',()=>{
- assert.match(app,/new Worker\(new URL\('\.\/upload-worker\.js',import\.meta\.url\)\)/);
+ assert.match(app,/new Worker\(new URL\('\.\/scanner\/upload-worker\.js',import\.meta\.url\)\)/);
  assert.match(app,/worker\.terminate\(\)/);
  assert.match(app,/cancelUploadDecode\(\)/);
  assert.match(app,/generation!==uploadGeneration/);

@@ -297,7 +297,7 @@ test('Auto schedules color scans without starving standard formats',()=>{
  const open=script.slice(script.indexOf('async function startCamera()'),script.indexOf('async function readChromaImage('));
  assert.ok(open.includes("show('camera-panel',true)"));
  assert.doesNotMatch(open,/await getScanner\(\)/);
- assert.match(script,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
+ assert.match(script,/new Worker\(new URL\('\.\/scanner\/barcode-worker\.js'/);
  assert.match(script,/createAutoScanScheduler\(performance\.now\(\)\)/);
  assert.match(script,/const plan=mode==='auto'\?scheduler\.next\(decodeStarted\):null/);
  assert.match(script,/const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417'/);

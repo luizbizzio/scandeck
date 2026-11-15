@@ -30,6 +30,6 @@ test('metadata and structured data describe actual site',()=>{
 });
 test('camera helper is part of published offline site',()=>{
   assert.match(workflow,/npm run build:cloudflare/);
-  assert.match(sw,/src\/scanner-geometry\.js/);
+  assert.match(sw,/src\/scanner\/scanner-geometry\.js/);
   assert.match(html,/src\/app\.js\?v=84/);
 });
