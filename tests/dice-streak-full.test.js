@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {packMicroHtml,decodeGame} from '../src/protocol.js';
 import {gameDocument} from '../src/runtime.js';
+import {inlineScriptRanges,firstHtmlAttribute} from '../tools/html-source.mjs';
 const source=readFileSync(new URL('../examples/dice-streak-micropdf417.html',import.meta.url),'utf8').trim();
 
 test('Dice Streak is executable self-contained HTML fitting a smaller MicroPDF417',async()=>{
@@ -23,8 +24,8 @@ test('Dice Streak is executable self-contained HTML fitting a smaller MicroPDF41
 });
 
 test('Dice Streak initialises score, accumulates dice rolls and resets on a one',()=>{
- const script=source.match(/<script>([^<]+)<\/script>/)?.[1];
- const onclick=source.match(/<button onclick="([^"]+)"/)?.[1];
+ const script=inlineScriptRanges(source)[0]?.source;
+ const onclick=firstHtmlAttribute(source,'button','onclick');
  assert.ok(script&&onclick);
  const p={textContent:'0'},rolls=[.3,.7,0,.5];let index=0;
  const ctx={p,Math:{random:()=>rolls[index++]}};
