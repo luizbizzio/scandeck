@@ -138,21 +138,25 @@ async function decodeIris(image){
   }catch{return null}
 }
 async function decodeFile(file,id){
-  const zx=await decoder();
-  const pure={...options,isPure:true,tryHarder:false};
-  for(const format of ['DataBarExpStk','RMQRCode']){
-    const result=await read(zx,file,{...pure,formats:[format]});
-    if(result)return result;
-  }
-  const first=await read(zx,file,options);
-  if(first)return first;
+  // Check decompressed image dimensions before passing untrusted files into
+  // a third-party WASM decoder. Compressed uploads can be tiny but enormous.
   const bitmap=await createImageBitmap(file);
   try{
     if(bitmap.width*bitmap.height>MAX_UPLOAD_PIXELS)
       throw Error('Image is too large to scan safely (12 megapixels max).');
+    const zx=await decoder();
+    self.postMessage({id,stage:'Checking standard code formats...'});
+    const pure={...options,isPure:true,tryHarder:false};
+    for(const format of ['DataBarExpStk','RMQRCode']){
+      const result=await read(zx,file,{...pure,formats:[format]});
+      if(result)return result;
+    }
+    const first=await read(zx,file,options);
+    if(first)return first;
     const pixels=capture(bitmap);
     let result=await read(zx,pixels,options);
     if(result)return result;
+    self.postMessage({id,stage:'Checking hard-to-read matrix codes...'});
     const {specialtyCandidates}=await import('./specialty-candidates.js');
     for(const candidate of specialtyCandidates(pixels,'rmqr')){
       result=await read(zx,candidate.image,{...options,formats:['RMQRCode'],
@@ -179,6 +183,7 @@ async function decodeFile(file,id){
         if(result)return result;
       }
     }
+    self.postMessage({id,stage:'Checking experimental codes...'});
     const normal=capture(bitmap,1,1_900_000,1920);
     const center=captureCenter(bitmap);
     for(const format of ['codablockf','dotcode']){
