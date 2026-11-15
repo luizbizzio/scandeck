@@ -462,7 +462,8 @@ test('Auto lists all supported formats and retains dedicated color scan controls
  assert.match(html,/Auto \(fast\)/);
  assert.ok(html.includes('<option value="chromaqr">ChromaQR</option>'));
  assert.ok(html.includes('<option value="iris">IRIS</option>'));
- assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':mode/);
+ assert.match(script,/captureMode=autoChroma\?'chromaqr':autoPdf\?'pdf417':autoDot\?'dotcode':mode/);
+ assert.match(script,/mode==='codablockf'\|\|mode==='dotcode'\|\|autoDot/);
  assert.match(script,/await readCameraChroma\(pixels\)/);
  assert.match(script,/await readIrisPixels\(/);
 });
@@ -478,7 +479,10 @@ test('all code previews open an in-page dialog headed with the barcode type',()=
   assert.match(css,/#code-image-dialog\.dotcode-viewer \.code-image-viewport\{width:100%;aspect-ratio:1/);
   assert.match(css,/#code-image-dialog\.dotcode-viewer #code-image-full\{width:100%;height:100%;/);
   assert.match(css,/padding:14px;background:#0c120f;border-radius:9px/);
-  assert.match(script,/classList\.remove\('dotcode-viewer'\)/);
+  assert.match(script,/classList\.remove\('dotcode-viewer','microqr-viewer'\)/);
+  assert.match(script,/classList\.toggle\('microqr-viewer',groupFormat==='Micro QR'\|\|aboutFormat==='Micro QR'\)/);
+  assert.match(css,/#code-image-dialog\.microqr-viewer #code-image-full\{width:min\(460px/);
+  assert.ok(html.includes('href="assets/codebreaker-databar.png" download>Download PNG</a>'));
   assert.match(script,/querySelector\('\.group-title'\)/);
   assert.match(script,/querySelector\('\.about-code-heading h3'\)/);
   assert.doesNotMatch(script,/codeImageDialog\.classList\.toggle\('actual-size'\)/);
