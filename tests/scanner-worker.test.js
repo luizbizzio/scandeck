@@ -8,12 +8,12 @@ const html=readFileSync(new URL('index.html',root),'utf8');
 const sw=readFileSync(new URL('sw.js',root),'utf8');
 const flow=readFileSync(new URL('.github/workflows/pages.yml',root),'utf8');
 test('source tree keeps application files out of repository root',()=>{
- for(const file of ['app.js','runtime.js','protocol.js','microvm.js','chroma.js','maze.js','code128.js','exotic-worker.js','iris-worker.js','scanner-geometry.js','barcode-worker.js','style.css']){
+ for(const file of ['app.js','runtime.js','protocol.js','microvm.js','chroma.js','maze.js','code128.js','exotic-worker.js','iris-worker.js','scanner-geometry.js','barcode-worker.js','upload-worker.js','style.css']){
    assert.match(flow,/cp src\/\*\.js src\/style\.css dist\/src\//);
    assert.ok(sw.includes('"src/'+file+'"')||file==='style.css'&&sw.includes('"src/style.css"'),file);
  }
- assert.match(html,/href="src\/style\.css\?v=79"/);
- assert.match(html,/src="src\/app\.js\?v=79"/);
+ assert.match(html,/href="src\/style\.css\?v=80"/);
+ assert.match(html,/src="src\/app\.js\?v=80"/);
 });
 test('camera performs decoding away from main UI and frees worker on stop',()=>{
  assert.match(app,/new Worker\(new URL\('\.\/barcode-worker\.js'/);
