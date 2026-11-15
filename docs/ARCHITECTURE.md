@@ -22,7 +22,7 @@ ScanDeck is a static single-page application hosted with GitHub Pages. The files
 4. The decoded text must match a supported ScanDeck game protocol. Unrelated barcodes do not open games.
 5. The selected game runs inside the site's sandboxed game frame. The release build also embeds the original decoded sample games in a JSON data script, avoiding a separate fetch/decompression step when the user presses Play.
 
-The Codebreaker game uses GS1 DataBar Expanded Stacked with a seven-character Bytecode configuration. The decoder does not store JavaScript in the GS1 symbol; ScanDeck provides the game runtime. The old JAB and rMQR decoders remain available only as legacy modules and are not active library formats.
+The Codebreaker game uses GS1 DataBar Expanded Stacked with a seven-character Bytecode configuration. The decoder does not store JavaScript in the GS1 symbol; ScanDeck provides the game runtime. The old JAB implementation has been removed. The rMQR decoders remain as compatibility readers, not as active library formats.
 
 The live camera uses a single in-flight frame in its ZXing worker. Auto prioritizes standard QR/linear/matrix codes and schedules PDF417, ChromaQR and IRIS sparsely. ChromaQR and IRIS have dedicated focus modes when needed; DotCode requires dedicated focus. Native BarcodeDetector is used for Auto when available. Main and detailed capture canvases are reused, IRIS RGB conversion runs in its worker, and every worker has a bounded lifetime or recovery timeout. The camera stops its tracks and releases worker memory on close or when the page becomes hidden. Real-device performance must still be verified before release.
 
