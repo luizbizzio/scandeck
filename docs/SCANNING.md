@@ -24,7 +24,7 @@ Code generation and real-phone decoding are different problems. A perfect downlo
 | IRIS | Experimental ring/color detection. Use even light and a centered symbol |
 | ChromaQR | RGB planes are affected by screen brightness, camera white balance and blur |
 
-Auto includes GS1 DataBar in ZXing scans and periodic ChromaQR and IRIS attempts. Codablock F and DotCode require dedicated focus. Select them explicitly. There is no debug scanner mode. The standard live-camera decoder now runs in a separate worker with one in-flight frame, frame throttling and cleanup on stop. The change targets preview responsiveness; it does not make unsupported symbols camera-readable.
+Auto (fast) scans common formats including GS1 DataBar and MicroPDF417, with less frequent PDF417, ChromaQR and IRIS passes. DotCode and legacy Codablock F need focused or upload scanning. The live camera uses one in-flight decode in a worker, capture buffers are reused, and heavy color passes are spaced apart to help low-end phones. Successful PNG tests do not guarantee camera scans on real phones.
 
 
 ## GS1 DataBar Expanded Stacked (Codebreaker)
@@ -91,7 +91,7 @@ The experimental DotCode and Codablock F camera modes now retain nearly 2 MP of 
 
 ## Sustained camera performance and Auto mode
 
-Auto scans standard formats including DataBar, with periodic ChromaQR and IRIS passes. Color scans use dedicated workers rather than ZXing's grayscale reader. The standard camera worker is periodically recycled after 40 completed reads to release its WASM memory, and unresponsive reads are bounded by a watchdog. Default Auto frames are capped at 750,000 pixels; focused modes keep the detail needed by their symbols. No frames are queued while decoding. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images try both full and centered crops. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
+Auto scans standard formats including DataBar, with periodic ChromaQR and IRIS passes. Color scans use dedicated workers rather than ZXing's grayscale reader. The standard camera worker is recycled after 90 completed reads to limit WASM heap growth; the DotCode worker is recycled after 48 reads and the IRIS worker after 32 reads. Each decode has a deadline, and no camera frames are queued while decoding. Auto captures are capped at approximately 500,000 pixels in quick mode; dedicated focus modes preserve more detail. MaxiCode and rMQR use more whole-frame passes before narrow crops. Uploaded images use a disposable worker with a 12-megapixel input safety limit, independent rMQR fallback, full-image and centered crops, plus IRIS and ChromaQR recovery. SVG files can use the compatibility reader when browser workers cannot decode them. IRIS chooses the shorter of raw standalone JavaScript and lossless compressed JavaScript before constructing the rings, without removing game code.
 
 ## Independent Codablock F interoperability audit
 
@@ -103,7 +103,7 @@ ZXing-C++ only partially supports reading MaxiCode and does not offer a general-
 
 ## Clean PNG decoding and camera FPS
 
-Uploaded MaxiCode/rMQR originals now get a dedicated pure-image decoding pass first, since the ZXing MaxiCode reader expects a clean aligned symbol. Video preview requests 24 fps (up to 30 when the device permits), while long-running decodes dynamically add up to 800 ms between attempts to avoid heating and frame drops. The preview stream remains independent of decode scheduling.
+Uploaded GS1 DataBar and rMQR originals get a dedicated pure-image read first. Video preview requests 24 fps (up to 30 when supported); scanning is independently throttled, with scheduled slow-format passes. The upload decoder runs away from the UI thread. The preview stream remains independent of decode scheduling.
 
 ## IRIS secondary camera detector
 
