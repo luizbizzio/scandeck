@@ -8,7 +8,11 @@
  const result=document.querySelector('#result');
  const codes=[
   {file:'ironpass-micro-v3-qr.png',contains:'IP3:'},
-  {file:'codebreaker-databar.png',contains:'SDCB7'}
+  {file:'codebreaker-databar.png',contains:'SDCB7'},
+  {file:'dice-streak-micropdf417.png',format:'MicroPDF417'},
+  {file:'neon-dodge-dotcode.png',format:'DotCode'},
+  {file:'chromaqr-chroma.png',format:'ChromaQR'},
+  {file:'iris-wire.png',format:'IRIS'}
  ];
  const details=[];
  for(const code of codes){
@@ -29,7 +33,8 @@
      worker.onerror=event=>{clearTimeout(timeout);worker.terminate();reject(Error(event.message))};
      worker.postMessage({id,file:blob});
    });
-   if(!decoded?.text?.includes(code.contains))
+   if(!decoded?.text||(code.contains&&!decoded.text.includes(code.contains))||
+      (code.format&&decoded.format!==code.format))
      throw Error('Wrong decoded payload for '+code.file+': '+JSON.stringify(decoded));
    details.push(code.file+' OK');
  }
