@@ -187,7 +187,7 @@ test('Brick Rush has faster ball, three lives and pointer/keyboard control',()=>
  assert.match(html,/BRICK RUSH/);
 });
 test('Chroma Rush separates its scoreboard and has longer rounds',()=>{
- const html=readFileSync(new URL('../examples/colorpath-jab.html',import.meta.url),'utf8');
+ const html=readFileSync(new URL('../examples/colorpath-chromaqr.html',import.meta.url),'utf8');
  const src=extractScript(html);
  const t={textContent:'',style:{}},s={textContent:''},l={textContent:''},start={hidden:false,textContent:'START'},g={},fill={style:{},offsetWidth:50};
  let timerId=0;
