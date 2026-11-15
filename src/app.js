@@ -675,6 +675,10 @@ function decodeImageInWorker(file){
     const timer=setTimeout(()=>finish(new Error('Image processing timed out. Try a smaller image or a clear crop.')),45000);
     worker.onmessage=({data})=>{
       if(data?.id!==id)return;
+      if(typeof data.stage==='string'){
+        if(activeUploadWorker===worker)status(data.stage);
+        return;
+      }
       if(data.unsupported){
         const error=new Error('Image worker is unsupported.');
         error.fallback=true;finish(error);return;
