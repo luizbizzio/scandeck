@@ -4,10 +4,11 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {decodeGame} from '../src/protocol.js';
 import {compactGameHtml} from '../tools/optimize-encoding.mjs';
+import {inlineScriptRanges} from '../tools/html-source.mjs';
 
 const root=new URL('../',import.meta.url);
 const original=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();
-const rawScript=html=>html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+const rawScript=html=>inlineScriptRanges(html)[0]?.source;
 function simulate(script){
  const trace=[];
  const pen={
