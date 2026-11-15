@@ -25,7 +25,7 @@ test('Auto gives at least four regular scans between specialized work',()=>{
  }
  const quick=tasks.filter(t=>t.kind==='standard').length;
  assert.ok(quick>=tasks.length*.72,'Auto must prioritize common codes');
- for(const kind of ['pdf417','chroma','iris'])
+ for(const kind of ['pdf417','dotcode','chroma','iris'])
    assert.ok(tasks.some(t=>t.kind===kind),'Auto must eventually try '+kind);
  for(let i=0;i<tasks.length;i++){
    if(tasks[i].kind==='standard')continue;
@@ -58,4 +58,38 @@ test('Fresh camera sessions reset the format schedule',()=>{
  const first=createAutoScanScheduler(500);
  const second=createAutoScanScheduler(500);
  for(let i=0;i<5;i++)assert.equal(first.next(i*300+500),second.next(i*300+500));
+});
+
+
+test('DotCode is scheduled in Auto without monopolizing the camera',()=>{
+ const scanner=createAutoScanScheduler(0);
+ const tasks=[];
+ let now=0;
+ for(let i=0;i<360;i++){
+  const kind=scanner.next(now),duration=kind==='standard'?120:kind==='dotcode'?750:kind==='pdf417'?430:1050;
+  tasks.push({kind,time:now});now+=duration+240;scanner.report(kind,now,duration);
+ }
+ const dot=tasks.filter(x=>x.kind==='dotcode');
+ assert.ok(dot.length>=2,'DotCode must be attempted periodically in Auto');
+ assert.ok(dot.length<tasks.length*.08,'DotCode must stay infrequent to protect frame rate');
+ for(const task of dot){
+  const index=tasks.indexOf(task);
+  assert.ok(index>=4&&tasks.slice(index-4,index).every(x=>x.kind==='standard'),
+   'DotCode must follow at least four common-code reads');
+ }
+});
+
+test('Slow DotCode decoding receives a longer Auto cooldown',()=>{
+ const scanner=createAutoScanScheduler(0);
+ const seen=[];
+ let now=0,first=null;
+ for(let i=0;i<180;i++){
+  const kind=scanner.next(now);
+  if(kind==='dotcode'){
+   if(first!==null){assert.ok(now-first>=30000,'DotCode ran before cooldown');return}
+   first=now;scanner.report(kind,now+3500,3500);now+=3500;
+  }else now+=kind==='standard'?420:1200;
+  seen.push(kind);
+ }
+ assert.fail('Auto never resumed DotCode after cooldown');
 });
