@@ -46,5 +46,5 @@ jobs:
             > /tmp/scandeck-browser.log 2>&1 &
           node tests/browser-smoke-runner.mjs \
             http://127.0.0.1:8765/tests/browser-upload-smoke.html
-          echo "QR and GS1 upload workers decoded successfully in real-time Chrome"
+          echo "All 12 ScanDeck upload formats decoded successfully in real-time Chrome"
 
