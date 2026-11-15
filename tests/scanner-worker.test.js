@@ -43,7 +43,7 @@ test('continuous scanner recycles worker memory without affecting camera streams
   assert.match(app,/\+\+barcodeReads>=90/);
   assert.match(app,/\+\+irisReads>=32/);
   assert.match(app,/mode==='chroma'\?7800:barcodeReads===0\?6500:options\.formats\?\.length===1\?4200:3200/);
- assert.match(app,/const dedicated=mode==='auto'&&\(autoChroma\|\|autoPdf\)/);
+ assert.match(app,/const dedicated=mode==='auto'&&\(autoChroma\|\|autoPdf\|\|autoDot\)/);
  assert.match(app,/autoQuickFormats\(quickPass\+\+\)/);
 });
 
@@ -80,7 +80,9 @@ test('rMQR camera preprocessing offers both true pure-code and finder-based read
 });
 
 test('camera DotCode transfers a disposable frame and limits blocking time',()=>{
- assert.match(app,/readExoticPixels\(pixels,mode,false,frame%5,true\)/);
+ assert.match(app,/readExoticPixels\(pixels,exoticFormat,false,frame%5,true\)/);
+ assert.match(app,/const exoticFormat=autoDot\?'dotcode':mode/);
+ assert.match(app,/autoDot=plan==='dotcode'/);
  assert.match(app,/transferPixels\?data:new Uint8ClampedArray\(data\)/);
  assert.match(app,/setTimeout\(resetExoticWorker,exact\?9000:4000\)/);
 });
