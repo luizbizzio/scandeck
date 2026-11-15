@@ -17,7 +17,7 @@
   </p>
 </div>
 
-![ScanDeck Scan page](docs/screenshots/scan.png)
+![ScanDeck Scan page](docs/screenshots/scandeck-demo.png)
 
 ## Play from a code
 
