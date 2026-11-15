@@ -9,6 +9,9 @@ Do not merge the camera audit until tests are repeated on at least one real Andr
 - [ ] Scan DotCode in dedicated mode for 10 minutes. Verify performance does not degrade when its decoder worker is recycled
 - [ ] Rotate the phone, change focus rapidly, lock/unlock the screen and grant/deny camera permission. All camera tracks should stop cleanly
 - [ ] Try a large image upload immediately after closing the camera; the previous live camera must not retain a worker or block the new scan
+- [ ] Upload GS1 DataBar, DotCode, IRIS and ChromaQR PNGs on Android and iOS. Check all four are decoded from their pixels by the new upload worker
+- [ ] Cancel a slow upload by selecting another file or opening the camera. Check that the first scan cannot overwrite the new result
+- [ ] Test an SVG file in the compatibility path, a malformed file, and a photo above 12 megapixels. Errors must not freeze the page
 - [ ] Check Chrome DevTools Performance Monitor where available: JavaScript heap and process memory must not climb without stabilizing
 - [ ] Verify the source viewer, Play, Download and Create still work for every game, and Full/Partial/Bytecode labels reflect actual payloads
 
