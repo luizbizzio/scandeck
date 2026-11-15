@@ -693,6 +693,9 @@ function decodeImageInWorker(file){
   });
 }
 async function detectImage(file) {
+  // SVG has inconsistent createImageBitmap support inside workers. Keep the
+  // existing vector-image decode fallback for this one uncommon input type.
+  if(file.type==='image/svg+xml')return detectImageLegacy(file);
   // The normal path runs entire image analysis in a separate worker. Browser
   // fallback retains legacy readers only if module/image-worker APIs are absent.
   if(typeof Worker==='function'&&typeof createImageBitmap==='function'){
