@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {decodeGame} from '../src/protocol.js';
-import {compactGameHtml} from '../tools/optimize-encoding.mjs';
-import {inlineScriptRanges} from '../tools/html-source.mjs';
+import {decodeGame} from '../src/formats/protocol.js';
+import {compactGameHtml} from '../tools/build/optimize-encoding.mjs';
+import {inlineScriptRanges} from '../tools/build/html-source.mjs';
 
 const root=new URL('../',import.meta.url);
 const original=readFileSync(new URL('examples/ironpass-micro-v3.html',root),'utf8').trim();

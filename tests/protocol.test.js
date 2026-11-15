@@ -1,11 +1,11 @@
 import test from 'node:test';
 import vm from 'node:vm';
-import {snakePayload} from '../tools/generate-snake.mjs';
+import {snakePayload} from '../tools/build/generate-snake.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packCompactHtml,packCompactScript,packMicroQuiz,QR_LIMIT} from '../src/protocol.js';
-import {code128Svg,decodeCode128Svg} from '../src/code128.js';
-import {gameDocument} from '../src/runtime.js';
+import {base43Decode,base43Encode,decodeGame,LEGACY_SNAKE,packHtml,packScript,packCompactHtml,packCompactScript,packMicroQuiz,QR_LIMIT} from '../src/formats/protocol.js';
+import {code128Svg,decodeCode128Svg} from '../src/formats/code128.js';
+import {gameDocument} from '../src/games/runtime.js';
 test('base43 binary round trips',()=>{
   for(const n of [0,1,2,3,43,100,255,512,2779]){
     const bytes=Uint8Array.from({length:n},(_,i)=>(i*91+13)%256);
@@ -192,7 +192,7 @@ test('both RGB color formats store complete embedded game payloads as PNG',async
 });
 
 test('Micro QR controls randomly generated, solvable 6x6 mazes',async()=>{
- const {generateMaze}=await import('../src/maze.js');
+ const {generateMaze}=await import('../src/games/maze.js');
  const raw=packMicroQuiz('M36509');
  assert.equal(raw,'MQ:M36509');
  const game=await decodeGame(raw);
@@ -233,7 +233,7 @@ test('compressed full HTML and standalone JavaScript preserve source bytes and r
 test('SDY alphanumeric compressed JavaScript remains a full standalone game',async()=>{
  const source=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
  const {deflateRawSync}=await import('node:zlib');
- const {base43Encode}=await import('../src/protocol.js');
+ const {base43Encode}=await import('../src/formats/protocol.js');
  const payload='SDY:'+base43Encode(deflateRawSync(Buffer.from(source)));
  const game=await decodeGame(payload);
  assert.equal(game.kind,'standalone');
@@ -243,7 +243,7 @@ test('SDY alphanumeric compressed JavaScript remains a full standalone game',asy
 });
 
 test('Z85 game transport round-trips bytes and both source types',async()=>{
-  const {base85Encode,base85Decode,packDenseHtml,packDenseScript}=await import('../src/protocol.js');
+  const {base85Encode,base85Decode,packDenseHtml,packDenseScript}=await import('../src/formats/protocol.js');
   for(const n of [0,1,2,3,4,5,13,257,1024]){
     const bytes=Uint8Array.from({length:n},(_,i)=>(i*73+19)%256);
     assert.deepEqual(base85Decode(base85Encode(bytes)),bytes);
@@ -268,7 +268,7 @@ test('DotCode accepts new Z85 payloads and legacy Base64 symbols',async()=>{
 });
 
 test('older DotCode and rMQR programs still use their original game markup',async()=>{
- const {gameDocument}=await import('../src/runtime.js');
+ const {gameDocument}=await import('../src/games/runtime.js');
  const oldDot='g=c.getContext("2d");requestAnimationFrame(()=>0)';
  const newDot='p=s=z=0;y=-32;v=0;a=4;c.onclick=()=>p^=1;tick=d=>{}';
  const legacy=gameDocument({kind:'standalone',title:'Neon Dodge',source:oldDot});
@@ -284,7 +284,7 @@ test('older DotCode and rMQR programs still use their original game markup',asyn
 
 test('Ironpass preserves its tower-defense mechanics without opening filler text',async()=>{
  const html=readFileSync(new URL('../examples/ironpass-micro-v3.html',import.meta.url),'utf8').trim();
- const {compactGameHtml}=await import('../tools/optimize-encoding.mjs');
+ const {compactGameHtml}=await import('../tools/build/optimize-encoding.mjs');
  const compacted=await compactGameHtml(html,{minifyGlobals:true});
  const payload=readFileSync(new URL('../assets/ironpass-micro-v3.txt',import.meta.url),'utf8').trim();
  const game=await decodeGame(payload);

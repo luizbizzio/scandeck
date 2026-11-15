@@ -5,7 +5,7 @@ import {inflateSync} from 'node:zlib';
 import {encodeColor,renderColorRaster,decodeColor} from '../vendor/iris/color.js';
 import {decodeColorMarkers} from '../vendor/iris/markers.js';
 import {decodeColorRobust} from '../vendor/iris/robust.js';
-import {cropIrisDisk} from '../src/iris-camera.js';
+import {cropIrisDisk} from '../src/scanner/iris-camera.js';
 
 function readRgbPng(name){
   const file=readFileSync(new URL('../assets/'+name+'.png',import.meta.url));
@@ -66,7 +66,7 @@ test('compact IRIS game remains decodable after mobile-sized nearest-neighbor re
 });
 
 test('IRIS camera worker prioritizes RGB markers and isolated card over costly full-frame search',()=>{
- const worker=readFileSync(new URL('../src/iris-worker.js',import.meta.url),'utf8');
+ const worker=readFileSync(new URL('../src/scanner/iris-worker.js',import.meta.url),'utf8');
  assert.ok(worker.indexOf('cropIrisCard(grid)')<worker.indexOf('decodeColorMarkers(grid)'));
  assert.ok(worker.indexOf('decodeColorMarkers(card)')<worker.indexOf('decodeColorRobust(card,'));
  assert.match(worker,/budgetMs:650/);

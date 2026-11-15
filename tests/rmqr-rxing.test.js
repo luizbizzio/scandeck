@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
 import * as rxing from 'rxing-wasm';
-import {decodeRxingRMQRImage} from '../src/rmqr-rxing.js';
+import {decodeRxingRMQRImage} from '../src/scanner/rmqr-rxing.js';
 
 test('Rxing independently decodes the published rMQR pixels',()=>{
  const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));

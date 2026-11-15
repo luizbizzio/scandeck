@@ -14,7 +14,7 @@ test('public domain and crawl metadata agree',()=>{
   assert.match(robots,/Sitemap: https:\/\/scandeck\.luizbizzio\.com\/sitemap.xml/);
   assert.match(sitemap,/<loc>https:\/\/scandeck\.luizbizzio\.com\/<\/loc>/);
   assert.equal((sitemap.match(/<loc>/g)||[]).length,1);
-  assert.match(workflow,/cp index.html sw.js \.nojekyll robots.txt sitemap.xml dist\//);
+  assert.match(workflow,/npm run build:cloudflare/);
 });
 test('metadata and structured data describe actual site',()=>{
   assert.match(html,/<meta name="description" content="Play small browser games/);
@@ -29,7 +29,7 @@ test('metadata and structured data describe actual site',()=>{
   assert.doesNotMatch(html,/noindex/);
 });
 test('camera helper is part of published offline site',()=>{
-  assert.match(workflow,/cp src\/\*\.js src\/style\.css dist\/src\//);
+  assert.match(workflow,/npm run build:cloudflare/);
   assert.match(sw,/src\/scanner-geometry\.js/);
   assert.match(html,/src\/app\.js\?v=84/);
 });

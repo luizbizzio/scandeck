@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {PNG} from 'pngjs';
-import {cropIrisCard} from '../src/iris-camera.js';
+import {cropIrisCard} from '../src/scanner/iris-camera.js';
 import {decodeColorMarkers} from '../vendor/iris/markers.js';
 import {decodeColorRobust} from '../vendor/iris/robust.js';
 

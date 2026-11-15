@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {packMicroVm,decodeGame} from '../src/protocol.js';
-import {parseMicroProgram,executeMicroProgram,microVmHtml} from '../src/microvm.js';
-import {gameDocument} from '../src/runtime.js';
+import {packMicroVm,decodeGame} from '../src/formats/protocol.js';
+import {parseMicroProgram,executeMicroProgram,microVmHtml} from '../src/games/microvm.js';
+import {gameDocument} from '../src/games/runtime.js';
 
 const CODE='V1R4T3DIC+L0X';
 test('Pocket Reflex holds an endless 13-byte Micro QR program',async()=>{

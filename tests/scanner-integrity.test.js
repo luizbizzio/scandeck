@@ -45,7 +45,7 @@ test('rMQR PNG, saved payload and original game source agree',async()=>{
  const png=PNG.sync.read(readFileSync(new URL('../assets/math-rmqr.png',import.meta.url)));
  const payload=readFileSync(new URL('../assets/math-rmqr.txt',import.meta.url),'utf8').trim();
  const original=readFileSync(new URL('../examples/math-rmqr.js',import.meta.url),'utf8').trim();
- const {decodeGame}=await import('../src/protocol.js');
+ const {decodeGame}=await import('../src/formats/protocol.js');
  const hits=await readBarcodes({width:png.width,height:png.height,data:new Uint8ClampedArray(png.data)},{
   formats:['RMQRCode'],maxNumberOfSymbols:1,tryRotate:true,tryDownscale:false
  });
