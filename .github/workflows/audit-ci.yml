@@ -1,0 +1,50 @@
+name: Pre-release audit checks (no deployment)
+on:
+  push:
+    branches:
+      - 'audit/**'
+  pull_request:
+    branches:
+      - main
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Audit dependency security
+        run: npm audit --audit-level=high
+      - name: Build all barcode assets
+        run: npm run build
+      - name: Verify JavaScript syntax
+        run: |
+          for file in src/*.js tools/*.mjs; do node --check "$file"; done
+      - name: Run full test suite
+        run: npm test
+      - name: Verify static deployment assets
+        run: node tools/prepare-cloudflare.mjs
+      - name: Browser smoke test for upload worker
+        run: |
+          mkdir -p dist/tests
+          cp tests/browser-upload-smoke.html dist/tests/
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory dist > /tmp/scandeck-server.log 2>&1 &
+          for i in {1..15}; do
+            curl -fsS http://127.0.0.1:8765/ > /dev/null && break
+            sleep 1
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$CHROME" ]; then echo 'Headless Chrome not installed on CI runner'; exit 1; fi
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu \
+            --remote-allow-origins='*' --remote-debugging-port=9222 \
+            --user-data-dir=/tmp/scandeck-chrome about:blank \
+            > /tmp/scandeck-browser.log 2>&1 &
+          node tests/browser-smoke-runner.mjs \
+            http://127.0.0.1:8765/tests/browser-upload-smoke.html
+          echo "All 12 ScanDeck upload formats decoded successfully in real-time Chrome"
+

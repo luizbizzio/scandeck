@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <title>ScanDeck | Play Games Inside QR Codes and Barcodes</title>
+  <link rel="canonical" href="https://scandeck.luizbizzio.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ScanDeck">
+  <meta property="og:title" content="ScanDeck | Play Games Inside QR Codes and Barcodes">
+  <meta property="og:description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta property="og:url" content="https://scandeck.luizbizzio.com/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://scandeck.luizbizzio.com/assets/ironpass-micro-v3-qr.png">
+  <meta property="og:image:alt" content="A ScanDeck QR code that contains a playable game">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ScanDeck | Play Games Inside QR Codes and Barcodes">
+  <meta name="twitter:description" content="Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.">
+  <meta name="twitter:image" content="https://scandeck.luizbizzio.com/assets/ironpass-micro-v3-qr.png">
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@graph":[
+      {"@type":"WebSite","name":"ScanDeck","url":"https://scandeck.luizbizzio.com/","inLanguage":"en"},
+      {"@type":"WebApplication","name":"ScanDeck","url":"https://scandeck.luizbizzio.com/","description":"Play small browser games stored inside QR codes, barcodes and other 2D codes. Scan or upload a code, explore 12 formats, and create your own.","applicationCategory":"GameApplication","operatingSystem":"Any modern browser","isAccessibleForFree":true,"inLanguage":"en","author":{"@type":"Person","name":"Luiz Bizzio","url":"https://github.com/luizbizzio"},"codeRepository":"https://github.com/luizbizzio/scandeck","license":"https://github.com/luizbizzio/scandeck/blob/main/LICENSE"}
+    ]
+  }
+  </script>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="stylesheet" href="src/style.css?v=83">
+  <script type="module" src="src/app.js?v=84"></script>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a href="#scan" class="logo" aria-label="ScanDeck home"><span class="logo-mark" aria-hidden="true"><i></i><i></i><i></i></span><span>scan<span class="logo-light">deck</span><span class="logo-dot">.</span></span></a>
+    <nav aria-label="Main navigation">
+      <a class="tab active" href="#scan" data-tab="scan" aria-current="page">Scan</a>
+      <a class="tab" href="#library" data-tab="library">Games</a>
+      <a class="tab" href="#create" data-tab="create">Create</a>
+      <a class="tab" href="#about" data-tab="about">About</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="page active" id="scan" aria-labelledby="scan-title">
+      <div class="section-heading"><h1 id="scan-title">The game is in the code.</h1><p>Scan a game QR code or barcode to play. The code holds the game, not a link to it.</p></div>
+      <div class="scan-layout">
+        <section class="surface scanner" aria-label="Game scanner">
+          <div class="scanner-heading">
+            <h2>Scan a game</h2>
+            <details class="scan-formats-details"><summary>12 code formats</summary><div class="scan-formats" aria-label="Game code formats"><span>QR</span><span>Code 128</span><span>Data Matrix</span><span>Aztec</span><span>PDF417</span><span>EAN-13</span><span>Micro QR</span><span>GS1 DataBar Expanded Stacked</span><span>MicroPDF417</span><span>DotCode</span><span>IRIS color</span><span>ChromaQR</span></div></details>
+          </div>
+          <div class="scan-workspace">
+            <div class="scan-viewport" id="scan-viewport">
+              <div class="scan-idle" id="scan-idle">
+                <div class="idle-frame" aria-hidden="true">
+                  <i></i><i></i><i></i><i></i>
+                  <div class="idle-symbol"><span></span><span></span><span></span><span></span></div>
+                </div>
+                <p>Place a game code in view</p>
+              </div>
+              <div id="camera-panel" class="camera-panel" hidden>
+                <div class="camera-stage" id="camera-stage">
+                  <video id="camera" playsinline muted autoplay aria-label="Live camera"></video>
+                  <div class="scan-graphic" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+                  <span id="camera-label" class="camera-label">SCANNING</span>
+                  <button id="stop-camera" type="button" class="camera-close" aria-label="Close scanner" disabled hidden><span aria-hidden="true">✕</span> Close</button>
+                  <div class="camera-bottom">
+                    <label for="camera-mode">Scan format</label>
+                    <select id="camera-mode" aria-label="Camera scan format">
+                      <option value="auto">Auto (fast)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="ean13">EAN-13</option><option value="microqr">Micro QR</option><option value="databar">GS1 DataBar Expanded Stacked</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="micropdf417">MicroPDF417</option><option value="dotcode">DotCode</option></select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="scan-controls">
+              <div class="scan-guide"><h3>Ready to play?</h3><p>Use your camera or upload an image of a ScanDeck game code.</p></div>
+              <div class="scan-mode-row"><label for="scan-mode">Scanner focus</label><select id="scan-mode" aria-label="Scanner focus"><option value="auto">Auto (fast)</option><option value="qr">QR Code</option><option value="code128">Code 128</option><option value="datamatrix">Data Matrix</option><option value="aztec">Aztec</option><option value="pdf417">PDF417</option><option value="ean13">EAN-13</option><option value="microqr">Micro QR</option><option value="databar">GS1 DataBar Expanded Stacked</option><option value="iris">IRIS</option><option value="chromaqr">ChromaQR</option><option value="micropdf417">MicroPDF417</option><option value="dotcode">DotCode</option></select></div>
+              <div class="scan-actions">
+                <button id="start-camera" class="btn btn-primary">Open camera <span aria-hidden="true">↗</span></button>
+                <label class="btn btn-upload">Upload image<input type="file" id="image-input" accept="image/*" hidden></label>
+              </div>
+              <div class="status" id="status" role="status" aria-live="polite"><span id="status-text"></span></div>
+              
+            </div>
+          </div>
+          <details class="manual-entry"><summary>Paste game data instead</summary><div class="manual-inner"><label class="field-label" for="paste-input">Game data</label><textarea id="paste-input" rows="4" spellcheck="false" placeholder="Paste the code data here"></textarea><button id="decode-text" class="btn">Open game</button></div></details>
+        </section>
+        <p class="scan-explore">Don't have a code? <button class="inline-link" id="scan-games">Try a game</button></p>
+      </div>
+      <section id="detected" class="surface detected" hidden aria-label="Detected game">
+        <div><span class="small-label">GAME FOUND</span><h2 id="detected-title">Game found</h2><p id="detected-description">Ready to play.</p><div class="meta" id="detected-meta"></div></div>
+        <div class="detected-actions"><button class="btn btn-primary" id="play-detected">Play game <span aria-hidden="true">↗</span></button><button class="btn btn-small" id="inspect-detected" type="button">View source</button></div>
+      </section>
+    </section>
+
+    <section class="page" id="library" aria-labelledby="library-title">
+      <div class="section-heading"><h1 id="library-title">Games to try.</h1><p>Each game is stored inside the code you can download.</p><div class="code-legend" aria-label="Embedding status legend"><span><span class="legend-tick legend-full" aria-hidden="true">✓</span> Full · HTML game</span><span><span class="legend-tick legend-partial" aria-hidden="true">✓</span> Partial · JavaScript only</span><span><span class="legend-tick legend-bytecode" aria-hidden="true">⌘</span> Bytecode · VM program</span></div></div>
+      <div class="game-groups">
+        <section class="game-group" aria-labelledby="qr-games-heading">
+          <h2 class="group-title" id="qr-games-heading">QR Code</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview square-code-preview" href="assets/ironpass-micro-v3-qr.png" aria-label="View full-size Ironpass QR code"><span class="game-code-paper"><img src="assets/ironpass-micro-v3-qr.png" alt="QR code containing Ironpass" loading="lazy" decoding="async"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Ironpass</h3><p>Defend your towers and survive waves of enemies.</p><div class="code-metadata" data-code-asset="ironpass-micro-v3-qr" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-ironpass">Play</button><a class="btn" href="assets/ironpass-micro-v3-qr.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="ironpass-micro-v3-qr" data-source-title="Ironpass" aria-label="View source for Ironpass">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="bar-games-heading">
+          <h2 class="group-title" id="bar-games-heading">Code 128 barcode</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview barcode-code-preview wide-code-preview" href="assets/taprush-code128.png" aria-label="View full Tap Rush Code 128 barcode"><span class="game-code-paper"><img src="assets/taprush-code128.png" alt="Code 128 containing the Tap Rush JavaScript counter" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Tap Rush</h3><p>Tap as fast as you can for five seconds. Beat your best score.</p><div class="code-metadata" data-code-asset="taprush-code128" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-partial" title="Complete JavaScript game, with the HTML interface supplied by ScanDeck"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-taprush">Play</button><a class="btn" href="assets/taprush-code128.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="taprush-code128" data-source-title="Tap Rush" aria-label="View source for Tap Rush">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="micropdf-games-heading">
+          <h2 class="group-title" id="micropdf-games-heading">MicroPDF417</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview stacked-code-preview wide-code-preview tight-code-preview" href="assets/dice-streak-micropdf417.png" aria-label="Preview Dice Streak MicroPDF417 barcode"><span class="game-code-paper"><img src="assets/dice-streak-micropdf417.png" alt="MicroPDF417 containing the complete Dice Streak HTML game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Dice Streak</h3><p>Roll the dice, build your streak and avoid a 1 that resets your score.</p><div class="code-metadata" data-code-asset="dice-streak-micropdf417" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-dice-streak">Play</button><a class="btn" href="assets/dice-streak-micropdf417.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="dice-streak-micropdf417" data-source-title="Dice Streak" aria-label="View source for Dice Streak">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="dotcode-games-heading">
+          <h2 class="group-title" id="dotcode-games-heading">DotCode</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview dotcode-code-preview square-code-preview" href="assets/neon-dodge-dotcode.png" aria-label="View full Neon Dodge DotCode symbol"><span class="game-code-paper"><img src="assets/neon-dodge-dotcode.png" alt="DotCode containing the Neon Dodge JavaScript game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Neon Dodge</h3><p>Switch between two lanes, dodge falling blocks and stay alive as the speed increases.</p><div class="code-metadata" data-code-asset="neon-dodge-dotcode" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-partial" title="JavaScript game stored in the code; ScanDeck supplies the HTML interface"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-dotcode-dodge">Play</button><a class="btn" href="assets/neon-dodge-dotcode.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="neon-dodge-dotcode" data-source-title="Neon Dodge" aria-label="View source for Neon Dodge">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="dm-games-heading">
+          <h2 class="group-title" id="dm-games-heading">Data Matrix</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview square-code-preview" href="assets/catch-datamatrix.png" aria-label="View Catch 10 Data Matrix code"><span class="game-code-paper"><img src="assets/catch-datamatrix.png" alt="Data Matrix containing Catch 10" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Catch 10</h3><p>Catch ten moving targets as quickly as you can.</p><div class="code-metadata" data-code-asset="catch-datamatrix" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-catch">Play</button><a class="btn" href="assets/catch-datamatrix.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="catch-datamatrix" data-source-title="Catch 10" aria-label="View source for Catch 10">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="aztec-games-heading">
+          <h2 class="group-title" id="aztec-games-heading">Aztec Code</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview square-code-preview" href="assets/memory-aztec.png" aria-label="View Pattern Memory Aztec code"><span class="game-code-paper"><img src="assets/memory-aztec.png" alt="Aztec Code containing Pattern Memory" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Pattern Memory</h3><p>Watch the color pattern, remember the order and repeat it.</p><div class="code-metadata" data-code-asset="memory-aztec" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-memory">Play</button><a class="btn" href="assets/memory-aztec.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="memory-aztec" data-source-title="Pattern Memory" aria-label="View source for Pattern Memory">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="pdf-games-heading">
+          <h2 class="group-title" id="pdf-games-heading">PDF417</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview wide-code-preview tight-code-preview" href="assets/breakout-pdf417.png" aria-label="View PDF417 Brick Rush code"><span class="game-code-paper"><img src="assets/breakout-pdf417.png" alt="PDF417 containing Brick Rush" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Brick Rush</h3><p>Bounce the ball, break all twelve bricks and protect your three lives.</p><div class="code-metadata" data-code-asset="breakout-pdf417" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-breakout">Play</button><a class="btn" href="assets/breakout-pdf417.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="breakout-pdf417" data-source-title="Brick Rush" aria-label="View source for Brick Rush">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="ean-games-heading">
+          <h2 class="group-title" id="ean-games-heading">EAN-13</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview barcode-code-preview wide-code-preview tight-code-preview" href="assets/timing-ean13.png" aria-label="Preview EAN-13 Perfect Timing barcode"><span class="game-code-paper"><img src="assets/timing-ean13.png" alt="EAN-13 containing the Perfect Timing numeric game level" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Perfect Timing</h3><p>Stop the clock as close as possible to a new millisecond target.</p><div class="code-metadata" data-code-asset="timing-ean13" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-bytecode" title="Numeric timing level stored in the barcode, interpreted by ScanDeck"><span class="code-tick" aria-hidden="true">⌘</span>Bytecode</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-tap">Play</button><a class="btn" href="assets/timing-ean13.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="timing-ean13" data-source-title="Perfect Timing" aria-label="View source for Perfect Timing">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="micro-games-heading">
+          <h2 class="group-title" id="micro-games-heading">Micro QR</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview microqr-code-preview square-code-preview" href="assets/reflex-microqr.png" aria-label="View Micro QR Pocket Reflex code"><span class="game-code-paper"><img src="assets/reflex-microqr.png" alt="Micro QR containing the entire Pocket Reflex virtual machine program" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Pocket Reflex</h3><p>Find and tap the matching number before time runs out. Keep playing as the timer gets shorter with every point.</p><div class="code-metadata" data-code-asset="reflex-microqr" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-bytecode" title="Complete VM instructions, executed by the ScanDeck interpreter"><span class="code-tick" aria-hidden="true">⌘</span>Bytecode</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-micro">Play</button><a class="btn" href="assets/reflex-microqr.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="reflex-microqr" data-source-title="Pocket Reflex" aria-label="View source for Pocket Reflex">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="databar-games-heading">
+          <h2 class="group-title" id="databar-games-heading">GS1 DataBar Expanded Stacked</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview stacked-code-preview wide-code-preview tight-code-preview" href="assets/codebreaker-databar.png" aria-label="View GS1 DataBar Expanded Stacked Codebreaker code"><span class="game-code-paper"><img src="assets/codebreaker-databar.png" alt="GS1 DataBar Expanded Stacked containing Codebreaker" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Codebreaker</h3><p>Guess the hidden number in seven tries using UP and DOWN clues.</p><div class="code-metadata" data-code-asset="codebreaker-databar" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-bytecode" title="Only the SDCB instruction and attempt count are embedded; the JavaScript game remains in ScanDeck"><span class="code-tick" aria-hidden="true">⌘</span>Bytecode</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-databar">Play</button><a class="btn" href="assets/codebreaker-databar.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="codebreaker-databar" data-source-title="Codebreaker" aria-label="View source for Codebreaker">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="iris-games-heading">
+          <h2 class="group-title" id="iris-games-heading">IRIS</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview square-code-preview" href="assets/iris-wire.png" aria-label="View full-size IRIS Wire Crisis code"><span class="game-code-paper"><img src="assets/iris-wire.png" alt="IRIS color code containing the complete Wire Crisis game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Wire Crisis</h3><p>Memorize the wire colors and cut them in the right order before time runs out.</p><div class="code-metadata" data-code-asset="iris-wire" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-partial" title="Complete JavaScript game, with the HTML interface supplied by ScanDeck"><span class="code-tick" aria-hidden="true">✓</span>Partial</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-iris-wire">Play</button><a class="btn" href="assets/iris-wire.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="iris-wire" data-source-title="Wire Crisis" aria-label="View source for Wire Crisis">View source</button></div></div>
+          </article>
+        </section>
+        <section class="game-group" aria-labelledby="chroma-games-heading">
+          <h2 class="group-title" id="chroma-games-heading">ChromaQR</h2>
+          <article class="surface game-card">
+            <a class="game-code-preview qr-code-preview square-code-preview" href="assets/chromaqr-chroma.png" aria-label="View full-size ChromaQR Chroma Rush code"><span class="game-code-paper"><img src="assets/chromaqr-chroma.png" alt="ChromaQR RGB code containing the complete Chroma Rush game" loading="lazy"></span><span class="game-code-caption" aria-hidden="true">Preview code</span></a>
+            <div class="game-body"><h3>Chroma Rush</h3><p>Choose the color of the letters, not the word, before the timer runs out.</p><div class="code-metadata" data-code-asset="chromaqr-chroma" aria-label="Code embedding and file sizes">
+              <span class="code-embedding code-embedding-full" title="Complete HTML game with its own interface"><span class="code-tick" aria-hidden="true">✓</span>Full</span>
+              <span class="code-size"><span class="code-size-label">Code</span> <strong data-payload-size>...</strong></span>
+              <span class="code-size"><span class="code-size-label">PNG</span> <strong data-png-size>...</strong></span>
+            </div><div class="game-actions"><button class="btn btn-primary" id="try-chromaqr-chroma">Play</button><a class="btn" href="assets/chromaqr-chroma.png" download>Download code</a><button class="btn btn-source" type="button" data-source-asset="chromaqr-chroma" data-source-title="Chroma Rush" aria-label="View source for Chroma Rush">View source</button></div></div>
+          </article>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="create" aria-labelledby="create-title">
+      <div class="section-heading"><h1 id="create-title">Put a game in a code.</h1><p>Have a small game? Paste its code and make a QR code or barcode.</p></div>
+      <div class="create-layout">
+        <section class="surface create-main">
+          <label class="field-label section-label" id="format-label">Code type</label>
+          <div class="format-options" role="group" aria-labelledby="format-label">
+            <button class="format-option selected" data-format="qr" aria-pressed="true"><strong>QR Code</strong><span>For small HTML games</span></button>
+            <button class="format-option" data-format="bar" aria-pressed="false"><strong>Code 128</strong><span>For standalone JavaScript games</span></button>
+            <button class="format-option" data-format="data-matrix" aria-pressed="false"><strong>Data Matrix</strong><span>For tiny HTML games</span></button>
+            <button class="format-option" data-format="aztec" aria-pressed="false"><strong>Aztec Code</strong><span>For compact HTML games</span></button>
+            <button class="format-option" data-format="pdf" aria-pressed="false"><strong>PDF417</strong><span>For HTML arcade games</span></button>
+            <button class="format-option" data-format="ean13" aria-pressed="false"><strong>EAN-13</strong><span>Numeric timing levels (bytecode)</span></button>
+            <button class="format-option" data-format="microqr" aria-pressed="false"><strong>Micro QR</strong><span>For complete tiny VM programs (13 bytes)</span></button>
+            <button class="format-option" data-format="databar" aria-pressed="false"><strong>GS1 DataBar Expanded Stacked</strong><span>Bytecode for Codebreaker</span></button>
+            <button class="format-option" data-format="iris" aria-pressed="false"><strong>IRIS color</strong><span>For full HTML games</span></button>
+            <button class="format-option" data-format="chromaqr" aria-pressed="false"><strong>ChromaQR</strong><span>For JavaScript games across RGB layers</span></button>
+            <button class="format-option" data-format="micropdf417" aria-pressed="false"><strong>MicroPDF417</strong><span>Compact full HTML games in stacked bars</span></button>
+            <button class="format-option" data-format="dotcode" aria-pressed="false"><strong>DotCode</strong><span>Compressed JavaScript in fewer dots</span></button>
+          </div>
+          <p class="format-note" id="create-help">QR codes can store more game data.</p>
+          <div class="editor-heading"><label class="field-label section-label" for="create-source" id="create-label">Game code (HTML)</label><button class="text-action" id="use-example">Load an example</button></div>
+          <textarea spellcheck="false" id="create-source" class="source-editor" placeholder="Paste your HTML game here"></textarea>
+          <div class="create-actions"><button class="btn btn-primary" id="generate">Generate code <span aria-hidden="true">↗</span></button></div>
+          <p id="create-error" class="create-error" role="alert" hidden></p>
+        </section>
+        <section class="surface result-surface" id="create-result" hidden>
+          <div class="result-heading"><h2>Your game code</h2><span id="output-label" class="small-label" aria-live="polite">READY</span></div>
+          <div id="output-preview" class="output-preview"></div>
+          <div class="output-stats" id="output-stats" role="status" aria-live="polite"></div>
+          <div class="create-actions result-actions"><button class="btn btn-primary" id="download-code" disabled>Download code</button><button class="btn" id="test-code" disabled>Test game</button></div>
+          <details class="advanced-output"><summary>Copy game data</summary><div class="advanced-inner"><textarea id="generated-payload" spellcheck="false" readonly rows="3" aria-label="Generated game data"></textarea><button class="btn btn-small" id="copy-code" disabled>Copy data</button></div></details>
+        </section>
+      </div>
+    </section>
+
+    <section class="page" id="about" aria-labelledby="about-title">
+      <div class="section-heading"><h1 id="about-title">More than a barcode.</h1><p>Every code has a story. Discover where these formats came from and why they exist.</p></div>
+      <div class="about-content">
+        <p class="about-lead">Most QR codes open a website. ScanDeck is different. The code contains the game itself. Scan it here, and play.</p>
+        <h2>How it works</h2>
+        <ol class="about-steps"><li><span>01</span>Find a ScanDeck game code.</li><li><span>02</span>Scan it or upload its image.</li><li><span>03</span>Play in your browser.</li></ol>
+        <div class="about-section-heading"><h2>Meet the 12 code formats</h2><p>From factory barcodes to colorful experiments, each format was made to solve a different problem.</p></div>
+        <div class="about-types">
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>QR Code</h3><span>1994 · Japan</span></div>
+            <p>QR Code was created by DENSO engineers in Japan to track car parts faster. Its three large corner squares help a scanner find the code from different angles. QR means Quick Response. It later became popular for tickets, menus and payments.</p>
+            <a class="about-code-example" href="assets/ironpass-micro-v3-qr.png" aria-label="View full-size QR Code example containing Ironpass">
+              <span class="about-example-preview"><img src="assets/ironpass-micro-v3-qr.png" alt="QR Code example containing Ironpass" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Ironpass</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.qrcode.com/en/history/" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at DENSO <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>Code 128</h3><span>1981 · United States</span></div>
+            <p>Computer Identics introduced Code 128 to store letters, numbers and symbols in a line of bars. It became useful for shipping labels and inventory. Its name comes from the 128 characters in the ASCII set. A long message makes a very wide barcode.</p>
+            <a class="about-code-example" href="assets/taprush-code128.png" aria-label="View full-size Code 128 example containing Tap Rush">
+              <span class="about-example-preview"><img src="assets/taprush-code128.png" alt="Code 128 example containing Tap Rush" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Tap Rush</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.keyence.com/ss/products/auto_id/codereader/basic/code128.jsp" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at KEYENCE <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>MicroPDF417</h3><span>1990s · United States</span></div>
+            <p>MicroPDF417 is a compact stacked barcode designed for smaller labels and short messages. It uses multiple rows and built-in error correction. ScanDeck stores the complete Dice Streak HTML game inside the code. Keep every bar sharp and the full symbol visible when scanning.</p>
+            <a class="about-code-example" href="assets/dice-streak-micropdf417.png" aria-label="Preview MicroPDF417 example containing Dice Streak">
+              <span class="about-example-preview"><img src="assets/dice-streak-micropdf417.png" alt="MicroPDF417 example containing Dice Streak" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Dice Streak</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.iso.org/standard/38838.html" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at ISO <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>DotCode</h3><span>2009 · AIM standard</span></div>
+            <p>DotCode uses separate dots instead of square cells. Originally designed for industrial printing and standardized by AIM in 2009, it stores the Neon Dodge JavaScript game. ScanDeck provides the canvas interface.</p>
+            <a class="about-code-example" href="assets/neon-dodge-dotcode.png" aria-label="View full-size DotCode example containing Neon Dodge">
+              <span class="about-example-preview"><img src="assets/neon-dodge-dotcode.png" alt="DotCode example containing Neon Dodge" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Neon Dodge</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://aidc100.org/wp-content/uploads/2018/07/DCA-history.pdf" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at AIDC history <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>Data Matrix</h3><span>1987 · United States</span></div>
+            <p>Data Matrix was developed by ID Matrix for marking small items. Its L-shaped border helps scanners find the rows and columns. You may see it on electronic parts, medical equipment and product labels. It can store more data than its small size suggests.</p>
+            <a class="about-code-example" href="assets/catch-datamatrix.png" aria-label="View full-size Data Matrix example containing Catch 10">
+              <span class="about-example-preview"><img src="assets/catch-datamatrix.png" alt="Data Matrix example containing Catch 10" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Catch 10</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.keyence.com/ss/products/auto_id/codereader/basic_2d/datamatrix.jsp" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at KEYENCE <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>Aztec Code</h3><span>1995 · United States</span></div>
+            <p>Andrew Longacre and Robert Hussey developed Aztec Code at Welch Allyn. The square target at its center looks like an ancient Aztec pyramid from above. It does not need a large white border, which makes it useful on compact tickets and travel passes.</p>
+            <a class="about-code-example" href="assets/memory-aztec.png" aria-label="View full-size Aztec Code example containing Pattern Memory">
+              <span class="about-example-preview"><img src="assets/memory-aztec.png" alt="Aztec Code example containing Pattern Memory" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Pattern Memory</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://barcodeguide.seagullscientific.com/Content/Symbologies/Aztec_Code.htm" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at Seagull Scientific <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>PDF417</h3><span>1991 · United States</span></div>
+            <p>Ynjiun Wang invented PDF417 at Symbol Technologies. It works like many short barcodes stacked into one larger symbol. The name refers to its four bars and spaces across 17 units. The format is widely used on identification cards, tickets and travel documents.</p>
+            <a class="about-code-example" href="assets/breakout-pdf417.png" aria-label="View full-size PDF417 example containing Brick Rush">
+              <span class="about-example-preview"><img src="assets/breakout-pdf417.png" alt="PDF417 example containing Brick Rush" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Brick Rush</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.telerik.com/products/reporting/documentation/report-items/barcode/2d-barcodes/pdf417" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at Telerik <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>EAN-13</h3><span>1977 · International</span></div>
+            <p>EAN-13 is a widely used retail barcode with 13 digits, including a check digit. ScanDeck stores a numeric Perfect Timing challenge, not a product identifier or link. The game runs using the ScanDeck interpreter.</p>
+            <a class="about-code-example" href="assets/timing-ean13.png" aria-label="Preview EAN-13 example containing Perfect Timing">
+              <span class="about-example-preview"><img src="assets/timing-ean13.png" alt="EAN-13 example containing Perfect Timing" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Perfect Timing</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://ref.gs1.org/standards/genspecs/" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at GS1 <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>Micro QR</h3><span>1997 · Japan</span></div>
+            <p>DENSO created Micro QR as a smaller version of QR Code. It uses only one large corner marker, leaving more room for data in a tiny square. The trade-off is very low capacity. In ScanDeck, Pocket Reflex uses a short program and a shared interpreter.</p>
+            <a class="about-code-example" href="assets/reflex-microqr.png" aria-label="View full-size Micro QR example containing Pocket Reflex">
+              <span class="about-example-preview"><img src="assets/reflex-microqr.png" alt="Micro QR example containing Pocket Reflex" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Pocket Reflex</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://www.denso.com/global/en/driven-base/career-life/qr_engineer-1/" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at DENSO <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>GS1 DataBar Expanded Stacked</h3><span>GS1 barcode · Multi-row</span></div>
+            <p>GS1 DataBar Expanded Stacked combines multiple rows of short barcode segments. Codebreaker is Bytecode: its barcode contains only an instruction and an attempt count. The JavaScript game runs in ScanDeck. ZXing reads the symbol.</p>
+            <a class="about-code-example" href="assets/codebreaker-databar.png" aria-label="View full-size GS1 DataBar Expanded Stacked example containing Codebreaker">
+              <span class="about-example-preview"><img src="assets/codebreaker-databar.png" alt="GS1 DataBar Expanded Stacked example containing Codebreaker" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Codebreaker</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://ref.gs1.org/standards/genspecs/" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at GS1 <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>IRIS</h3><span>Open-source research</span></div>
+            <p>IRIS is a modern open-source experiment with a circular design. It places colored data cells in rings around a central target and uses error correction to repair missing information. It is not an established retail barcode standard, and real-camera scanning is still being improved.</p>
+            <a class="about-code-example" href="assets/iris-wire.png" aria-label="View full-size IRIS example containing Wire Crisis">
+              <span class="about-example-preview"><img src="assets/iris-wire.png" alt="IRIS example containing Wire Crisis" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Wire Crisis</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://github.com/AllTerrainDeveloper/iris" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at IRIS project <span aria-hidden="true">↗</span></a>
+          </article>
+          <article class="about-code-card">
+            <div class="about-code-heading"><h3>ChromaQR</h3><span>Open-source project</span></div>
+            <p>ChromaQR was built around a simple question: what if one image could carry three QR Codes? It stores separate data in red, green and blue channels, then combines them into one colorful image. The reader must separate those channels to recover the full message.</p>
+            <a class="about-code-example" href="assets/chromaqr-chroma.png" aria-label="View full-size ChromaQR example containing Chroma Rush">
+              <span class="about-example-preview"><img src="assets/chromaqr-chroma.png" alt="ChromaQR example containing Chroma Rush" loading="lazy" decoding="async"></span>
+              <span class="about-example-footer"><span><small>EXAMPLE</small><strong>Chroma Rush</strong></span><span class="about-example-open">View PNG</span></span>
+            </a>
+            <a href="https://github.com/w-henderson/ChromaQR" target="_blank" rel="noopener noreferrer" class="about-source">Learn more at ChromaQR project <span aria-hidden="true">↗</span></a>
+          </article>
+        </div>
+        <div class="about-explainer">
+          <h2>What does "the game is in the code" mean?</h2>
+          <p>Six games contain complete HTML. Three are Partial, each storing JavaScript with an interface supplied by ScanDeck. Three are Bytecode: Pocket Reflex, Perfect Timing and Codebreaker, which store compact instructions rather than JavaScript. These labels describe actual code contents, not camera reliability.</p>
+          <p>Code capacity and camera readability are not the same thing. A large game can fit into a symbol and still be hard for a phone to scan, especially with experimental formats.</p>
+          <p>Only compatible game codes work. Normal website links and product barcodes are not games. Only open game codes you trust.</p>
+        </div>
+        <p class="about-last">Want to make your own? <button class="inline-link" id="about-create">Create a game code</button>.</p>
+      </div>
+    </section>
+  </main>
+  <footer class="site-footer"><span class="footer-version">ScanDeck · 1.0.0</span><span class="footer-credit">Created by <a href="https://github.com/luizbizzio" target="_blank" rel="noopener noreferrer">Luiz Bizzio</a></span><a class="footer-github" href="https://github.com/luizbizzio/scandeck" target="_blank" rel="noopener noreferrer">GitHub ↗</a></footer>
+</div>
+<div class="game-overlay" id="game-overlay" hidden>
+  <section class="game-app" role="dialog" aria-modal="true" aria-label="Game application">
+  <div class="game-top"><div class="game-brand">scan<span>deck</span><span class="game-title" id="overlay-game-title">Game</span></div><div class="game-top-right"><span id="game-score" class="game-score"></span><button class="btn exit-btn" id="retry-game">↻ Retry</button><button class="btn exit-btn" id="exit-game">✕ Exit</button></div></div>
+  <div class="game-viewport">
+  <iframe id="game-frame" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Independent game application"></iframe>
+  <div id="touch-controls" class="touch-controls" hidden><button data-dir="U" aria-label="Up">↑</button><div><button data-dir="L" aria-label="Left">←</button><button data-dir="D" aria-label="Down">↓</button><button data-dir="R" aria-label="Right">→</button></div></div>
+  </div>
+  <div class="game-app-footer"><span>SCANDECK ARCADE</span><span>INDEPENDENT GAME</span></div>
+  </section>
+</div>
+<dialog id="code-image-dialog" aria-labelledby="code-image-heading">
+  <div class="dialog-head">
+    <div><span class="small-label">CODE PREVIEW</span><h2 id="code-image-heading">Code type</h2></div>
+    <div class="source-dialog-actions">
+      <button class="btn btn-small" type="button" id="close-code-image">Close</button>
+    </div>
+  </div>
+  <div id="code-image-viewport" class="code-image-viewport">
+    <img id="code-image-full" alt="Code image" decoding="async">
+  </div>
+  <p>For scanning, use the full image on a separate screen, with its white margins visible.</p>
+</dialog>
+<dialog id="source-dialog" aria-labelledby="source-heading">
+  <div class="dialog-head"><div><span class="small-label">SOURCE VIEWER</span><h2 id="source-heading">Game source</h2></div><div class="source-dialog-actions"><button class="btn btn-small" id="copy-source" type="button">Copy code</button><button class="btn btn-small" id="close-source" type="button">Close</button></div></div>
+  <div class="source-classification" id="source-classification" aria-live="polite"><span id="source-status" class="code-embedding code-embedding-full"><span class="code-tick" aria-hidden="true">✓</span><span id="source-status-label">Full</span></span><span id="source-format">HTML game</span></div>
+  <p id="source-description">View the code that is stored inside the symbol.</p>
+  <pre id="source-view" tabindex="0"></pre>
+</dialog>
+
+</body>
+</html>
