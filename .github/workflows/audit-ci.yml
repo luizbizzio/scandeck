@@ -41,13 +41,10 @@ jobs:
           CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
           if [ -z "$CHROME" ]; then echo 'Headless Chrome not installed on CI runner'; exit 1; fi
           "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu \
-            --virtual-time-budget=30000 --dump-dom \
-            http://127.0.0.1:8765/tests/browser-upload-smoke.html \
-            > /tmp/scandeck-browser-result.html 2> /tmp/scandeck-browser.log
-          if ! grep -q 'data-status="passed"' /tmp/scandeck-browser-result.html; then
-            grep -E 'data-status|Testing image|Wrong decoded|Timed out|Error' /tmp/scandeck-browser-result.html | head -25
-            tail -40 /tmp/scandeck-browser.log
-            exit 1
-          fi
-          echo "QR and GS1 image upload workers decoded successfully in headless Chrome"
+            --remote-allow-origins='*' --remote-debugging-port=9222 \
+            --user-data-dir=/tmp/scandeck-chrome about:blank \
+            > /tmp/scandeck-browser.log 2>&1 &
+          node tests/browser-smoke-runner.mjs \
+            http://127.0.0.1:8765/tests/browser-upload-smoke.html
+          echo "QR and GS1 upload workers decoded successfully in real-time Chrome"
 
