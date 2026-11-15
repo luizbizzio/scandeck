@@ -314,8 +314,8 @@ test('library Play is fast, uses cached exact payload copies, and supports Micro
   assert.match(script,/openCatalogGame\('chromaqr-chroma','Chroma Rush'\)/);
   assert.match(script,/playMatrixExample\('reflex-microqr','Pocket Reflex','MicroQRCode'\)/);
   assert.doesNotMatch(item,/readBarcodes\(/);
-  assert.match(html,/src\/app\.js\?v=79/);
-  assert.match(html,/src\/style\.css\?v=79/);
+  assert.match(html,/src\/app\.js\?v=80/);
+  assert.match(html,/src\/style\.css\?v=80/);
 });
 
 test('expanding Paste game data cannot stretch the camera over the controls',()=>{
