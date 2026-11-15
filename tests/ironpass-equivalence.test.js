@@ -63,18 +63,19 @@ test('all Full HTML matrix games preserve the complete source after compression'
 // A clean checkout contains source code and the favicon, never committed game symbols.
 test('Ironpass PNG and payload are generated during build, not tracked by Git',()=>{
  const ignore=readFileSync(new URL('.gitignore',root),'utf8');
- assert.match(ignore,/^\\/assets\\/\\*$/m);
- assert.match(ignore,/^!\\/assets\\/favicon\\.svg$/m);
+ const rules=ignore.split(/\r?\n/);
+ assert.ok(rules.includes('/assets/*'),'All generated assets must be ignored');
+ assert.ok(rules.includes('!/assets/favicon.svg'),'Keep favicon in Git');
  const build=readFileSync(new URL('tools/build/build-matrix.mjs',root),'utf8');
- assert.match(build,/writeFileSync\\(asset\\('ironpass-micro-v3-qr\\.png'\\)/);
- assert.match(build,/writeFileSync\\(asset\\('ironpass-micro-v3\\.txt'\\)/);
+ assert.ok(build.includes("writeFileSync(asset('ironpass-micro-v3-qr.png')"));
+ assert.ok(build.includes("writeFileSync(asset('ironpass-micro-v3.txt')"));
  for(const name of ['ironpass-micro-v3-qr.png','ironpass-micro-v3.txt']){
   assert.ok(existsSync(new URL('assets/'+name,root)),'Missing generated asset '+name);
  }
  // Git metadata is not present in some source-archive downloads.
  if(existsSync(new URL('.git',root))){
   const tracked=execFileSync('git',['ls-files','--','assets'],{cwd:fileURLToPath(root),encoding:'utf8'})
-    .trim().split('\\n').filter(Boolean);
+    .trim().split('\n').filter(Boolean);
   assert.deepEqual(tracked,['assets/favicon.svg']);
  }
 });
