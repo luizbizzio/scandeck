@@ -29,3 +29,25 @@ jobs:
         run: npm test
       - name: Verify static deployment assets
         run: node tools/prepare-cloudflare.mjs
+      - name: Browser smoke test for upload worker
+        run: |
+          mkdir -p dist/tests
+          cp tests/browser-upload-smoke.html dist/tests/
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory dist > /tmp/scandeck-server.log 2>&1 &
+          for i in {1..15}; do
+            curl -fsS http://127.0.0.1:8765/ > /dev/null && break
+            sleep 1
+          done
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || true)
+          if [ -z "$CHROME" ]; then echo 'Headless Chrome not installed on CI runner'; exit 1; fi
+          "$CHROME" --headless=new --no-sandbox --disable-dev-shm-usage --disable-gpu \
+            --virtual-time-budget=30000 --dump-dom \
+            http://127.0.0.1:8765/tests/browser-upload-smoke.html \
+            > /tmp/scandeck-browser-result.html 2> /tmp/scandeck-browser.log
+          if ! grep -q 'data-status="passed"' /tmp/scandeck-browser-result.html; then
+            grep -E 'data-status|Testing image|Wrong decoded|Timed out|Error' /tmp/scandeck-browser-result.html | head -25
+            tail -40 /tmp/scandeck-browser.log
+            exit 1
+          fi
+          echo "QR and GS1 image upload workers decoded successfully in headless Chrome"
+
