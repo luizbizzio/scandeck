@@ -1,0 +1,47 @@
+name: Build and publish ScanDeck
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: scandeck-pages-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out files
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build static release
+        run: npm run build:cloudflare
+      - name: Validate browser JavaScript
+        run: |
+          find src tools -type f \( -name '*.js' -o -name '*.mjs' \) -exec node --check {} \;
+          node --check sw.js
+      - name: Run tests
+        run: npm test
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Wait for artifact indexing
+        run: sleep 15
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
