@@ -1,4 +1,4 @@
-// Prefer common barcodes in Auto. Experimental color readers still run,
+// Prefer common barcodes in Auto. Experimental image readers still run,
 // but never dominate the camera loop or accumulate decode debt over time.
 const QUICK_FORMATS=[
   ['QRCode','DataMatrix','Aztec','Code128','EAN13'],
@@ -12,7 +12,7 @@ export function autoQuickFormats(index){
 }
 export function createAutoScanScheduler(startTime=0){
   let quickReads=0;
-  let nextPdf=startTime+2800,nextChroma=startTime+9000,nextIris=startTime+14500;
+  let nextPdf=startTime+2800,nextDot=startTime+6500,nextChroma=startTime+9000,nextIris=startTime+14500;
   return {
     next(now){
       // At least four regular barcode frames between every specialized pass.
@@ -25,6 +25,9 @@ export function createAutoScanScheduler(startTime=0){
       }
       if(now>=nextChroma){
         nextChroma=now+18000;quickReads=0;return 'chroma'
+      }
+      if(now>=nextDot){
+        nextDot=now+21000;quickReads=0;return 'dotcode'
       }
       if(now>=nextPdf){
         nextPdf=now+4200;quickReads=0;return 'pdf417'
@@ -41,6 +44,8 @@ export function createAutoScanScheduler(startTime=0){
         nextIris=Math.max(nextIris,finishedAt+34000);
       if(kind==='pdf417'&&decodeMs>1800)
         nextPdf=Math.max(nextPdf,finishedAt+7000);
+      if(kind==='dotcode'&&decodeMs>1800)
+        nextDot=Math.max(nextDot,finishedAt+30000);
     }
   };
 }
