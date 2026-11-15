@@ -13,7 +13,7 @@ const WASM_FORMATS = ['QRCode','Code128','DataMatrix','Aztec','PDF417','MicroPDF
 const WASM_SCRIPT = 'vendor/zxing-wasm/index.js';
 const QR_GENERATOR_URL = 'vendor/qrcode-generator.js';
 let selectedGame = null;
-let scanStream = null, live = false, cameraToken = 0, scanner = null, scanTimeout = null;
+let scanStream = null, live = false, cameraToken = 0, scanner = null;
 let barcodeWorker=null,barcodeSequence=0,barcodeReads=0;
 const barcodePending=new Map();
 let generatorFormat = 'qr', outputData = null, lastGame = null;
@@ -282,7 +282,7 @@ const wasmOptions={formats:WASM_FORMATS,maxNumberOfSymbols:1,tryHarder:true,tryR
 const FOCUS_FORMATS={qr:'QRCode',code128:'Code128',datamatrix:'DataMatrix',aztec:'Aztec',pdf417:'PDF417',micropdf417:'MicroPDF417',ean13:'EAN13',microqr:'MicroQRCode',rmqr:'RMQRCode',databar:'DataBarExpStk'};
 const scanFocus=()=> $('scan-mode').value;
 const focusTips={
-  auto:'Prioritizes QR and standard codes, with periodic PDF417, ChromaQR and IRIS. For DotCode, select DotCode focus.',
+  auto:'Prioritizes common codes. PDF417, DotCode, ChromaQR and IRIS are checked periodically.',
   qr:'Keep the complete QR Code centered.',
   datamatrix:'Keep the complete square Data Matrix in view.',
   aztec:'Center the Aztec symbol and keep it sharp.',
@@ -374,7 +374,7 @@ function requestBarcodeWorker(pixels,mode='standard',options={}){
 const readCameraBarcodes=(pixels,options)=>requestBarcodeWorker(pixels,'standard',options);
 const readCameraChroma=pixels=>requestBarcodeWorker(pixels,'chroma');
 function stopCamera() {
-  cameraToken++;live=false;clearTimeout(scanTimeout);
+  cameraToken++;live=false;
   stopBarcodeWorker();failIrisWorker();resetExoticWorker();
   if(scanStream)scanStream.getTracks().forEach(track=>track.stop());scanStream=null;
   const video=$('camera');video.pause();video.srcObject=null;
@@ -421,9 +421,8 @@ async function startCamera() {
     $('stop-camera').disabled=false;
     document.documentElement.classList.toggle('camera-open',isMobileCamera());
     setScanFocus(scanFocus());
-    status('Camera ready. Initializing code reader...');
     if(!live||token!==cameraToken)return;
-    status('Camera ready. '+focusTips[scanFocus()]);
+    status('');
     void cameraLoop(token);
   }catch(error){
     if(token===cameraToken){
@@ -578,9 +577,9 @@ async function cameraLoop(token){
       if(video.readyState>=2&&video.videoWidth&&video.videoHeight){
         const decodeStarted=performance.now();
         const plan=mode==='auto'?scheduler.next(decodeStarted):null;
-        const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417';
+        const autoIris=plan==='iris',autoChroma=plan==='chroma',autoPdf=plan==='pdf417',autoDot=plan==='dotcode';
         try{
-          if(frame%3===0&&!autoIris&&!autoChroma){
+          if(frame%3===0&&!autoIris&&!autoChroma&&!autoDot){
             // Native BarcodeDetector, when available, can recognize common
             // formats directly from video without copying pixels or loading WASM.
             const native=await detectNativeFocused(autoPdf?'pdf417':mode,video);
@@ -593,8 +592,8 @@ async function cameraLoop(token){
             if(live&&token===cameraToken&&mode===scanFocus()&&iris&&
               await acceptPayload(iris,'camera','IRIS'))return;
           }else{
-            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':mode;
-            const dedicated=mode==='auto'&&(autoChroma||autoPdf);
+            const captureMode=autoChroma?'chromaqr':autoPdf?'pdf417':autoDot?'dotcode':mode;
+            const dedicated=mode==='auto'&&(autoChroma||autoPdf||autoDot);
             const target=dedicated?detailCanvas:canvas,draw=dedicated?detailCtx:ctx;
             const size=captureDimensions(video.videoWidth,video.videoHeight,captureMode);
             if(target.width!==size.width)target.width=size.width;
@@ -605,7 +604,7 @@ async function cameraLoop(token){
               const chroma=await readCameraChroma(pixels);
               if(live&&token===cameraToken&&mode===scanFocus()&&chroma&&
                 await acceptPayload(chroma,'camera','ChromaQR'))return;
-            }else if(mode==='auto'||FOCUS_FORMATS[mode]){
+            }else if((mode==='auto'&&!autoDot)||FOCUS_FORMATS[mode]){
               const lib={readBarcodes:readCameraBarcodes};
               let result;
               if(autoPdf||['rmqr','pdf417','micropdf417','code128','databar'].includes(mode)){
@@ -621,13 +620,15 @@ async function cameraLoop(token){
               const raw=result?.text||result?.rawValue;
               if(live&&token===cameraToken&&mode===scanFocus()&&raw&&
                 await acceptPayload(raw,'camera',result.format))return;
-            }else if(mode==='codablockf'||mode==='dotcode'){
-              // Transfer pixels rather than copying large buffers on every frame.
+            }else if(mode==='codablockf'||mode==='dotcode'||autoDot){
+              // Reuse the focused DotCode decoder, even during scheduled Auto scans.
+              // The worker receives a transferred frame so the UI does not copy it.
               const roi=exoticCaptureRegion(target.width,target.height,frame);
               const pixels=draw.getImageData(roi.left,roi.top,roi.width,roi.height);
-              const experimental=await readExoticPixels(pixels,mode,false,frame%5,true);
+              const exoticFormat=autoDot?'dotcode':mode;
+              const experimental=await readExoticPixels(pixels,exoticFormat,false,frame%5,true);
               if(live&&token===cameraToken&&mode===scanFocus()&&experimental&&
-                await acceptPayload(experimental,'camera',mode==='codablockf'?'CodablockF':'DotCode'))return;
+                await acceptPayload(experimental,'camera',exoticFormat==='codablockf'?'CodablockF':'DotCode'))return;
             }
           }
         }catch(error){
@@ -878,10 +879,11 @@ document.addEventListener('click',event=>{
   const aboutFormat=anchor.closest('.about-code-card')?.querySelector('.about-code-heading h3')?.textContent?.trim()||'';
   $('code-image-heading').textContent=(groupFormat||aboutFormat||'Code preview').replace(/ barcode$/i,'');
   codeImageDialog.classList.toggle('dotcode-viewer',groupFormat==='DotCode'||aboutFormat==='DotCode');
+  codeImageDialog.classList.toggle('microqr-viewer',groupFormat==='Micro QR'||aboutFormat==='Micro QR');
   if(!codeImageDialog.open)codeImageDialog.showModal();
 });
 $('close-code-image').addEventListener('click',()=>codeImageDialog.close());
-codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src');codeImageDialog.classList.remove('dotcode-viewer')});
+codeImageDialog.addEventListener('close',()=>{codeImage.removeAttribute('src');codeImageDialog.classList.remove('dotcode-viewer','microqr-viewer')});
 codeImageDialog.addEventListener('click',event=>{if(event.target===codeImageDialog)codeImageDialog.close()});
 
 const catalogPromises=new Map();
