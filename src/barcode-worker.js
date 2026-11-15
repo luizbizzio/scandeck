@@ -59,22 +59,6 @@ self.onmessage=async({data:task})=>{
         }
       }
     }
-    if(mode==='jab'){
-      // JAB is full-colour, never send it through ZXing's monochrome readers.
-      try{
-        const {decodeJabPixels}=await import('./jab-camera.js');
-        const jab=await import('../vendor/jabcode.js');
-        const decoded=decodeJabPixels(jab,pixels,{phase:options?.phase||0});
-        result=decoded?[{text:decoded,format:'JABCode'}]:[];
-      }catch(error){
-        if(!decoderWarnings.has('JAB')){
-          decoderWarnings.add('JAB');
-          console.warn('[ScanDeck] JAB decoder unavailable:',error);
-        }
-      }
-      self.postMessage({id,result});
-      return;
-    }
     const zxing=await getDecoder();
     if(mode==='chroma'){
       const {decodeChromaPixels}=await import('./chroma.js');
