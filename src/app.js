@@ -1,11 +1,11 @@
-import { decodeGame, packHtml, packScript, packCodebreakerDataBar, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './protocol.js?v=83';
-import { gameDocument } from './runtime.js?v=83';
-import { code128Svg, decodeCode128Svg } from './code128.js';
-import { encodeChroma,chromaSvg,decodeChromaPixels } from './chroma.js';
-import { specialtyCandidates } from './specialty-candidates.js';
-import {decodeCodebreakerDataBar} from './databar.js';
-import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner-geometry.js?v=83';
-import { createAutoScanScheduler, autoQuickFormats, hasColorSignal } from './camera-scheduler.js?v=84';
+import { decodeGame, packHtml, packScript, packCodebreakerDataBar, packMicroQuiz, packMicroVm, packCompactHtml, packCompactScript, packDenseHtml, packDenseScript, packEanLevel, packMicroHtml, deflateRaw, base43Encode, QR_LIMIT } from './formats/protocol.js?v=83';
+import { gameDocument } from './games/runtime.js?v=83';
+import { code128Svg, decodeCode128Svg } from './formats/code128.js';
+import { encodeChroma,chromaSvg,decodeChromaPixels } from './formats/chroma.js';
+import { specialtyCandidates } from './scanner/specialty-candidates.js';
+import {decodeCodebreakerDataBar} from './formats/databar.js';
+import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner/scanner-geometry.js?v=83';
+import { createAutoScanScheduler, autoQuickFormats, hasColorSignal } from './scanner/camera-scheduler.js?v=84';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr'];
@@ -232,7 +232,7 @@ function failIrisWorker(){
 }
 function getIrisWorker(){
   if(!irisWorker){
-    irisWorker=new Worker(new URL('./iris-worker.js',import.meta.url),{type:'module'});
+    irisWorker=new Worker(new URL('./scanner/iris-worker.js',import.meta.url),{type:'module'});
     irisWorker.onmessage=({data})=>{
       const pending=irisPending.get(data?.id);
       if(!pending)return;
@@ -326,7 +326,7 @@ function stopBarcodeWorker(){
 }
 function getBarcodeWorker(){
   if(!barcodeWorker){
-    barcodeWorker=new Worker(new URL('./barcode-worker.js',import.meta.url));
+    barcodeWorker=new Worker(new URL('./scanner/barcode-worker.js',import.meta.url));
     barcodeWorker.onmessage=({data})=>{
       const job=barcodePending.get(data?.id);
       if(!job)return;
@@ -435,7 +435,7 @@ function resetExoticWorker(){
 }
 function getExoticWorker(){
   if(!exoticWorker){
-    exoticWorker=new Worker(new URL('./exotic-worker.js',import.meta.url),{type:'module'});
+    exoticWorker=new Worker(new URL('./scanner/exotic-worker.js',import.meta.url),{type:'module'});
     exoticWorker.onmessage=({data})=>{
       const pending=exoticWaiting.get(data?.id);
       if(!pending)return;
@@ -656,7 +656,7 @@ function cancelUploadDecode(){
 }
 function decodeImageInWorker(file){
   return new Promise((resolve,reject)=>{
-    const worker=new Worker(new URL('./upload-worker.js',import.meta.url));
+    const worker=new Worker(new URL('./scanner/upload-worker.js',import.meta.url));
     activeUploadWorker=worker;
     const id=++uploadSequence;
     let complete=false;

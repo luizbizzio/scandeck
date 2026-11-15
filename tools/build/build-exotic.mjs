@@ -96,7 +96,7 @@ for(const game of games){
   writeFileSync(asset(game.name+'.txt'),payload);
   console.log(game.format+' | '+game.name+' | '+source.length+' source characters -> '+payload.length+' code characters | '+matrix.width+'×'+matrix.height+' modules | complete matrix round-trip verified');
 }
-writeFileSync(new URL('src/exotic-shapes.js',root),
+writeFileSync(new URL('src/scanner/exotic-shapes.js',root),
   '/* Geometry only, generated at build time. */\nexport const EXOTIC_SHAPES='+JSON.stringify(generatedShapes)+';\n');
 copyFileSync(new URL('node_modules/@sythos/js_barcode_universal/bundle/sythos-barcode.esm.js',root),
  new URL('vendor/sythos-barcode.esm.js',root));

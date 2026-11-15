@@ -9,14 +9,14 @@ const dist = join(root, 'dist');
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 
-for (const file of ['index.html', 'sw.js', 'robots.txt', 'sitemap.xml']) {
+for (const file of ['index.html', 'sw.js', '.nojekyll', 'robots.txt', 'sitemap.xml']) {
   await copyFile(join(root, file), join(dist, file));
 }
 for (const dir of ['src', 'assets', 'vendor']) {
   await cp(join(root, dir), join(dist, dir), { recursive: true });
 }
 
-execFileSync(process.execPath, [join(root, 'tools/inject-code-sizes.mjs'), join(dist, 'index.html')], {
+execFileSync(process.execPath, [join(root, 'tools/build/inject-code-sizes.mjs'), join(dist, 'index.html')], {
   cwd: root,
   stdio: 'inherit',
 });
