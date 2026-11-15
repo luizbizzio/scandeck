@@ -8,7 +8,7 @@ const html=readFileSync(new URL('index.html',root),'utf8');
 const sw=readFileSync(new URL('sw.js',root),'utf8');
 const flow=readFileSync(new URL('.github/workflows/pages.yml',root),'utf8');
 test('source tree keeps modules in organized folders and publishes them',()=>{
- const files=['src/app.js','src/style.css','src/games/runtime.js','src/games/microvm.js','src/games/maze.js',
+ const files=['src/app.js','src/style.css','src/ui/game-metadata.js','src/ui/gallery-layout.js','src/games/runtime.js','src/games/microvm.js','src/games/maze.js',
    'src/formats/protocol.js','src/formats/chroma.js','src/formats/code128.js',
    'src/scanner/exotic-worker.js','src/scanner/iris-worker.js','src/scanner/scanner-geometry.js',
    'src/scanner/barcode-worker.js','src/scanner/upload-worker.js'];

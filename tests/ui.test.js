@@ -527,6 +527,7 @@ test('all library shapes fit their actual codes while preview heights remain ide
 });
 
 test('stacked and horizontal 2D codes trim only their preview paper, not their scanner margins',()=>{
+  const layout=readFileSync(new URL('../src/ui/gallery-layout.js',import.meta.url),'utf8');
  const assets=['dice-streak-micropdf417','timing-ean13','breakout-pdf417','codebreaker-databar'];
  for(const id of assets){
    const position=html.indexOf('href="assets/'+id+'.png"');
@@ -536,10 +537,11 @@ test('stacked and horizontal 2D codes trim only their preview paper, not their s
  }
  assert.equal((html.match(/tight-code-preview"/g)||[]).length,assets.length);
  assert.match(css,/\.tight-code-preview \.game-code-paper\{width:min\(100%,280px\);height:166px;/);
- assert.match(script,/function fitTightCodePaper\(preview\)/);
- assert.match(script,/const scale=Math\.min\(150\/img\.naturalHeight,availableWidth\/img\.naturalWidth\)/);
- assert.match(script,/new ResizeObserver\(entries=>/);
- assert.match(script,/paper\.style\.width=Math\.ceil\(img\.naturalWidth\*scale\+16\)/);
+ assert.match(script,/initializeTightCodePreviews\(\)/);
+  assert.match(layout,/function fitTightCodePaper\(preview\)/);
+ assert.match(layout,/const scale=Math\.min\(150\/img\.naturalHeight,availableWidth\/img\.naturalWidth\)/);
+ assert.match(layout,/new ResizeObserver\(entries=>/);
+ assert.match(layout,/paper\.style\.width=Math\.ceil\(img\.naturalWidth\*scale\+16\)/);
  assert.match(css,/\.game-code-preview\{height:228px;/);
  assert.doesNotMatch(css,/\.game-code-preview\.tight-code-preview\{height:/);
 });

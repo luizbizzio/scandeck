@@ -8,6 +8,7 @@ ScanDeck is a static single-page application deployed with GitHub Pages. The roo
 - `src/scanner/` contains capture geometry, scan scheduling, upload and camera workers, experimental format detection and compatibility decoders.
 - `src/formats/` contains game payload encoding and decoding, DataBar, Code 128 and ChromaQR helpers.
 - `src/games/` contains the sandboxed game document runtime and bytecode/maze interpreters.
+- `src/ui/` holds game metadata/source labels and responsive gallery layout helpers.
 - `src/style.css` styles the browser app.
 - `examples/` holds the source programs for published games and compatibility samples still used by automated tests.
 - `tests/fixtures/` contains test-only HTML source samples not shipped as games.

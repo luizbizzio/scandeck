@@ -6,6 +6,8 @@ import { specialtyCandidates } from './scanner/specialty-candidates.js';
 import {decodeCodebreakerDataBar} from './formats/databar.js';
 import { captureDimensions, focusedCrop, scanPause, exoticCaptureRegion } from './scanner/scanner-geometry.js?v=83';
 import { createAutoScanScheduler, autoQuickFormats, hasColorSignal } from './scanner/camera-scheduler.js?v=84';
+import {loadCodeSizes,getEmbeddingStatus} from './ui/game-metadata.js';
+import {initializeTightCodePreviews} from './ui/gallery-layout.js';
 const $ = id => document.getElementById(id);
 const show = (el, visible) => { $(el).hidden = !visible; };
 const DEFAULT_BARCODES = ['qr_code','code_128','data_matrix','aztec','pdf417','ean_13','micro_qr'];
@@ -18,34 +20,6 @@ let barcodeWorker=null,barcodeSequence=0,barcodeReads=0;
 const barcodePending=new Map();
 let generatorFormat = 'qr', outputData = null, lastGame = null;
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-let codeSizesRequest=null;
-function formatCodeSize(bytes){
-  return bytes<1024?bytes.toLocaleString('en-US')+' B':(bytes/1024).toFixed(1)+' KB';
-}
-async function loadCodeSizes(){
-  // Production HTML already contains exact values supplied by the build.
-  const rows=[...document.querySelectorAll('.code-metadata[data-code-asset]')];
-  if(rows.every(row=>row.querySelector('[data-payload-size]').textContent!=='...'&&row.querySelector('[data-png-size]').textContent!=='...'))return;
-  if(!codeSizesRequest){
-    codeSizesRequest=fetch('assets/code-sizes.json?v=83',{cache:'no-store'})
-      .then(response=>{if(!response.ok)throw Error('Code size manifest unavailable');return response.json()})
-      .catch(error=>{codeSizesRequest=null;throw error});
-  }
-  try{
-    const info=await codeSizesRequest;
-    for(const row of document.querySelectorAll('.code-metadata[data-code-asset]')){
-      const item=info[row.dataset.codeAsset];
-      if(!item||!Number.isInteger(item.payloadBytes)||!Number.isInteger(item.pngBytes)||item.payloadBytes<1||item.pngBytes<1)continue;
-      row.querySelector('[data-payload-size]').textContent=formatCodeSize(item.payloadBytes);
-      row.querySelector('[data-png-size]').textContent=formatCodeSize(item.pngBytes);
-    }
-  }catch(error){
-    for(const row of document.querySelectorAll('.code-metadata[data-code-asset]')){
-      row.querySelector('[data-payload-size]').textContent='N/A';
-      row.querySelector('[data-png-size]').textContent='N/A';
-    }
-  }
-}
 function status(message, error = false) { $('status-text').textContent = message; $('status').classList.toggle('error', error); }
 function switchTab(tab) {
   if (!['scan','library','create','about'].includes(tab)) tab='scan';
@@ -58,30 +32,7 @@ function switchTab(tab) {
 document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', event=>{event.preventDefault();switchTab(b.dataset.tab)}));
 addEventListener('hashchange',()=>switchTab(location.hash.slice(1)));
 
-// Keep the paper close to the actual symbol, preserving the PNG's existing quiet zone.
-// The outer gallery preview stays 228px high. ResizeObserver also handles a hidden
-// library tab becoming visible and responsive width changes.
-const tightPreviews=[...document.querySelectorAll('.tight-code-preview')];
-function fitTightCodePaper(preview){
-  const img=preview.querySelector('.game-code-paper img'),paper=img?.parentElement;
-  if(!img?.naturalWidth||!img.naturalHeight||!paper||!preview.clientWidth)return;
-  const availableWidth=Math.max(1,preview.clientWidth-40);
-  const scale=Math.min(150/img.naturalHeight,availableWidth/img.naturalWidth);
-  paper.style.width=Math.ceil(img.naturalWidth*scale+16)+'px';
-  paper.style.height=Math.ceil(img.naturalHeight*scale+16)+'px';
-}
-if(tightPreviews.length){
-  const observer=typeof ResizeObserver==='undefined'?null:new ResizeObserver(entries=>{
-    for(const entry of entries)fitTightCodePaper(entry.target);
-  });
-  for(const preview of tightPreviews){
-    const img=preview.querySelector('img');
-    if(img.complete)fitTightCodePaper(preview);
-    else img.addEventListener('load',()=>fitTightCodePaper(preview),{once:true});
-    observer?.observe(preview);
-  }
-  if(!observer)addEventListener('resize',()=>tightPreviews.forEach(fitTightCodePaper));
-}
+initializeTightCodePreviews();
 
 // Initial navigation runs after all module-level worker state is initialized.
 void loadCodeSizes();
@@ -117,15 +68,6 @@ async function acceptPayload(raw, mode='manual', format='') {
 $('decode-text').addEventListener('click',()=>{resetDetected();void acceptPayload($('paste-input').value)});
 $('paste-input').addEventListener('keydown',e=>{if(e.ctrlKey&&e.key==='Enter'){resetDetected();void acceptPayload($('paste-input').value)}});
 $('play-detected').addEventListener('click',()=>selectedGame&&playGame(selectedGame));
-function getEmbeddingStatus(game){
-  if(game.kind==='html')return {status:'full',label:'Full',format:'HTML game',
-    description:'The full HTML game and its JavaScript are stored inside the code.'};
-  if(['microvm','bytecode','maze','lights','eanlevel','codebreaker'].includes(game.kind))
-    return {status:'bytecode',label:'Bytecode',format:game.kind==='eanlevel'?'EAN-13 numeric level':game.kind==='codebreaker'?'GS1 Codebreaker rules':'VM instructions',
-      description:'The symbol contains game instructions, not JavaScript. ScanDeck provides the interpreter and interface.'};
-  return {status:'partial',label:'Partial',format:'JavaScript only',
-    description:'The complete JavaScript game is stored in the code, but ScanDeck provides its HTML interface.'};
-}
 function showGameSource(game,title=game.title){
   const source=String(game.source||'');
   if(!source)throw Error('The game has no readable source data.');
