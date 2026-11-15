@@ -40,7 +40,7 @@ Codebreaker uses **GS1 DataBar Expanded Stacked**, a distinct stacked linear bar
 You need Node.js 24 or newer.
 
 ```bash
-npm install
+npm ci
 npm run build
 npm test
 npm run start
@@ -53,7 +53,7 @@ Open http://localhost:8000. The camera needs HTTPS or localhost. The build comma
 | Path | Purpose |
 | --- | --- |
 | `index.html`, `src/style.css` | Website |
-| `src/app.js`, `src/scanner-geometry.js`, `src/barcode-worker.js` | Scanner and camera processing |
+| `src/app.js`, `src/scanner-geometry.js`, `src/camera-scheduler.js`, `src/barcode-worker.js`, `src/upload-worker.js` | Camera and image scanning |
 | `src/protocol.js`, `src/runtime.js`, `src/microvm.js`, `src/maze.js` | Game data and playback |
 | `src/chroma.js`, `src/iris-worker.js`, `src/exotic-worker.js` | Experimental decoders |
 | `examples/` | Original game sources |
@@ -73,7 +73,7 @@ Open http://localhost:8000. The camera needs HTTPS or localhost. The build comma
 
 ## Security and limits
 
-The scanner uses local decoding. A scanned game is not fetched from a remote game server. The Games tab opens predecoded copies embedded during the release build for immediate previews, so its **Play** buttons are not a camera scanning test.
+The scanner uses local decoding. Uploaded pictures run in a separate worker when the browser supports it, so the page stays responsive during long scans. A scanned game is not fetched from a remote game server. The Games tab opens predecoded copies embedded during the release build for immediate previews, so its **Play** buttons are not a camera scanning test.
 
 Only run game code you trust. The game iframe is sandboxed, but untrusted code may still freeze a browser tab.
 
